@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>メニュー</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: "Noto Sans JP", sans-serif;
+      background-color: #f5f7fa;
+      color: #333;
+      display: flex;
+      height: 100vh;
+    }
+    .sidebar {
+      width: 250px;
+      background-color: #1c2e4a;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 20px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+    }
+    .today-word strong {
+      display: block;
+      font-size: 20px;
+      color: #fff;
+    }
+    .today-word span {
+      font-size: 13px;
+      color: #ccc;
+      display: block;
+      margin-top: 5px;
+      line-height: 1.4;
+    }
+    .menu { list-style: none; padding: 0; }
+    .menu li { margin: 15px 0; }
+    .menu a {
+      color: #fff; text-decoration: none;
+      font-size: 16px; padding: 10px 15px;
+      display: block; border-radius: 8px;
+      transition: background-color 0.3s;
+    }
+    .menu a:hover { background-color: #32486b; }
+    .main {
+      margin-left: 270px;
+      padding: 40px;
+      flex: 1;
+    }
+    .card-container { display: flex; gap: 20px; flex-wrap: wrap; }
+    .card {
+      background: #fff; padding: 20px;
+      border-radius: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      width: 280px;
+    }
+    .card h2 { font-size: 20px; margin-bottom: 15px; color: #1c2e4a; }
+    .card button {
+      background-color: #1c2e4a; color: white;
+      border: none; padding: 10px 15px;
+      border-radius: 8px; cursor: pointer;
+      font-size: 14px; transition: background-color 0.3s;
+    }
+    .card button:hover { background-color: #32486b; }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <div id="todayWord" class="today-word"></div>
+    <ul class="menu">
+      <li><a href="test.html">テスト</a></li>
+      <li><a href="edit.html">問題編集</a></li>
+      <li><a href="index.html">ログアウト</a></li>
+    </ul>
+  </div>
+  <div class="main">
+    <h1>テストメニュー</h1>
+    <div class="card-container">
+      <div class="card">
+        <h2>社会</h2>
+        <button onclick="startTest('社会')">テスト開始</button>
+      </div>
+      <div class="card">
+        <h2>古文</h2>
+        <button onclick="startTest('古文')">テスト開始</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="data.js"></script>
+  <script>
+    const randomWord = words[Math.floor(Math.random() * words.length)];
+    document.getElementById("todayWord").innerHTML = `
+      <strong>${randomWord.word}</strong>
+      <span>${randomWord.meaning}</span>
+    `;
+    function startTest(subject) {
+      localStorage.setItem("selectedSubject", subject);
+      window.location.href = "test.html";
+    }
+  </script>
+</body>
+</html>
