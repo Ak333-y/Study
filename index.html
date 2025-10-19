@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>ログイン - 勉強アプリ</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="sidebar">
+    <h2>勉強アプリ</h2>
+  </div>
+  <div class="main-content">
+    <h1>ログイン</h1>
+    <input type="text" id="username" placeholder="ユーザー名">
+    <input type="password" id="password" placeholder="パスワード">
+    <button onclick="login()">ログイン</button>
+    <p id="error"></p>
+  </div>
+
+  <script>
+    function login() {
+      const user = document.getElementById('username').value;
+      const pass = document.getElementById('password').value;
+      if (user === "akio" && pass === "123334") {
+        localStorage.setItem("bnp", 0);
+        window.location.href = "menu.html";
+      } else {
+        document.getElementById("error").innerText = "ユーザー名またはパスワードが違います。";
+      }
+    }
+  </script>
+</body>
+</html>
