@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>メニュー - BNP</title>
+<style>
+body { font-family:'Segoe UI',sans-serif; background:#fff; text-align:center; margin-top:60px;}
+button { padding:10px 20px; margin:10px; border:none; border-radius:8px; background:#222; color:white; cursor:pointer; }
+#bnp { position:fixed; top:10px; right:20px; font-weight:bold; }
+</style>
+</head>
+<body>
+<div id="bnp"></div>
+<h2>科目を選んでね</h2>
+<select id="subject">
+  <option value="社会">社会</option>
+  <option value="古文">古文</option>
+</select><br>
+<button onclick="start('test')">問題を解く</button>
+<button onclick="start('add')">問題を追加</button>
+
+<script>
+document.getElementById("bnp").innerText = localStorage.getItem("bnp")+" bnp";
+function start(type){
+  const s=document.getElementById("subject").value;
+  localStorage.setItem("subject",s);
+  if(type==='test') location.href="test.html";
+  else location.href="add.html";
+}
+</script>
+</body>
+</html>
