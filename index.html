@@ -1,208 +1,33 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>コード1：学習システム</title>
-  <style>
-    body {
-      font-family: "Noto Sans JP", sans-serif;
-      background: #f4f4f4;
-      text-align: center;
-      padding: 40px;
-    }
-    .container {
-      background: #fff;
-      display: inline-block;
-      padding: 30px 40px;
-      border-radius: 15px;
-      box-shadow: 0 0 10px #bbb;
-      width: 90%;
-      max-width: 500px;
-    }
-    input, button {
-      padding: 10px;
-      margin: 8px;
-      font-size: 16px;
-      width: 80%;
-      max-width: 300px;
-    }
-    button {
-      cursor: pointer;
-      background-color: #0078ff;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      transition: 0.2s;
-    }
-    button:hover {
-      background-color: #005fd1;
-    }
-    h1 {
-      color: #222;
-    }
-    #questionArea {
-      margin-top: 20px;
-    }
-    .hidden {
-      display: none;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>ログイン - BNP勉強アプリ</title>
+<style>
+body { font-family: 'Segoe UI', sans-serif; background:#fff; text-align:center; margin-top:80px; }
+input { padding:10px; margin:8px; border:1px solid #ccc; border-radius:8px; }
+button { padding:10px 20px; background:#222; color:white; border:none; border-radius:8px; cursor:pointer; }
+h1 { font-weight:500; margin-bottom:30px; }
+</style>
 </head>
 <body>
+  <h1>BNP 勉強アプリ</h1>
+  <input id="user" placeholder="ユーザー名"><br>
+  <input id="pass" type="password" placeholder="パスワード"><br>
+  <button onclick="login()">ログイン</button>
 
-  <div id="login" class="container">
-    <h1>ログイン</h1>
-    <input type="text" id="username" placeholder="ユーザー名"><br>
-    <input type="password" id="password" placeholder="パスワード"><br>
-    <button onclick="login()">ログイン</button>
-    <p id="loginError" style="color:red;"></p>
-  </div>
-
-  <div id="menu" class="container hidden">
-    <h1>メニュー</h1>
-    <p>ようこそ、<span id="userNameDisplay"></span> さん！</p>
-    <button onclick="showAddQuestion()">問題を追加</button><br>
-    <button onclick="startTest()">テストを始める</button><br>
-    <button onclick="logout()">ログアウト</button>
-  </div>
-
-  <div id="addQuestion" class="container hidden">
-    <h1>問題追加</h1>
-    <input type="text" id="qText" placeholder="問題文"><br>
-    <input type="text" id="aText" placeholder="答え"><br>
-    <input type="number" id="pText" placeholder="ポイント (例:10)" value="10"><br>
-    <button onclick="addQuestion()">追加</button><br>
-    <button onclick="backToMenu()">← メニューに戻る</button>
-    <ul id="qList"></ul>
-  </div>
-
-  <div id="test" class="container hidden">
-    <h1>テスト</h1>
-    <p id="questionText">読み込み中...</p>
-    <input type="text" id="answerInput" placeholder="答えを入力"><br>
-    <button onclick="checkAnswer()">送信</button><br>
-    <p id="result"></p>
-    <button onclick="backToMenu()">← メニューに戻る</button>
-  </div>
-
-  <script>
-    // ======== ログイン機能 =========
-    const adminUser = { username: "akio", password: "1234" }; // ← 好きに変更OK
-
-    function login() {
-      const user = document.getElementById("username").value.trim();
-      const pass = document.getElementById("password").value.trim();
-      const err = document.getElementById("loginError");
-
-      if (user === adminUser.username && pass === adminUser.password) {
-        localStorage.setItem("loggedIn", "true");
-        localStorage.setItem("currentUser", user);
-        showMenu();
-      } else {
-        err.textContent = "ユーザー名またはパスワードが違います。";
-      }
-    }
-
-    function logout() {
-      localStorage.removeItem("loggedIn");
-      localStorage.removeItem("currentUser");
-      document.getElementById("menu").classList.add("hidden");
-      document.getElementById("login").classList.remove("hidden");
-    }
-
-    function showMenu() {
-      document.getElementById("login").classList.add("hidden");
-      document.getElementById("menu").classList.remove("hidden");
-      document.getElementById("userNameDisplay").textContent = localStorage.getItem("currentUser");
-    }
-
-    // ======== 問題追加機能 =========
-    let questions = JSON.parse(localStorage.getItem("questions")) || [];
-
-    function showAddQuestion() {
-      document.getElementById("menu").classList.add("hidden");
-      document.getElementById("addQuestion").classList.remove("hidden");
-      renderQuestionList();
-    }
-
-    function addQuestion() {
-      const q = document.getElementById("qText").value.trim();
-      const a = document.getElementById("aText").value.trim();
-      const p = parseInt(document.getElementById("pText").value);
-
-      if (!q || !a) return alert("問題と答えを入力してね！");
-      questions.push({ question: q, answer: a, points: p });
-      localStorage.setItem("questions", JSON.stringify(questions));
-
-      document.getElementById("qText").value = "";
-      document.getElementById("aText").value = "";
-      document.getElementById("pText").value = 10;
-      renderQuestionList();
-    }
-
-    function renderQuestionList() {
-      const list = document.getElementById("qList");
-      list.innerHTML = "";
-      questions.forEach((q, i) => {
-        const li = document.createElement("li");
-        li.textContent = `${i + 1}. ${q.question}（${q.points}pt）`;
-        list.appendChild(li);
-      });
-    }
-
-    // ======== テスト機能 =========
-    let testQuestions = [];
-    let index = 0;
-    let score = 0;
-
-    function startTest() {
-      if (questions.length === 0) return alert("問題がまだありません！");
-      document.getElementById("menu").classList.add("hidden");
-      document.getElementById("test").classList.remove("hidden");
-
-      testQuestions = [...questions].sort(() => 0.5 - Math.random()).slice(0, 10);
-      index = 0;
-      score = 0;
-      showQuestion();
-    }
-
-    function showQuestion() {
-      if (index < testQuestions.length) {
-        document.getElementById("questionText").textContent = testQuestions[index].question;
-        document.getElementById("answerInput").value = "";
-        document.getElementById("result").textContent = "";
-      } else {
-        document.getElementById("test").innerHTML = `<h2>テスト終了！合計スコア：${score}点</h2>
-        <button onclick="backToMenu()">← メニューに戻る</button>`;
-      }
-    }
-
-    function checkAnswer() {
-      const ans = document.getElementById("answerInput").value.trim();
-      const correct = testQuestions[index].answer.trim();
-      const pts = testQuestions[index].points;
-
-      if (ans === correct) {
-        score += pts;
-        document.getElementById("result").textContent = `正解！ +${pts}点`;
-      } else {
-        document.getElementById("result").textContent = `不正解！正解は「${correct}」`;
-      }
-
-      index++;
-      setTimeout(showQuestion, 1000);
-    }
-
-    // ======== 汎用 =========
-    function backToMenu() {
-      document.getElementById("addQuestion").classList.add("hidden");
-      document.getElementById("test").classList.add("hidden");
-      document.getElementById("menu").classList.remove("hidden");
-    }
-
-    if (localStorage.getItem("loggedIn") === "true") {
-      showMenu();
-    }
-  </script>
+<script>
+function login(){
+  const u=document.getElementById("user").value;
+  const p=document.getElementById("pass").value;
+  if(u==="akio" && p==="123334"){
+    localStorage.setItem("user","akio");
+    localStorage.setItem("bnp", localStorage.getItem("bnp") || 0);
+    location.href="menu.html";
+  } else {
+    alert("ユーザー名またはパスワードが違います。");
+  }
+}
+</script>
 </body>
 </html>
