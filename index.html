@@ -1,1 +1,86 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ログイン | コード1</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: #f3f4f6;
+    }
+    .login-box {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      width: 300px;
+      text-align: center;
+    }
+    input {
+      width: 90%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #1e40af;
+    }
+  </style>
+</head>
+<body>
 
+  <div class="login-box">
+    <h2>ログイン</h2>
+    <input type="text" id="username" placeholder="ユーザー名">
+    <input type="password" id="password" placeholder="パスワード">
+    <button onclick="login()">ログイン</button>
+    <p id="message" style="color:red;"></p>
+  </div>
+
+  <script>
+    function login() {
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const msg = document.getElementById("message");
+
+      if (!username || !password) {
+        msg.textContent = "ユーザー名とパスワードを入力してね！";
+        return;
+      }
+
+      // 管理者判定
+      if (username === "admin" && password === "1234") {
+        localStorage.setItem("currentUser", "admin");
+        window.location.href = "admin.html"; // 管理者ページへ
+        return;
+      }
+
+      // 一般ユーザー用
+      const users = JSON.parse(localStorage.getItem("users") || "{}");
+
+      if (users[username] && users[username].password === password) {
+        localStorage.setItem("currentUser", username);
+        window.location.href = "menu.html"; // 通常メニューへ
+      } else {
+        msg.textContent = "ユーザー名またはパスワードが違うよ！";
+      }
+    }
+  </script>
+
+</body>
+</html>
