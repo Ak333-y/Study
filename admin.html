@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>管理者ページ | コード1</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: #f3f4f6;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+    .container {
+      background: white;
+      max-width: 600px;
+      margin: 20px auto;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    input, textarea, select, button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background: #2563eb;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #1e40af;
+    }
+    .back {
+      text-align: center;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🧑‍💻 管理者ページ</h1>
+  <div class="container">
+    <h3>新しい問題を追加</h3>
+    <label>カテゴリを選択：</label>
+    <select id="category">
+      <option value="英単語">英単語</option>
+      <option value="社会">社会</option>
+      <option value="理科">理科</option>
+      <option value="古文単語">古文単語</option>
+    </select>
+
+    <label>問題文：</label>
+    <textarea id="question" placeholder="問題文を入力"></textarea>
+
+    <label>正解：</label>
+    <input type="text" id="answer" placeholder="正解を入力">
+
+    <label>ポイント：</label>
+    <input type="number" id="points" value="10">
+
+    <button onclick="addQuestion()">＋ 追加する</button>
+
+    <div id="message" style="color:green; text-align:center;"></div>
+  </div>
+
+  <div class="back">
+    <button onclick="window.location.href='menu.html'">← メニューに戻る</button>
+  </div>
+
+  <script>
+    function addQuestion() {
+      const category = document.getElementById("category").value;
+      const question = document.getElementById("question").value.trim();
+      const answer = document.getElementById("answer").value.trim();
+      const points = parseInt(document.getElementById("points").value);
+      const msg = document.getElementById("message");
+
+      if (!question || !answer) {
+        msg.style.color = "red";
+        msg.textContent = "問題と正解を入力してね！";
+        return;
+      }
+
+      const data = JSON.parse(localStorage.getItem("questions") || "{}");
+
+      if (!data[category]) data[category] = [];
+      data[category].push({ question, answer, points });
+
+      localStorage.setItem("questions", JSON.stringify(data));
+
+      msg.style.color = "green";
+      msg.textContent = "✅ 問題を追加しました！";
+
+      document.getElementById("question").value = "";
+      document.getElementById("answer").value = "";
+      document.getElementById("points").value = 10;
+    }
+  </script>
+
+</body>
+</html>
