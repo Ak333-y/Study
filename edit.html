@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>問題編集</title>
+  <style>
+    body { font-family: "Noto Sans JP"; background-color: #f5f7fa; padding: 40px; }
+    select, input { margin: 5px; padding: 5px; font-size: 15px; }
+    textarea { width: 100%; height: 80px; margin: 5px 0; }
+    button { background: #1c2e4a; color: white; padding: 8px 15px; border: none; border-radius: 6px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>問題編集</h1>
+  <select id="subject">
+    <option value="社会">社会</option>
+    <option value="古文">古文</option>
+  </select>
+  <textarea id="question" placeholder="問題文"></textarea>
+  <input type="text" id="c1" placeholder="選択肢1">
+  <input type="text" id="c2" placeholder="選択肢2">
+  <input type="text" id="c3" placeholder="選択肢3">
+  <input type="text" id="c4" placeholder="選択肢4">
+  <input type="text" id="answer" placeholder="正解（選択肢と同じ内容）">
+  <button onclick="saveQuestion()">保存</button>
+
+  <script src="data.js"></script>
+  <script>
+    function saveQuestion() {
+      const subject = document.getElementById("subject").value;
+      const newQ = {
+        q: document.getElementById("question").value,
+        choices: [
+          document.getElementById("c1").value,
+          document.getElementById("c2").value,
+          document.getElementById("c3").value,
+          document.getElementById("c4").value,
+        ],
+        a: document.getElementById("answer").value
+      };
+      let localData = JSON.parse(localStorage.getItem("customData") || "{}");
+      if (!localData[subject]) localData[subject] = [];
+      localData[subject].push(newQ);
+      localStorage.setItem("customData", JSON.stringify(localData));
+      alert("保存しました！");
+    }
+  </script>
+</body>
+</html>
