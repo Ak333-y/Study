@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>テスト - BNP</title>
+<style>
+body { font-family:'Segoe UI',sans-serif; background:#fff; text-align:center; margin-top:60px; }
+#bnp { position:fixed; top:10px; right:20px; font-weight:bold; }
+button { padding:8px 16px; margin:6px; border:none; border-radius:8px; background:#333; color:white; cursor:pointer; }
+</style>
+</head>
+<body>
+<div id="bnp"></div>
+<h2 id="q"></h2>
+<div id="choices"></div>
+<script src="data.js"></script>
+<script>
+const subject = localStorage.getItem("subject");
+let questions = JSON.parse(localStorage.getItem("questions")||"[]").filter(q=>q.subject===subject);
+if(questions.length>10) questions = questions.sort(()=>Math.random()-0.5).slice(0,10);
+
+let index=0, bnp = Number(localStorage.getItem("bnp"));
+document.getElementById("bnp").innerText=bnp+" bnp";
+
+function show(){
+  if(index>=questions.length){ alert("終了！おつかれ🔥"); location.href="menu.html"; return; }
+  const q=questions[index];
+  document.getElementById("q").innerText=`${index+1}. ${q.question}`;
+  const div=document.getElementById("choices"); div.innerHTML="";
+  q.choices.forEach((c,i)=>{
+    const btn=document.createElement("button");
+    btn.textContent=c;
+    btn.onclick=()=>check(c,q.answer,q.point);
+    div.appendChild(btn);
+  });
+}
+function check(c,a,p){
+  if(c===a){
+    alert("正解！ +"+p+"bnp🔥");
+    bnp+=Number(p);
+    localStorage.setItem("bnp",bnp);
+    document.getElementById("bnp").innerText=bnp+" bnp";
+  }else{
+    alert("残念！ 正解は「"+a+"」");
+  }
+  index++;
+  show();
+}
+show();
+</script>
+</body>
+</html>
