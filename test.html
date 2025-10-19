@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>テスト</title>
+  <style>
+    body {
+      font-family: "Noto Sans JP", sans-serif;
+      background-color: #f5f7fa;
+      text-align: center;
+      padding: 40px;
+    }
+    .question {
+      font-size: 20px;
+      margin-bottom: 20px;
+    }
+    button {
+      margin: 5px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background-color: #1c2e4a;
+      color: white;
+    }
+    .result {
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>テスト中</h1>
+  <div id="quiz"></div>
+  <div class="result" id="result"></div>
+
+  <script src="data.js"></script>
+  <script>
+    const subject = localStorage.getItem("selectedSubject");
+    let questions = data[subject];
+    let current = 0, correct = 0;
+
+    questions = questions.sort(() => Math.random() - 0.5).slice(0, 10);
+
+    function showQuestion() {
+      const q = questions[current];
+      const quizDiv = document.getElementById("quiz");
+      quizDiv.innerHTML = `
+        <div class="question">${q.q}</div>
+        ${q.choices.map((c, i) => `<button onclick="checkAnswer(${i})">${c}</button>`).join('')}
+      `;
+      document.getElementById("result").textContent = "";
+    }
+
+    function checkAnswer(index) {
+      const q = questions[current];
+      const res = document.getElementById("result");
+      if (q.choices[index] === q.a) {
+        res.textContent = "⭕ 正解！";
+        correct++;
+      } else {
+        res.textContent = "❌ 不正解";
+      }
+      setTimeout(() => {
+        current++;
+        if (current < 10) showQuestion();
+        else {
+          document.getElementById("quiz").innerHTML = `<h2>終了！${correct}/10 正解！</h2>`;
+          res.textContent = "";
+        }
+      }, 1000);
+    }
+
+    showQuestion();
+  </script>
+</body>
+</html>
