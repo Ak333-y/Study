@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>メニュー</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="words.js" defer></script>
+</head>
+<body>
+  <div class="sidebar">
+    <h2>📚 勉強メニュー</h2>
+    <p id="word-display"></p>
+  </div>
+
+  <div class="main-content">
+    <div class="points">💰 <span id="points"></span> bnp</div>
+    <h1>科目を選択</h1>
+    <select id="subject">
+      <option value="社会">社会</option>
+      <option value="古文">古文</option>
+    </select>
+
+    <div class="menu-buttons">
+      <button onclick="goTo('test.html')">問題を解く</button>
+      <button onclick="goTo('add.html')">問題を追加</button>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById("points").textContent = localStorage.getItem("bnp") || 0;
+    function goTo(page) {
+      const subject = document.getElementById("subject").value;
+      localStorage.setItem("subject", subject);
+      window.location.href = page;
+    }
+  </script>
+</body>
+</html>
