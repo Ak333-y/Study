@@ -2,32 +2,109 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>Born in the shadows</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>社会 一問一答</title>
   <style>
     body {
       font-family: "Noto Sans JP", sans-serif;
-      background-color: #f5f5f5;
+      background-color: #f8f8f8;
       text-align: center;
-      padding: 50px;
+      padding: 40px;
     }
     h1 {
-      color: #2c3e50;
+      color: #333;
     }
-    p {
-      color: #555;
+    .question {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      padding: 20px;
+      margin: 20px auto;
+      width: 300px;
     }
-    a {
-      color: #007bff;
-      text-decoration: none;
+    button {
+      margin: 5px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background 0.2s;
     }
-    a:hover {
-      text-decoration: underline;
-    }
+    .correct { background: #4CAF50; color: white; }
+    .wrong { background: #f44336; color: white; }
+    .neutral { background: #ddd; }
   </style>
 </head>
 <body>
-  <h1>study📚</h1>
-  <p>ここに勉強ノートとか過去問まとめをアップしていく予定！</p>
-  <p>第1章：社会まとめ（coming soon...）</p>
+  <h1>社会 一問一答クイズ🔥</h1>
+  <div class="question" id="quiz">
+    <p id="qText">問題を読み込み中...</p>
+    <div id="answers"></div>
+    <p id="result"></p>
+  </div>
+
+  <script>
+    const quiz = [
+      {
+        q: "聖徳太子が制定した法律は？",
+        a: ["大宝律令", "十七条の憲法", "鎌倉新法"],
+        correct: 1
+      },
+      {
+        q: "江戸幕府を開いたのは？",
+        a: ["織田信長", "徳川家康", "豊臣秀吉"],
+        correct: 1
+      },
+      {
+        q: "日本国憲法が施行された年は？",
+        a: ["1947年", "1945年", "1950年"],
+        correct: 0
+      }
+    ];
+
+    let current = 0;
+
+    const qText = document.getElementById("qText");
+    const answers = document.getElementById("answers");
+    const result = document.getElementById("result");
+
+    function showQuestion() {
+      const q = quiz[current];
+      qText.textContent = q.q;
+      answers.innerHTML = "";
+      result.textContent = "";
+
+      q.a.forEach((choice, i) => {
+        const btn = document.createElement("button");
+        btn.textContent = choice;
+        btn.classList.add("neutral");
+        btn.onclick = () => checkAnswer(i);
+        answers.appendChild(btn);
+      });
+    }
+
+    function checkAnswer(i) {
+      const q = quiz[current];
+      const buttons = document.querySelectorAll("#answers button");
+      buttons.forEach((btn, index) => {
+        btn.disabled = true;
+        if (index === q.correct) btn.classList.add("correct");
+        else if (index === i) btn.classList.add("wrong");
+      });
+
+      result.textContent = (i === q.correct) ? "✅ 正解！" : "❌ 不正解！";
+      setTimeout(() => {
+        current++;
+        if (current < quiz.length) showQuestion();
+        else {
+          qText.textContent = "全問終了！おつかれ！🎉";
+          answers.innerHTML = "";
+        }
+      }, 1000);
+    }
+
+    showQuestion();
+  </script>
 </body>
 </html>
