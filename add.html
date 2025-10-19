@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>問題追加</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="data.js"></script>
+</head>
+<body>
+  <div class="sidebar">
+    <h2>📝 問題追加</h2>
+  </div>
+
+  <div class="main-content">
+    <h1>問題を追加</h1>
+    <select id="subject">
+      <option value="社会">社会</option>
+      <option value="古文">古文</option>
+    </select><br><br>
+    <input type="text" id="question" placeholder="問題文"><br>
+    <input type="text" id="opt1" placeholder="選択肢1">
+    <input type="text" id="opt2" placeholder="選択肢2">
+    <input type="text" id="opt3" placeholder="選択肢3">
+    <input type="text" id="opt4" placeholder="選択肢4"><br>
+    <input type="number" id="answer" placeholder="正解(1〜4)"><br>
+    <button onclick="addQuestion()">追加</button>
+    <p id="status"></p>
+  </div>
+
+  <script>
+    function addQuestion() {
+      const subject = document.getElementById("subject").value;
+      const q = document.getElementById("question").value;
+      const opts = [1,2,3,4].map(n => document.getElementById("opt"+n).value);
+      const ans = parseInt(document.getElementById("answer").value)-1;
+      if (!q || opts.some(o => !o) || ans < 0 || ans > 3) {
+        alert("全て入力してね！");
+        return;
+      }
+      data[subject].push({q:q, options:opts, answer:ans});
+      localStorage.setItem("data", JSON.stringify(data));
+      document.getElementById("status").innerText = "追加完了🔥";
+    }
+  </script>
+</body>
+</html>
