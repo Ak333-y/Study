@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>問題追加 | AEP</title>
+  <style>
+    body {
+      font-family: "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+      background-color: #fff;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+    input, textarea, select {
+      width: 90%;
+      max-width: 400px;
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+    button {
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 15px;
+    }
+    button:hover {
+      background-color: #43a047;
+    }
+    .msg {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>📘 問題追加フォーム</h1>
+
+  <select id="subject">
+    <option value="kobu">古文</option>
+    <option value="syakai">社会</option>
+    <option value="kanji">漢字</option>
+  </select><br>
+
+  <input type="text" id="question" placeholder="問題文を入力"><br>
+
+  <textarea id="choices" placeholder="選択肢をカンマ区切りで入力（例：とても,少し,まったく,よく）"></textarea><br>
+
+  <input type="number" id="answer" placeholder="正解の選択肢の番号（0から）"><br>
+
+  <button onclick="addQuestion()">追加する</button>
+
+  <p class="msg" id="msg"></p>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js"></script>
+
+  <script>
+    // 🔥 Firebase設定（自分の設定に変えてね）
+    const firebaseConfig = {
+  apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
+  authDomain: "akeducationalplatform.firebaseapp.com",
+  projectId: "akeducationalplatform",
+  storageBucket: "akeducationalplatform.firebasestorage.app",
+  messagingSenderId: "778140595189",
+  appId: "1:778140595189:web:301e7490b813b44782a6bc"
+};
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    async function addQuestion() {
+      const subject = document.getElementById("subject").value;
+      const q = document.getElementById("question").value.trim();
+      const choices = document.getElementById("choices").value.split(",").map(c => c.trim());
+      const answer = parseInt(document.getElementById("answer").value);
+
+      if (!q || choices.length < 2 || isNaN(answer)) {
+        document.getElementById("msg").textContent = "⚠ 入力が足りないよ！";
+        document.getElementById("msg").style.color = "red";
+        return;
+      }
+
+      try {
+        await db.collection("questions").add({
+          subject: subject,
+          q: q,
+          choices: choices,
+          answer: answer
+        });
+        document.getElementById("msg").textContent = "✅ 問題を追加したよ！";
+        document.getElementById("msg").style.color = "green";
+        document.getElementById("question").value = "";
+        document.getElementById("choices").value = "";
+        document.getElementById("answer").value = "";
+      } catch (e) {
+        document.getElementById("msg").textContent = "❌ エラー：" + e.message;
+        document.getElementById("msg").style.color = "red";
+      }
+    }
+  </script>
+
+</body>
+</html>
