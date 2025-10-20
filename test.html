@@ -93,34 +93,30 @@
 
   <div id="feedback" class="feedback"></div>
 
-  <script>
-    // --- パラメータを受け取る ---
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+    // ✅ Firebase設定（自分のを貼り替える！）
+    const firebaseConfig = {
+  apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
+  authDomain: "akeducationalplatform.firebaseapp.com",
+  projectId: "akeducationalplatform",
+  storageBucket: "akeducationalplatform.firebasestorage.app",
+  messagingSenderId: "778140595189",
+  appId: "1:778140595189:web:301e7490b813b44782a6bc"
+};
+
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // --- URLパラメータ（教科と出題数）---
     const params = new URLSearchParams(window.location.search);
     const subject = params.get("subject");
     const questionCount = parseInt(params.get("count"));
 
-    // --- 仮データ（ここに本の内容を入れてOK）---
-    const questions = {
-      kobu: [
-        { q: "いと", choices: ["とても", "少し", "まったく", "よく"], answer: 0 },
-        { q: "をかし", choices: ["趣がある", "悲しい", "暑い", "うるさい"], answer: 0 }
-      ],
-      syakai: [
-        { q: "鎌倉幕府を開いたのは？", choices: ["源頼朝", "織田信長", "徳川家康", "豊臣秀吉"], answer: 0 }
-      ],
-      kanji: [
-        { q: "「行幸」の読みは？", choices: ["ぎょうこう", "こうぎょう", "こうこう", "ぎょうぎょう"], answer: 0 }
-      ]
-    };
-
-    // --- 教科ごとの問題を取得 ---
-    let currentSet = questions[subject] || [];
     let selected = [];
-    for (let i = 0; i < questionCount; i++) {
-      const rand = currentSet[Math.floor(Math.random() * currentSet.length)];
-      selected.push(rand);
-    }
-
     let current = 0;
     let correctCount = 0;
     let timeLeft = 5;
@@ -131,6 +127,28 @@
     const progressEl = document.getElementById("progress");
     const feedbackEl = document.getElementById("feedback");
 
+    // 🔥 Firestoreから問題を取得
+    async function loadQuestions() {
+      const snapshot = await getDocs(collection(db, "questions"));
+      const all = snapshot.docs.map(doc => doc.data());
+
+      // 教科でフィルタ
+      const currentSet = all.filter(q => q.subject === subject);
+
+      if (currentSet.length === 0) {
+        questionEl.textContent = "問題がまだ登録されていません。";
+        return;
+      }
+
+      // ランダムに指定数抽出
+      for (let i = 0; i < questionCount; i++) {
+        const rand = currentSet[Math.floor(Math.random() * currentSet.length)];
+        selected.push(rand);
+      }
+
+      showQuestion();
+    }
+
     function showQuestion() {
       if (current >= selected.length) {
         endTest();
@@ -138,14 +156,14 @@
       }
 
       const q = selected[current];
-      questionEl.textContent = `${current + 1}. ${q.q}`;
+      questionEl.textContent = `${current + 1}. ${q.question}`;
       choicesEl.innerHTML = "";
 
-      q.choices.forEach((choice, index) => {
+      q.options.forEach((choice, index) => {
         const btn = document.createElement("button");
         btn.textContent = choice;
         btn.classList.add("choice");
-        btn.onclick = () => checkAnswer(index === q.answer);
+        btn.onclick = () => checkAnswer(index === q.correct);
         choicesEl.appendChild(btn);
       });
 
@@ -182,27 +200,28 @@
       }, 800);
     }
 
-   function endTest() {
-  questionEl.textContent = `テスト終了！`;
-  choicesEl.innerHTML = `
-    <p>正解数：${correctCount} / ${selected.length}</p>
-    <p>正答率：${Math.round((correctCount / selected.length) * 100)}%</p>
-    <br>
-    <button onclick="location.reload()" 
-      style="background-color:#2196f3;color:white;border:none;border-radius:8px;
-      padding:10px 20px;font-size:16px;cursor:pointer;margin-right:10px;">
-      もう一度テストを受ける
-    </button>
-    <button onclick="location.href='menu.html'" 
-      style="background-color:#4caf50;color:white;border:none;border-radius:8px;
-      padding:10px 20px;font-size:16px;cursor:pointer;">
-      ホームに戻る
-    </button>
-  `;
-  progressEl.style.width = "0%";
-}
+    function endTest() {
+      questionEl.textContent = `テスト終了！`;
+      choicesEl.innerHTML = `
+        <p>正解数：${correctCount} / ${selected.length}</p>
+        <p>正答率：${Math.round((correctCount / selected.length) * 100)}%</p>
+        <br>
+        <button onclick="location.reload()" 
+          style="background-color:#2196f3;color:white;border:none;border-radius:8px;
+          padding:10px 20px;font-size:16px;cursor:pointer;margin-right:10px;">
+          もう一度テストを受ける
+        </button>
+        <button onclick="location.href='menu.html'" 
+          style="background-color:#4caf50;color:white;border:none;border-radius:8px;
+          padding:10px 20px;font-size:16px;cursor:pointer;">
+          ホームに戻る
+        </button>
+      `;
+      progressEl.style.width = "0%";
+    }
+
     // --- スタート ---
-    showQuestion();
+    loadQuestions();
   </script>
 
 </body>
