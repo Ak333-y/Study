@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>テスト | AEP</title>
+  <style>
+    body {
+      font-family: "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+      text-align: center;
+      background-color: #fff;
+      margin: 0;
+      padding: 0;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 10px;
+      background-color: #e0e0e0;
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .progress {
+      width: 100%;
+      height: 100%;
+      background-color: #4caf50;
+      transition: width 0.1s linear;
+    }
+
+    .question-box {
+      margin-top: 100px;
+    }
+
+    .question {
+      font-size: 22px;
+      margin-bottom: 20px;
+    }
+
+    .choices {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      max-width: 300px;
+      margin: 0 auto;
+    }
+
+    button.choice {
+      background-color: #f0f0f0;
+      border: none;
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    button.choice:hover {
+      background-color: #e6ffe6;
+    }
+
+    .feedback {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 48px;
+      font-weight: bold;
+      display: none;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+
+    .correct {
+      color: #4caf50;
+    }
+
+    .wrong {
+      color: #e53935;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="progress-bar">
+    <div id="progress" class="progress"></div>
+  </div>
+
+  <div class="question-box">
+    <div id="question" class="question">読み込み中...</div>
+    <div id="choices" class="choices"></div>
+  </div>
+
+  <div id="feedback" class="feedback"></div>
+
+  <script>
+    // --- パラメータを受け取る ---
+    const params = new URLSearchParams(window.location.search);
+    const subject = params.get("subject");
+    const questionCount = parseInt(params.get("count"));
+
+    // --- 仮データ（ここに本の内容を入れてOK）---
+    const questions = {
+      kobu: [
+        { q: "いと", choices: ["とても", "少し", "まったく", "よく"], answer: 0 },
+        { q: "をかし", choices: ["趣がある", "悲しい", "暑い", "うるさい"], answer: 0 }
+      ],
+      syakai: [
+        { q: "鎌倉幕府を開いたのは？", choices: ["源頼朝", "織田信長", "徳川家康", "豊臣秀吉"], answer: 0 }
+      ],
+      kanji: [
+        { q: "「行幸」の読みは？", choices: ["ぎょうこう", "こうぎょう", "こうこう", "ぎょうぎょう"], answer: 0 }
+      ]
+    };
+
+    // --- 教科ごとの問題を取得 ---
+    let currentSet = questions[subject] || [];
+    let selected = [];
+    for (let i = 0; i < questionCount; i++) {
+      const rand = currentSet[Math.floor(Math.random() * currentSet.length)];
+      selected.push(rand);
+    }
+
+    let current = 0;
+    let correctCount = 0;
+    let timeLeft = 5;
+    let timer;
+
+    const questionEl = document.getElementById("question");
+    const choicesEl = document.getElementById("choices");
+    const progressEl = document.getElementById("progress");
+    const feedbackEl = document.getElementById("feedback");
+
+    function showQuestion() {
+      if (current >= selected.length) {
+        endTest();
+        return;
+      }
+
+      const q = selected[current];
+      questionEl.textContent = `${current + 1}. ${q.q}`;
+      choicesEl.innerHTML = "";
+
+      q.choices.forEach((choice, index) => {
+        const btn = document.createElement("button");
+        btn.textContent = choice;
+        btn.classList.add("choice");
+        btn.onclick = () => checkAnswer(index === q.answer);
+        choicesEl.appendChild(btn);
+      });
+
+      timeLeft = 5;
+      progressEl.style.width = "100%";
+      clearInterval(timer);
+      timer = setInterval(() => {
+        timeLeft -= 0.1;
+        progressEl.style.width = `${(timeLeft / 5) * 100}%`;
+        if (timeLeft <= 0) {
+          clearInterval(timer);
+          checkAnswer(false);
+        }
+      }, 100);
+    }
+
+    function checkAnswer(isCorrect) {
+      clearInterval(timer);
+
+      if (isCorrect) correctCount++;
+
+      feedbackEl.textContent = isCorrect ? "◯" : "×";
+      feedbackEl.className = `feedback ${isCorrect ? "correct" : "wrong"}`;
+      feedbackEl.style.display = "block";
+      feedbackEl.style.opacity = "1";
+
+      setTimeout(() => {
+        feedbackEl.style.opacity = "0";
+        setTimeout(() => {
+          feedbackEl.style.display = "none";
+          current++;
+          showQuestion();
+        }, 400);
+      }, 800);
+    }
+
+    function endTest() {
+      questionEl.textContent = `テスト終了！`;
+      choicesEl.innerHTML = `正解数：${correctCount} / ${selected.length}<br>正答率：${Math.round((correctCount / selected.length) * 100)}%`;
+      progressEl.style.width = "0%";
+    }
+
+    // --- スタート ---
+    showQuestion();
+  </script>
+
+</body>
+</html>
