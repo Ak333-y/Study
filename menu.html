@@ -1,184 +1,133 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AEP メニュー</title>
+  <meta charset="UTF-8" />
+  <title>メニュー画面</title>
   <style>
     body {
       margin: 0;
-      font-family: "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+      font-family: "Segoe UI", sans-serif;
       display: flex;
-      background-color: #f3f5f7;
+      height: 100vh;
+      background-color: #f4f4f4;
     }
 
-    /* サイドバー */
+    /* 左のメニュー */
     .sidebar {
-      width: 220px;
-      background-color: #243447;
+      width: 200px;
+      background-color: #222;
       color: white;
-      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 30px;
+    }
+
+    .sidebar button {
+      width: 160px;
+      margin: 10px 0;
+      padding: 10px;
+      font-size: 1em;
+      background-color: #444;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .sidebar button:hover {
+      background-color: #666;
+    }
+
+    /* メイン画面 */
+    .main {
+      flex: 1;
+      padding: 40px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding: 20px 0;
     }
 
-    .logo {
-      text-align: center;
-      font-size: 24px;
+    .days {
+      font-size: 1.2em;
       font-weight: bold;
-      margin-bottom: 30px;
     }
 
-    .menu {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-      padding-left: 25px;
+    .word-card {
+      background-color: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      width: 350px;
     }
 
-    .menu a {
-      color: white;
-      text-decoration: none;
-      font-size: 15px;
-      transition: 0.2s;
+    .word {
+      font-size: 1.3em;
+      font-weight: bold;
     }
 
-    .menu a:hover {
-      color: #60a5fa;
-    }
-
-    .logout {
-      text-align: center;
-      margin-top: auto;
-    }
-
-    .logout button {
-      background-color: #e53935;
-      color: white;
-      border: none;
-      border-radius: 20px;
-      padding: 10px 20px;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-
-    .logout button:hover {
-      background-color: #c62828;
-    }
-
-    /* メイン部分 */
-    .main {
-      flex-grow: 1;
-      padding: 20px 40px;
+    .meaning {
+      color: #555;
+      margin-top: 8px;
     }
 
     .header {
       display: flex;
-      justify-content: space-between;
+      justify-content: flex-end;
       align-items: center;
-      margin-bottom: 30px;
     }
 
-    .header-right {
-      display: flex;
-      gap: 40px;
+    .title {
+      font-size: 1.2em;
       font-weight: bold;
-    }
-
-    .card {
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      padding: 20px;
-      margin-bottom: 20px;
-    }
-
-    .card h2 {
-      margin-top: 0;
+      margin-right: 20px;
     }
   </style>
 </head>
 <body>
+  <!-- 左のメニュー -->
   <div class="sidebar">
-    <div>
-      <div class="logo">AEP</div>
-      <div class="menu">
-        <a href="user.html">ユーザー情報</a>
-        <a href="#">テスト</a>
-        <a href="#">過去の成績</a>
-      </div>
-    </div>
-    <div class="logout">
-      <button onclick="logout()">ログアウト</button>
-    </div>
+    <button onclick="location.href='test.html'">📘 テスト</button>
+    <button onclick="location.href='past.html'">📊 過去の成績</button>
   </div>
 
+  <!-- メイン画面 -->
   <div class="main">
     <div class="header">
-      <div></div>
-      <div class="header-right">
-        <div id="word">今日のムズ単：読み込み中...</div>
-      </div>
+      <div class="title">📚 むズ単</div>
     </div>
 
-    <div class="card">
-      <h2>ホーム</h2>
-      <p>ようこそ、akio さん。</p>
+    <div>
+      <div class="days" id="countdown">公立高校入試まであと...日</div>
     </div>
 
-    <div class="card" id="exam-countdown">
-      <p>★大阪府公立高校入試まであと <span id="daysLeft"></span> 日</p>
+    <div class="word-card" id="wordCard">
+      <div class="word" id="word">読み込み中...</div>
+      <div class="meaning" id="meaning"></div>
     </div>
   </div>
 
   <script>
-    // --- 公立高校入試までの日数計算 ---
-    function updateCountdown() {
-      const examDate = new Date("2026-03-11");
-      const today = new Date();
-      const diff = examDate - today;
-      const daysLeft = Math.ceil(diff / (1000 * 60 * 60 * 24));
-      document.getElementById("daysLeft").textContent = daysLeft;
-    }
-    updateCountdown();
+    // 🔹 日数カウント
+    const targetDate = new Date("2026-03-11");
+    const today = new Date();
+    const diffTime = targetDate - today;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    document.getElementById("countdown").textContent = `公立高校入試まであと ${diffDays} 日`;
 
-    // --- 難しい日本語リスト ---
+    // 🔹 難しい単語ランダム表示
     const words = [
-      ["恣意的（しいてき）", "自分の思うままに行うさま"],
-      ["矛盾（むじゅん）", "つじつまが合わないこと"],
-      ["形而上（けいじじょう）", "目に見えない抽象的なもの"],
-      ["帰納（きのう）", "個々の事例から一般法則を導くこと"],
-      ["演繹（えんえき）", "一般的原理から個別の結論を導くこと"],
-      ["齟齬（そご）", "物事がうまくかみ合わないこと"],
-      ["煩瑣（はんさ）", "細かいことが多くて面倒なさま"],
-      ["越権（えっけん）", "自分の権限を超えて行動すること"],
-      ["忖度（そんたく）", "他人の気持ちを推し量ること"],
-      ["迎合（げいごう）", "相手の考えに合わせて機嫌をとること"],
-      ["不遜（ふそん）", "謙虚さがなく傲慢なこと"],
-      ["詭弁（きべん）", "道理に合わないがもっともらしい議論"],
-      ["冗漫（じょうまん）", "無駄に長くてまとまりがないこと"],
-      ["稚拙（ちせつ）", "未熟で下手なこと"],
-      ["傲慢（ごうまん）", "おごり高ぶること"],
-      ["頑健（がんけん）", "体が丈夫であること"],
-      ["多弁（たべん）", "よくしゃべること"],
-      ["寡黙（かもく）", "口数が少ないこと"],
-      ["博識（はくしき）", "広い知識を持っていること"],
-      ["怠惰（たいだ）", "なまけること"]
+      { word: "恣意的（しいてき）", meaning: "自分の思うままに物事を行うさま。" },
+      { word: "帰納（きのう）", meaning: "個々の事例から一般的法則を導くこと。" },
+      { word: "俯瞰（ふかん）", meaning: "高い所から全体を見渡すこと。" },
+      { word: "敷衍（ふえん）", meaning: "意味や内容を広げて説明すること。" },
+      { word: "矜持（きょうじ）", meaning: "自分の信念や誇りを大切にする気持ち。" }
     ];
 
-    // --- ムズ単ランダム表示 ---
-    function showRandomWord() {
-      const random = words[Math.floor(Math.random() * words.length)];
-      document.getElementById("word").textContent = `今日のムズ単：${random[0]} - ${random[1]}`;
-    }
-    showRandomWord();
-
-    // --- ログアウト ---
-    function logout() {
-      window.location.href = "index.html";
-    }
+    const random = words[Math.floor(Math.random() * words.length)];
+    document.getElementById("word").textContent = random.word;
+    document.getElementById("meaning").textContent = random.meaning;
   </script>
 </body>
 </html>
