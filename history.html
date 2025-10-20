@@ -124,7 +124,7 @@
         table.innerHTML = "";
         snapshot.forEach(doc => {
           const data = doc.data();
-          const date = data.timestamp?.toDate().toLocaleString("ja-JP") || "不明";
+          const date = data.date?.toDate().toLocaleString("ja-JP") || "不明";
           const subject = data.subject || "不明";
           const correct = data.correctCount ?? "?";
           const total = data.totalCount ?? "?";
