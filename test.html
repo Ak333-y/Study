@@ -185,54 +185,50 @@
       }, 800);
     }
 
-    <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    // --- Firebaseを使って成績保存 ---
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
-    authDomain: "akeducationalplatform.firebaseapp.com",
-    projectId: "akeducationalplatform",
-  };
+// 🔥 あきおのFirebase設定をここに入れる！
+const firebaseConfig = {
+  apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
+  authDomain: "akeducationalplatform.firebaseapp.com",
+  projectId: "akeducationalplatform"
+};
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-  // テスト終了処理
-  async function endTest() {
-    questionEl.textContent = `テスト終了！`;
-    choicesEl.innerHTML = `
-      <p>正解数：${correctCount} / ${selected.length}</p>
-      <p>正答率：${Math.round((correctCount / selected.length) * 100)}%</p>
-      <br>
-      <button onclick="location.reload()" 
-        style="background-color:#2196f3;color:white;border:none;border-radius:8px;
-        padding:10px 20px;font-size:16px;cursor:pointer;margin-right:10px;">
-        もう一度テストを受ける
-      </button>
-      <button onclick="location.href='menu.html'" 
-        style="background-color:#4caf50;color:white;border:none;border-radius:8px;
-        padding:10px 20px;font-size:16px;cursor:pointer;">
-        ホームに戻る
-      </button>
-    `;
-    progressEl.style.width = "0%";
+async function endTest() {
+  questionEl.textContent = `テスト終了！`;
+  choicesEl.innerHTML = `
+    <p>正解数：${correctCount} / ${selected.length}</p>
+    <p>正答率：${Math.round((correctCount / selected.length) * 100)}%</p>
+    <br>
+    <button onclick="location.reload()" 
+      style="background-color:#2196f3;color:white;border:none;border-radius:8px;
+      padding:10px 20px;font-size:16px;cursor:pointer;margin-right:10px;">
+      もう一度テストを受ける
+    </button>
+    <button onclick="location.href='menu.html'" 
+      style="background-color:#4caf50;color:white;border:none;border-radius:8px;
+      padding:10px 20px;font-size:16px;cursor:pointer;">
+      ホームに戻る
+    </button>
+  `;
+  progressEl.style.width = "0%";
 
-    // 成績をFirestoreに保存
-    const date = new Date();
-    const result = {
+  // Firestoreに成績を保存
+  try {
+    await addDoc(collection(db, "results"), {
       subject: subject,
       correct: correctCount,
       total: selected.length,
       rate: Math.round((correctCount / selected.length) * 100),
-      timestamp: date.toLocaleString("ja-JP"),
-    };
-
-    try {
-      await addDoc(collection(db, "results"), result);
-      console.log("✅ 成績データを保存しました！", result);
-    } catch (e) {
-      console.error("❌ 保存エラー:", e);
-    }
+      timestamp: new Date().toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })
+    });
+    console.log("成績が保存されたよ！");
+  } catch (e) {
+    console.error("保存エラー:", e);
   }
-</script>
+}
