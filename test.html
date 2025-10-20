@@ -182,11 +182,20 @@
       }, 800);
     }
 
-    function endTest() {
-      questionEl.textContent = `テスト終了！`;
-      choicesEl.innerHTML = `正解数：${correctCount} / ${selected.length}<br>正答率：${Math.round((correctCount / selected.length) * 100)}%`;
-      progressEl.style.width = "0%";
-    }
+   function endTest() {
+  questionEl.textContent = `テスト終了！`;
+  choicesEl.innerHTML = `
+    <p>正解数：${correctCount} / ${selected.length}</p>
+    <p>正答率：${Math.round((correctCount / selected.length) * 100)}%</p>
+    <br>
+    <button onclick="location.href='menu.html'" 
+      style="background-color:#4caf50;color:white;border:none;border-radius:8px;
+      padding:10px 20px;font-size:16px;cursor:pointer;">
+      ホームに戻る
+    </button>
+  `;
+  progressEl.style.width = "0%";
+}
 
     // --- スタート ---
     showQuestion();
