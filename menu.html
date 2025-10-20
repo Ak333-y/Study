@@ -2,132 +2,179 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>メニュー画面</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AEP メニュー</title>
+  <link rel="stylesheet" href="style.css" />
   <style>
     body {
-      margin: 0;
       font-family: "Segoe UI", sans-serif;
+      margin: 0;
       display: flex;
-      height: 100vh;
-      background-color: #f4f4f4;
+      background-color: #f5f6fa;
     }
-
-    /* 左のメニュー */
     .sidebar {
-      width: 200px;
-      background-color: #222;
+      width: 220px;
+      background-color: #1e2a38;
       color: white;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding-top: 30px;
+      height: 100vh;
+      padding: 20px;
     }
-
-    .sidebar button {
-      width: 160px;
-      margin: 10px 0;
-      padding: 10px;
-      font-size: 1em;
-      background-color: #444;
+    .sidebar h2 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .sidebar a {
+      display: block;
       color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background 0.2s;
+      text-decoration: none;
+      margin: 15px 0;
     }
-
-    .sidebar button:hover {
-      background-color: #666;
+    .sidebar a:hover {
+      text-decoration: underline;
     }
-
-    /* メイン画面 */
-    .main {
+    .content {
       flex: 1;
       padding: 40px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
     }
-
-    .days {
-      font-size: 1.2em;
-      font-weight: bold;
-    }
-
-    .word-card {
-      background-color: #fff;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    .card {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
       padding: 20px;
-      width: 350px;
+      margin-bottom: 20px;
     }
-
-    .word {
-      font-size: 1.3em;
+    .top-info {
+      text-align: right;
+      margin-bottom: 10px;
+      color: #333;
       font-weight: bold;
-    }
-
-    .meaning {
-      color: #555;
-      margin-top: 8px;
-    }
-
-    .header {
-      display: flex;
-      justify-content: flex-end;
-      align-items: center;
-    }
-
-    .title {
-      font-size: 1.2em;
-      font-weight: bold;
-      margin-right: 20px;
     }
   </style>
 </head>
 <body>
-  <!-- 左のメニュー -->
   <div class="sidebar">
-    <button onclick="location.href='test.html'">📘 テスト</button>
-    <button onclick="location.href='past.html'">📊 過去の成績</button>
+    <h2>AEP</h2>
+    <a href="menu.html">ホーム</a>
+    <a href="test.html">テスト</a>
+    <a href="history.html">過去の成績</a>
   </div>
 
-  <!-- メイン画面 -->
-  <div class="main">
-    <div class="header">
-      <div class="title">📚 むズ単</div>
+  <div class="content">
+    <div class="top-info" id="muzutan"></div>
+
+    <div class="card">
+      <h2>ホーム</h2>
+      <p>ようこそ、akio さん。</p>
     </div>
 
-    <div>
-      <div class="days" id="countdown">公立高校入試まであと...日</div>
-    </div>
-
-    <div class="word-card" id="wordCard">
-      <div class="word" id="word">読み込み中...</div>
-      <div class="meaning" id="meaning"></div>
+    <div class="card">
+      <p>★大阪府公立高校入試まであと <span id="daysLeft"></span> 日</p>
     </div>
   </div>
 
   <script>
-    // 🔹 日数カウント
-    const targetDate = new Date("2026-03-11");
-    const today = new Date();
-    const diffTime = targetDate - today;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    document.getElementById("countdown").textContent = `公立高校入試まであと ${diffDays} 日`;
-
-    // 🔹 難しい単語ランダム表示
-    const words = [
-      { word: "恣意的（しいてき）", meaning: "自分の思うままに物事を行うさま。" },
-      { word: "帰納（きのう）", meaning: "個々の事例から一般的法則を導くこと。" },
-      { word: "俯瞰（ふかん）", meaning: "高い所から全体を見渡すこと。" },
-      { word: "敷衍（ふえん）", meaning: "意味や内容を広げて説明すること。" },
-      { word: "矜持（きょうじ）", meaning: "自分の信念や誇りを大切にする気持ち。" }
+    // 🔹ムズ単語100個（国語系）
+    const muzutango = [
+      ["詭弁（きべん）", "道理に合わないが、もっともらしく聞こえる議論"],
+      ["諧謔（かいぎゃく）", "ユーモア、こっけい"],
+      ["造詣（ぞうけい）", "学問や芸術への深い理解"],
+      ["越権（えっけん）", "自分の権限をこえる行為"],
+      ["矜持（きょうじ）", "誇り、自尊心"],
+      ["傍若無人（ぼうじゃくぶじん）", "人を無視して勝手に振る舞うこと"],
+      ["冥利（みょうり）", "幸せ、ありがたみ"],
+      ["僭越（せんえつ）", "身分をこえて出過ぎたことをすること"],
+      ["煩悶（はんもん）", "悩みもだえること"],
+      ["邂逅（かいこう）", "思いがけない出会い"],
+      ["曖昧（あいまい）", "はっきりしないこと"],
+      ["漸次（ぜんじ）", "だんだんと"],
+      ["逡巡（しゅんじゅん）", "ためらうこと"],
+      ["頑健（がんけん）", "体が丈夫なこと"],
+      ["懐疑（かいぎ）", "うたがいをもつこと"],
+      ["端緒（たんしょ）", "きっかけ、始まり"],
+      ["示唆（しさ）", "ほのめかすこと"],
+      ["毀損（きそん）", "こわすこと、損なうこと"],
+      ["譬喩（ひゆ）", "たとえ"],
+      ["喧騒（けんそう）", "さわがしいこと"],
+      ["頓挫（とんざ）", "途中でうまくいかなくなること"],
+      ["醍醐味（だいごみ）", "本当のおもしろさ"],
+      ["傲慢（ごうまん）", "いばって人を見下す態度"],
+      ["如実（にょじつ）", "ありのまま"],
+      ["悠長（ゆうちょう）", "のんびりしていること"],
+      ["厭世（えんせい）", "人生をいやだと思う気持ち"],
+      ["虚無（きょむ）", "何も存在しないと思う考え"],
+      ["孤高（ここう）", "他にまじわらず高い立場にあること"],
+      ["詮索（せんさく）", "細かく調べること"],
+      ["叙情（じょじょう）", "感情を述べること"],
+      ["醜悪（しゅうあく）", "みにくく、いやなこと"],
+      ["破綻（はたん）", "成り立たなくなること"],
+      ["錯覚（さっかく）", "まちがった感じ方"],
+      ["動揺（どうよう）", "心が不安で落ち着かないこと"],
+      ["饒舌（じょうぜつ）", "しゃべりすぎること"],
+      ["顕著（けんちょ）", "目立ってあきらか"],
+      ["陳腐（ちんぷ）", "ありふれて新鮮味がない"],
+      ["迎合（げいごう）", "人の意見に合わせること"],
+      ["寡黙（かもく）", "口数が少ないこと"],
+      ["怠惰（たいだ）", "なまけること"],
+      ["頑迷（がんめい）", "かたくなで考えが古いこと"],
+      ["老獪（ろうかい）", "ずるがしこいこと"],
+      ["傑出（けっしゅつ）", "とびぬけてすぐれていること"],
+      ["陰湿（いんしつ）", "暗くてじめじめしていること"],
+      ["迅速（じんそく）", "すばやいこと"],
+      ["即興（そっきょう）", "その場の思いつきで行うこと"],
+      ["粗野（そや）", "上品さがないこと"],
+      ["博識（はくしき）", "広く物を知っていること"],
+      ["奇抜（きばつ）", "思いつきが普通と違うこと"],
+      ["空虚（くうきょ）", "中身がないこと"],
+      ["漠然（ばくぜん）", "ぼんやりしていること"],
+      ["弁解（べんかい）", "言いわけ"],
+      ["憤慨（ふんがい）", "ひどく怒ること"],
+      ["軽蔑（けいべつ）", "見下すこと"],
+      ["煩雑（はんざつ）", "こみいっていて面倒"],
+      ["微妙（びみょう）", "わずかなちがいがあること"],
+      ["緻密（ちみつ）", "細かくて正確"],
+      ["堅固（けんご）", "しっかりしていること"],
+      ["謙虚（けんきょ）", "えらそうにしないこと"],
+      ["温厚（おんこう）", "やさしくおだやか"],
+      ["沈着（ちんちゃく）", "落ち着いていること"],
+      ["頑丈（がんじょう）", "とても丈夫なこと"],
+      ["冷静（れいせい）", "おちついていること"],
+      ["勤勉（きんべん）", "よくはたらくこと"],
+      ["壮大（そうだい）", "とても大きく立派"],
+      ["繊細（せんさい）", "感情や感覚が細やか"],
+      ["堅実（けんじつ）", "しっかりして危なげがない"],
+      ["純朴（じゅんぼく）", "すなおで飾りけがない"],
+      ["明朗（めいろう）", "ほがらかではっきりしている"],
+      ["臨機応変（りんきおうへん）", "状況に応じてうまく対応"],
+      ["独創（どくそう）", "まねせず自分で考える"],
+      ["融通（ゆうずう）", "その場に応じてうまくやる"],
+      ["忠実（ちゅうじつ）", "まじめに尽くす"],
+      ["堅忍不抜（けんにんふばつ）", "がまん強く心が折れない"],
+      ["温和（おんわ）", "おだやかで優しい"],
+      ["慎重（しんちょう）", "よく考えて行動する"],
+      ["勤勉（きんべん）", "まじめに努力する"],
+      ["素朴（そぼく）", "かざりけがなくすなお"],
+      ["悠然（ゆうぜん）", "おちついていてゆったり"],
+      ["勇敢（ゆうかん）", "こわがらずに立ち向かう"],
+      ["誠実（せいじつ）", "うそがなく正直"],
+      ["質実剛健（しつじつごうけん）", "かざらずまじめで強い"],
+      ["融和（ゆうわ）", "なかよく調和する"],
+      ["寛容（かんよう）", "心が広いこと"],
+      ["温厚篤実（おんこうとくじつ）", "人柄がおだやかで誠実"],
+      ["謹厳実直（きんげんじっちょく）", "まじめで正直"],
+      ["誠心誠意（せいしんせいい）", "まごころこめて"],
+      ["温順（おんじゅん）", "おとなしくおだやか"],
+      ["和気藹藹（わきあいあい）", "なごやかでたのしい様子"]
     ];
 
-    const random = words[Math.floor(Math.random() * words.length)];
-    document.getElementById("word").textContent = random.word;
-    document.getElementById("meaning").textContent = random.meaning;
+    // ランダムに1つ表示
+    const [word, meaning] = muzutango[Math.floor(Math.random() * muzutango.length)];
+    document.getElementById("muzutan").textContent = `今日のムズ単：${word} - ${meaning}`;
+
+    // 入試日カウントダウン
+    const examDate = new Date("2026-03-10");
+    const today = new Date();
+    const diff = Math.ceil((examDate - today) / (1000 * 60 * 60 * 24));
+    document.getElementById("daysLeft").textContent = diff;
   </script>
 </body>
 </html>
