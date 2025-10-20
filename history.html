@@ -94,10 +94,10 @@
   <button id="homeBtn" onclick="location.href='menu.html'">🏠 ホームに戻る</button>
 
   <script type="module">
-    // ✅ Firebaseの設定（自分のコードに置き換えてね！）
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, collection, getDocs, orderBy, query } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, query } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+    // ✅ あきおのFirebase設定
     const firebaseConfig = {
       apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
       authDomain: "akeducationalplatform.firebaseapp.com",
@@ -107,13 +107,13 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // 🔥 Firestoreから成績データを取得
+    // 🔥 成績データを読み込む関数
     async function loadResults() {
       const table = document.getElementById("resultsTable");
       table.innerHTML = "<tr><td colspan='4'>読み込み中...</td></tr>";
 
       try {
-        const q = query(collection(db, "results"), orderBy("timestamp", "desc"));
+        const q = query(collection(db, "results"));
         const snapshot = await getDocs(q);
 
         if (snapshot.empty) {
@@ -124,15 +124,22 @@
         table.innerHTML = "";
         snapshot.forEach(doc => {
           const data = doc.data();
-          const date = data.date?.toDate().toLocaleString("ja-JP") || "不明";
+
+          // ✅ 日付が文字列でもTimestampでもOK
+          const dateText = typeof data.date === "string"
+            ? data.date
+            : (data.date?.toDate ? data.date.toDate().toLocaleString("ja-JP") : "不明");
+
           const subject = data.subject || "不明";
-          const correct = data.correctCount ?? "?";
-          const total = data.totalCount ?? "?";
-          const percent = total > 0 ? Math.round((correct / total) * 100) + "%" : "-";
+          const correct = data.correct ?? "?";
+          const total = data.total ?? "?";
+          const percent = data.rate
+            ? data.rate + "%"
+            : (total > 0 ? Math.round((correct / total) * 100) + "%" : "-");
 
           const row = `
             <tr>
-              <td>${date}</td>
+              <td>${dateText}</td>
               <td>${subject}</td>
               <td>${correct}/${total}</td>
               <td>${percent}</td>
