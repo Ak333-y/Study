@@ -12,7 +12,6 @@
       margin: 0;
       padding: 0;
     }
-
     .progress-bar {
       width: 100%;
       height: 10px;
@@ -20,23 +19,19 @@
       margin-bottom: 20px;
       position: relative;
     }
-
     .progress {
       width: 100%;
       height: 100%;
       background-color: #4caf50;
       transition: width 0.1s linear;
     }
-
     .question-box {
       margin-top: 100px;
     }
-
     .question {
       font-size: 22px;
       margin-bottom: 20px;
     }
-
     .choices {
       display: flex;
       flex-direction: column;
@@ -44,7 +39,6 @@
       max-width: 300px;
       margin: 0 auto;
     }
-
     button.choice {
       background-color: #f0f0f0;
       border: none;
@@ -54,11 +48,9 @@
       cursor: pointer;
       transition: 0.2s;
     }
-
     button.choice:hover {
       background-color: #e6ffe6;
     }
-
     .feedback {
       position: fixed;
       top: 50%;
@@ -70,14 +62,8 @@
       opacity: 0;
       transition: opacity 0.4s ease;
     }
-
-    .correct {
-      color: #4caf50;
-    }
-
-    .wrong {
-      color: #e53935;
-    }
+    .correct { color: #4caf50; }
+    .wrong { color: #e53935; }
   </style>
 </head>
 <body>
@@ -94,10 +80,10 @@
   <div id="feedback" class="feedback"></div>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
-    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-    // ✅ Firebase設定（自分のを貼り替える！）
+    // 🔥 自分のFirebase設定をここに！
     const firebaseConfig = {
   apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
   authDomain: "akeducationalplatform.firebaseapp.com",
@@ -107,11 +93,9 @@
   appId: "1:778140595189:web:301e7490b813b44782a6bc"
 };
 
-
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // --- URLパラメータ（教科と出題数）---
     const params = new URLSearchParams(window.location.search);
     const subject = params.get("subject");
     const questionCount = parseInt(params.get("count"));
@@ -127,20 +111,17 @@
     const progressEl = document.getElementById("progress");
     const feedbackEl = document.getElementById("feedback");
 
-    // 🔥 Firestoreから問題を取得
+    // 🔹 Firestoreから問題を読み込む関数
     async function loadQuestions() {
       const snapshot = await getDocs(collection(db, "questions"));
-      const all = snapshot.docs.map(doc => doc.data());
-
-      // 教科でフィルタ
-      const currentSet = all.filter(q => q.subject === subject);
+      const allQuestions = snapshot.docs.map(doc => doc.data());
+      const currentSet = allQuestions.filter(q => q.subject === subject);
 
       if (currentSet.length === 0) {
-        questionEl.textContent = "問題がまだ登録されていません。";
+        questionEl.textContent = "この教科の問題がありません😢";
         return;
       }
 
-      // ランダムに指定数抽出
       for (let i = 0; i < questionCount; i++) {
         const rand = currentSet[Math.floor(Math.random() * currentSet.length)];
         selected.push(rand);
@@ -156,14 +137,19 @@
       }
 
       const q = selected[current];
-      questionEl.textContent = `${current + 1}. ${q.question}`;
+      if (!q || !q.q || !q.choices) {
+        questionEl.textContent = "問題データが不正です";
+        return;
+      }
+
+      questionEl.textContent = `${current + 1}. ${q.q}`;
       choicesEl.innerHTML = "";
 
-      q.options.forEach((choice, index) => {
+      q.choices.forEach((choice, index) => {
         const btn = document.createElement("button");
         btn.textContent = choice;
         btn.classList.add("choice");
-        btn.onclick = () => checkAnswer(index === q.correct);
+        btn.onclick = () => checkAnswer(index === q.answer);
         choicesEl.appendChild(btn);
       });
 
@@ -182,7 +168,6 @@
 
     function checkAnswer(isCorrect) {
       clearInterval(timer);
-
       if (isCorrect) correctCount++;
 
       feedbackEl.textContent = isCorrect ? "◯" : "×";
@@ -220,7 +205,7 @@
       progressEl.style.width = "0%";
     }
 
-    // --- スタート ---
+    // 🔥 スタート！
     loadQuestions();
   </script>
 
