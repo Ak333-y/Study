@@ -188,6 +188,11 @@
     <p>正解数：${correctCount} / ${selected.length}</p>
     <p>正答率：${Math.round((correctCount / selected.length) * 100)}%</p>
     <br>
+    <button onclick="location.reload()" 
+      style="background-color:#2196f3;color:white;border:none;border-radius:8px;
+      padding:10px 20px;font-size:16px;cursor:pointer;margin-right:10px;">
+      もう一度テストを受ける
+    </button>
     <button onclick="location.href='menu.html'" 
       style="background-color:#4caf50;color:white;border:none;border-radius:8px;
       padding:10px 20px;font-size:16px;cursor:pointer;">
@@ -196,7 +201,6 @@
   `;
   progressEl.style.width = "0%";
 }
-
     // --- スタート ---
     showQuestion();
   </script>
