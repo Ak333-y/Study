@@ -2,74 +2,73 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>問題追加 | AEP</title>
   <style>
     body {
       font-family: "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
-      background-color: #fff;
+      background-color: #f5f6fa;
       text-align: center;
-      padding: 20px;
+      padding: 40px;
     }
+
     h1 {
       color: #333;
-      margin-bottom: 20px;
     }
-    input, textarea, select {
-      width: 90%;
-      max-width: 400px;
+
+    input, select, button {
+      margin: 10px;
       padding: 10px;
-      margin: 8px 0;
-      border-radius: 8px;
-      border: 1px solid #ccc;
       font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      width: 80%;
+      max-width: 400px;
     }
+
     button {
       background-color: #4caf50;
       color: white;
       border: none;
-      padding: 10px 20px;
-      font-size: 16px;
-      border-radius: 8px;
       cursor: pointer;
-      margin-top: 15px;
+      transition: 0.2s;
     }
+
     button:hover {
       background-color: #43a047;
     }
+
     .msg {
       margin-top: 15px;
+      color: #2e7d32;
       font-weight: bold;
     }
   </style>
 </head>
 <body>
-
-  <h1>📘 問題追加フォーム</h1>
+  <h1>📘 問題追加ページ</h1>
 
   <select id="subject">
-    <option value="kobu">古文</option>
+    <option value="kobu">古文単語</option>
     <option value="syakai">社会</option>
     <option value="kanji">漢字</option>
   </select><br>
 
   <input type="text" id="question" placeholder="問題文を入力"><br>
+  <input type="text" id="choice1" placeholder="選択肢1"><br>
+  <input type="text" id="choice2" placeholder="選択肢2"><br>
+  <input type="text" id="choice3" placeholder="選択肢3"><br>
+  <input type="text" id="choice4" placeholder="選択肢4"><br>
+  <input type="number" id="answer" placeholder="正解の番号 (1〜4)" min="1" max="4"><br>
 
-  <textarea id="choices" placeholder="選択肢をカンマ区切りで入力（例：とても,少し,まったく,よく）"></textarea><br>
+  <button id="addBtn">追加</button>
+  <div class="msg" id="msg"></div>
 
-  <input type="number" id="answer" placeholder="正解の選択肢の番号（0から）"><br>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-  <button onclick="addQuestion()">追加する</button>
-
-  <p class="msg" id="msg"></p>
-
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
-
-<script>
-  // 🔹 自分のFirebase設定に置き換えて！
-   const firebaseConfig = {
+    // 🟢 あきおのFirebase設定をここに入れて！
+    const firebaseConfig = {
   apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
   authDomain: "akeducationalplatform.firebaseapp.com",
   projectId: "akeducationalplatform",
@@ -77,40 +76,44 @@
   messagingSenderId: "778140595189",
   appId: "1:778140595189:web:301e7490b813b44782a6bc"
 };
-  // 🔹 Firebase 初期化
-  const app = firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
 
-  // 🔹 追加ボタンが押されたときに呼ばれる関数
-  function addQuestion() {
-    const subject = document.getElementById("subject").value;
-    const question = document.getElementById("question").value;
-    const choice1 = document.getElementById("choice1").value;
-    const choice2 = document.getElementById("choice2").value;
-    const choice3 = document.getElementById("choice3").value;
-    const choice4 = document.getElementById("choice4").value;
-    const answer = parseInt(document.getElementById("answer").value);
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-    if (!subject || !question || !choice1 || !choice2 || !choice3 || !choice4 || isNaN(answer)) {
-      alert("すべての項目を入力してね！");
-      return;
-    }
+    document.getElementById("addBtn").addEventListener("click", async () => {
+      const subject = document.getElementById("subject").value;
+      const q = document.getElementById("question").value;
+      const c1 = document.getElementById("choice1").value;
+      const c2 = document.getElementById("choice2").value;
+      const c3 = document.getElementById("choice3").value;
+      const c4 = document.getElementById("choice4").value;
+      const answer = parseInt(document.getElementById("answer").value) - 1;
+      const msg = document.getElementById("msg");
 
-    db.collection("questions").add({
-      subject: subject,
-      q: question,
-      choices: [choice1, choice2, choice3, choice4],
-      answer: answer
-    })
-    .then(() => {
-      alert("✅ 問題を追加しました！");
-      document.getElementById("question-form").reset();
-    })
-    .catch((error) => {
-      console.error("エラー:", error);
-      alert("❌ 追加に失敗しました: " + error.message);
+      if (!q || !c1 || !c2 || !c3 || !c4 || isNaN(answer)) {
+        msg.textContent = "⚠️ すべての項目を入力してね！";
+        msg.style.color = "#e53935";
+        return;
+      }
+
+      try {
+        await addDoc(collection(db, "questions"), {
+          subject,
+          q,
+          choices: [c1, c2, c3, c4],
+          answer
+        });
+        msg.textContent = "✅ 問題を追加しました！";
+        msg.style.color = "#2e7d32";
+
+        // 入力欄をリセット
+        document.querySelectorAll("input").forEach(i => i.value = "");
+      } catch (error) {
+        console.error(error);
+        msg.textContent = "❌ エラーが発生しました！";
+        msg.style.color = "#e53935";
+      }
     });
-  }
-</script>
+  </script>
 </body>
 </html>
