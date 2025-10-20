@@ -1,197 +1,184 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AEP メニュー</title>
-  <link rel="stylesheet" href="style.css" />
   <style>
     body {
-      font-family: "Segoe UI", sans-serif;
       margin: 0;
+      font-family: "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
       display: flex;
-      background-color: #f5f6fa;
+      background-color: #f3f5f7;
     }
 
-    /* 🔹サイドバー */
+    /* サイドバー */
     .sidebar {
       width: 220px;
-      background-color: #2f3b4a; /* ← 前より少し明るめ */
+      background-color: #243447;
       color: white;
       height: 100vh;
-      padding: 20px;
-      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 20px 0;
     }
 
-    /* 🔹AEPロゴをボタン化 */
-    .sidebar h2 {
+    .logo {
       text-align: center;
+      font-size: 24px;
+      font-weight: bold;
       margin-bottom: 30px;
+    }
+
+    .menu {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      padding-left: 25px;
+    }
+
+    .menu a {
+      color: white;
+      text-decoration: none;
+      font-size: 15px;
+      transition: 0.2s;
+    }
+
+    .menu a:hover {
+      color: #60a5fa;
+    }
+
+    .logout {
+      text-align: center;
+      margin-top: auto;
+    }
+
+    .logout button {
+      background-color: #e53935;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      padding: 10px 20px;
       cursor: pointer;
       transition: 0.2s;
     }
-    .sidebar h2:hover {
-      color: #ffd700;
+
+    .logout button:hover {
+      background-color: #c62828;
     }
 
-    .sidebar a {
-      display: block;
-      color: white;
-      text-decoration: none;
-      margin: 15px 0;
-      transition: 0.2s;
-    }
-    .sidebar a:hover {
-      text-decoration: underline;
-      color: #ffd700;
+    /* メイン部分 */
+    .main {
+      flex-grow: 1;
+      padding: 20px 40px;
     }
 
-    .content {
-      flex: 1;
-      padding: 40px;
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    .header-right {
+      display: flex;
+      gap: 40px;
+      font-weight: bold;
     }
 
     .card {
       background: white;
       border-radius: 10px;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
       padding: 20px;
       margin-bottom: 20px;
     }
 
-    .top-info {
-      text-align: right;
-      margin-bottom: 10px;
-      color: #333;
-      font-weight: bold;
+    .card h2 {
+      margin-top: 0;
     }
   </style>
 </head>
 <body>
   <div class="sidebar">
-    <!-- 🔹クリックでmenu.htmlに戻る -->
-    <h2 onclick="location.href='menu.html'">AEP</h2>
-
-    <!-- 🔹ユーザー情報削除済 -->
-    <a href="test.html">テスト</a>
-    <a href="history.html">過去の成績</a>
+    <div>
+      <div class="logo">AEP</div>
+      <div class="menu">
+        <a href="menu.html">ホーム</a>
+        <a href="#">テスト</a>
+        <a href="#">過去の成績</a>
+      </div>
+    </div>
+    <div class="logout">
+      <button onclick="logout()">ログアウト</button>
+    </div>
   </div>
 
-  <div class="content">
-    <div class="top-info" id="muzutan"></div>
+  <div class="main">
+    <div class="header">
+      <div></div>
+      <div class="header-right">
+        <div id="word">今日のムズ単：読み込み中...</div>
+      </div>
+    </div>
 
     <div class="card">
       <h2>ホーム</h2>
       <p>ようこそ、akio さん。</p>
     </div>
 
-    <div class="card">
+    <div class="card" id="exam-countdown">
       <p>★大阪府公立高校入試まであと <span id="daysLeft"></span> 日</p>
     </div>
   </div>
 
   <script>
-    // 🔹ムズ単語（国語系100個）
-    const muzutango = [
-      ["詭弁（きべん）", "道理に合わないが、もっともらしく聞こえる議論"],
-      ["諧謔（かいぎゃく）", "ユーモア、こっけい"],
-      ["造詣（ぞうけい）", "学問や芸術への深い理解"],
-      ["越権（えっけん）", "自分の権限をこえる行為"],
-      ["矜持（きょうじ）", "誇り、自尊心"],
-      ["傍若無人（ぼうじゃくぶじん）", "人を無視して勝手に振る舞うこと"],
-      ["冥利（みょうり）", "幸せ、ありがたみ"],
-      ["僭越（せんえつ）", "身分をこえて出過ぎたことをすること"],
-      ["煩悶（はんもん）", "悩みもだえること"],
-      ["邂逅（かいこう）", "思いがけない出会い"],
-      ["曖昧（あいまい）", "はっきりしないこと"],
-      ["漸次（ぜんじ）", "だんだんと"],
-      ["逡巡（しゅんじゅん）", "ためらうこと"],
-      ["頑健（がんけん）", "体が丈夫なこと"],
-      ["懐疑（かいぎ）", "うたがいをもつこと"],
-      ["端緒（たんしょ）", "きっかけ、始まり"],
-      ["示唆（しさ）", "ほのめかすこと"],
-      ["毀損（きそん）", "こわすこと、損なうこと"],
-      ["譬喩（ひゆ）", "たとえ"],
-      ["喧騒（けんそう）", "さわがしいこと"],
-      ["頓挫（とんざ）", "途中でうまくいかなくなること"],
-      ["醍醐味（だいごみ）", "本当のおもしろさ"],
-      ["傲慢（ごうまん）", "いばって人を見下す態度"],
-      ["如実（にょじつ）", "ありのまま"],
-      ["悠長（ゆうちょう）", "のんびりしていること"],
-      ["厭世（えんせい）", "人生をいやだと思う気持ち"],
-      ["虚無（きょむ）", "何も存在しないと思う考え"],
-      ["孤高（ここう）", "他にまじわらず高い立場にあること"],
-      ["詮索（せんさく）", "細かく調べること"],
-      ["叙情（じょじょう）", "感情を述べること"],
-      ["醜悪（しゅうあく）", "みにくく、いやなこと"],
-      ["破綻（はたん）", "成り立たなくなること"],
-      ["錯覚（さっかく）", "まちがった感じ方"],
-      ["動揺（どうよう）", "心が不安で落ち着かないこと"],
-      ["饒舌（じょうぜつ）", "しゃべりすぎること"],
-      ["顕著（けんちょ）", "目立ってあきらか"],
-      ["陳腐（ちんぷ）", "ありふれて新鮮味がない"],
-      ["迎合（げいごう）", "人の意見に合わせること"],
+    // --- 公立高校入試までの日数計算 ---
+    function updateCountdown() {
+      const examDate = new Date("2026-03-11");
+      const today = new Date();
+      const diff = examDate - today;
+      const daysLeft = Math.ceil(diff / (1000 * 60 * 60 * 24));
+      document.getElementById("daysLeft").textContent = daysLeft;
+    }
+    updateCountdown();
+
+    // --- 難しい日本語リスト ---
+    const words = [
+      ["恣意的（しいてき）", "自分の思うままに行うさま"],
+      ["矛盾（むじゅん）", "つじつまが合わないこと"],
+      ["形而上（けいじじょう）", "目に見えない抽象的なもの"],
+      ["帰納（きのう）", "個々の事例から一般法則を導くこと"],
+      ["演繹（えんえき）", "一般的原理から個別の結論を導くこと"],
+      ["齟齬（そご）", "物事がうまくかみ合わないこと"],
+      ["煩瑣（はんさ）", "細かいことが多くて面倒なさま"],
+      ["越権（えっけん）", "自分の権限を超えて行動すること"],
+      ["忖度（そんたく）", "他人の気持ちを推し量ること"],
+      ["迎合（げいごう）", "相手の考えに合わせて機嫌をとること"],
+      ["不遜（ふそん）", "謙虚さがなく傲慢なこと"],
+      ["詭弁（きべん）", "道理に合わないがもっともらしい議論"],
+      ["冗漫（じょうまん）", "無駄に長くてまとまりがないこと"],
+      ["稚拙（ちせつ）", "未熟で下手なこと"],
+      ["傲慢（ごうまん）", "おごり高ぶること"],
+      ["頑健（がんけん）", "体が丈夫であること"],
+      ["多弁（たべん）", "よくしゃべること"],
       ["寡黙（かもく）", "口数が少ないこと"],
-      ["怠惰（たいだ）", "なまけること"],
-      ["頑迷（がんめい）", "かたくなで考えが古いこと"],
-      ["老獪（ろうかい）", "ずるがしこいこと"],
-      ["傑出（けっしゅつ）", "とびぬけてすぐれていること"],
-      ["陰湿（いんしつ）", "暗くてじめじめしていること"],
-      ["迅速（じんそく）", "すばやいこと"],
-      ["即興（そっきょう）", "その場の思いつきで行うこと"],
-      ["粗野（そや）", "上品さがないこと"],
-      ["博識（はくしき）", "広く物を知っていること"],
-      ["奇抜（きばつ）", "思いつきが普通と違うこと"],
-      ["空虚（くうきょ）", "中身がないこと"],
-      ["漠然（ばくぜん）", "ぼんやりしていること"],
-      ["弁解（べんかい）", "言いわけ"],
-      ["憤慨（ふんがい）", "ひどく怒ること"],
-      ["軽蔑（けいべつ）", "見下すこと"],
-      ["煩雑（はんざつ）", "こみいっていて面倒"],
-      ["微妙（びみょう）", "わずかなちがいがあること"],
-      ["緻密（ちみつ）", "細かくて正確"],
-      ["堅固（けんご）", "しっかりしていること"],
-      ["謙虚（けんきょ）", "えらそうにしないこと"],
-      ["温厚（おんこう）", "やさしくおだやか"],
-      ["沈着（ちんちゃく）", "落ち着いていること"],
-      ["頑丈（がんじょう）", "とても丈夫なこと"],
-      ["冷静（れいせい）", "おちついていること"],
-      ["勤勉（きんべん）", "よくはたらくこと"],
-      ["壮大（そうだい）", "とても大きく立派"],
-      ["繊細（せんさい）", "感情や感覚が細やか"],
-      ["堅実（けんじつ）", "しっかりして危なげがない"],
-      ["純朴（じゅんぼく）", "すなおで飾りけがない"],
-      ["明朗（めいろう）", "ほがらかではっきりしている"],
-      ["臨機応変（りんきおうへん）", "状況に応じてうまく対応"],
-      ["独創（どくそう）", "まねせず自分で考える"],
-      ["融通（ゆうずう）", "その場に応じてうまくやる"],
-      ["忠実（ちゅうじつ）", "まじめに尽くす"],
-      ["堅忍不抜（けんにんふばつ）", "がまん強く心が折れない"],
-      ["温和（おんわ）", "おだやかで優しい"],
-      ["慎重（しんちょう）", "よく考えて行動する"],
-      ["素朴（そぼく）", "かざりけがなくすなお"],
-      ["悠然（ゆうぜん）", "おちついていてゆったり"],
-      ["勇敢（ゆうかん）", "こわがらずに立ち向かう"],
-      ["誠実（せいじつ）", "うそがなく正直"],
-      ["質実剛健（しつじつごうけん）", "かざらずまじめで強い"],
-      ["融和（ゆうわ）", "なかよく調和する"],
-      ["寛容（かんよう）", "心が広いこと"],
-      ["温厚篤実（おんこうとくじつ）", "人柄がおだやかで誠実"],
-      ["謹厳実直（きんげんじっちょく）", "まじめで正直"],
-      ["誠心誠意（せいしんせいい）", "まごころこめて"],
-      ["温順（おんじゅん）", "おとなしくおだやか"],
-      ["和気藹藹（わきあいあい）", "なごやかでたのしい様子"]
+      ["博識（はくしき）", "広い知識を持っていること"],
+      ["怠惰（たいだ）", "なまけること"]
     ];
 
-    // 🔹ランダムに1つ表示
-    const [word, meaning] = muzutango[Math.floor(Math.random() * muzutango.length)];
-    document.getElementById("muzutan").textContent = `今日のムズ単：${word} - ${meaning}`;
+    // --- ムズ単ランダム表示 ---
+    function showRandomWord() {
+      const random = words[Math.floor(Math.random() * words.length)];
+      document.getElementById("word").textContent = `今日のムズ単：${random[0]} - ${random[1]}`;
+    }
+    showRandomWord();
 
-    // 🔹入試日カウントダウン
-    const examDate = new Date("2026-03-10");
-    const today = new Date();
-    const diff = Math.ceil((examDate - today) / (1000 * 60 * 60 * 24));
-    document.getElementById("daysLeft").textContent = diff;
+    // --- ログアウト ---
+    function logout() {
+      window.location.href = "index.html";
+    }
   </script>
 </body>
 </html>
