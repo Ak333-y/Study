@@ -1,5 +1,8 @@
 {
   "akio": {
     "password": "1234"
+  },
+  "testuser": {
+    "password": "abcd"
   }
 }
