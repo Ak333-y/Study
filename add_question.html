@@ -64,52 +64,54 @@
   <p class="msg" id="msg"></p>
 
   <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
 
-  <script>
-    // 🔥 Firebase設定（自分の設定に変えてね）
-    const firebaseConfig = {
-  apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
-  authDomain: "akeducationalplatform.firebaseapp.com",
-  projectId: "akeducationalplatform",
-  storageBucket: "akeducationalplatform.firebasestorage.app",
-  messagingSenderId: "778140595189",
-  appId: "1:778140595189:web:301e7490b813b44782a6bc"
-};
-    const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+<script>
+  // 🔹 自分のFirebase設定に置き換えて！
+  const firebaseConfig = {
+    apiKey: "自分のAPIキー",
+    authDomain: "自分のドメイン",
+    projectId: "自分のプロジェクトID",
+    storageBucket: "自分のストレージ",
+    messagingSenderId: "自分のsenderID",
+    appId: "自分のappID"
+  };
 
-    async function addQuestion() {
-      const subject = document.getElementById("subject").value;
-      const q = document.getElementById("question").value.trim();
-      const choices = document.getElementById("choices").value.split(",").map(c => c.trim());
-      const answer = parseInt(document.getElementById("answer").value);
+  // 🔹 Firebase 初期化
+  const app = firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
 
-      if (!q || choices.length < 2 || isNaN(answer)) {
-        document.getElementById("msg").textContent = "⚠ 入力が足りないよ！";
-        document.getElementById("msg").style.color = "red";
-        return;
-      }
+  // 🔹 追加ボタンが押されたときに呼ばれる関数
+  function addQuestion() {
+    const subject = document.getElementById("subject").value;
+    const question = document.getElementById("question").value;
+    const choice1 = document.getElementById("choice1").value;
+    const choice2 = document.getElementById("choice2").value;
+    const choice3 = document.getElementById("choice3").value;
+    const choice4 = document.getElementById("choice4").value;
+    const answer = parseInt(document.getElementById("answer").value);
 
-      try {
-        await db.collection("questions").add({
-          subject: subject,
-          q: q,
-          choices: choices,
-          answer: answer
-        });
-        document.getElementById("msg").textContent = "✅ 問題を追加したよ！";
-        document.getElementById("msg").style.color = "green";
-        document.getElementById("question").value = "";
-        document.getElementById("choices").value = "";
-        document.getElementById("answer").value = "";
-      } catch (e) {
-        document.getElementById("msg").textContent = "❌ エラー：" + e.message;
-        document.getElementById("msg").style.color = "red";
-      }
+    if (!subject || !question || !choice1 || !choice2 || !choice3 || !choice4 || isNaN(answer)) {
+      alert("すべての項目を入力してね！");
+      return;
     }
-  </script>
 
+    db.collection("questions").add({
+      subject: subject,
+      q: question,
+      choices: [choice1, choice2, choice3, choice4],
+      answer: answer
+    })
+    .then(() => {
+      alert("✅ 問題を追加しました！");
+      document.getElementById("question-form").reset();
+    })
+    .catch((error) => {
+      console.error("エラー:", error);
+      alert("❌ 追加に失敗しました: " + error.message);
+    });
+  }
+</script>
 </body>
 </html>
