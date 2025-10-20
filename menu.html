@@ -12,37 +12,53 @@
       display: flex;
       background-color: #f5f6fa;
     }
+
+    /* 🔹サイドバー */
     .sidebar {
       width: 220px;
-      background-color: #1e2a38;
+      background-color: #2f3b4a; /* ← 前より少し明るめ */
       color: white;
       height: 100vh;
       padding: 20px;
+      box-sizing: border-box;
     }
+
+    /* 🔹AEPロゴをボタン化 */
     .sidebar h2 {
       text-align: center;
       margin-bottom: 30px;
+      cursor: pointer;
+      transition: 0.2s;
     }
+    .sidebar h2:hover {
+      color: #ffd700;
+    }
+
     .sidebar a {
       display: block;
       color: white;
       text-decoration: none;
       margin: 15px 0;
+      transition: 0.2s;
     }
     .sidebar a:hover {
       text-decoration: underline;
+      color: #ffd700;
     }
+
     .content {
       flex: 1;
       padding: 40px;
     }
+
     .card {
       background: white;
       border-radius: 10px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
       padding: 20px;
       margin-bottom: 20px;
     }
+
     .top-info {
       text-align: right;
       margin-bottom: 10px;
@@ -53,8 +69,10 @@
 </head>
 <body>
   <div class="sidebar">
-    <h2>AEP</h2>
-    <a href="menu.html">ホーム</a>
+    <!-- 🔹クリックでmenu.htmlに戻る -->
+    <h2 onclick="location.href='menu.html'">AEP</h2>
+
+    <!-- 🔹ユーザー情報削除済 -->
     <a href="test.html">テスト</a>
     <a href="history.html">過去の成績</a>
   </div>
@@ -73,7 +91,7 @@
   </div>
 
   <script>
-    // 🔹ムズ単語100個（国語系）
+    // 🔹ムズ単語（国語系100個）
     const muzutango = [
       ["詭弁（きべん）", "道理に合わないが、もっともらしく聞こえる議論"],
       ["諧謔（かいぎゃく）", "ユーモア、こっけい"],
@@ -151,7 +169,6 @@
       ["堅忍不抜（けんにんふばつ）", "がまん強く心が折れない"],
       ["温和（おんわ）", "おだやかで優しい"],
       ["慎重（しんちょう）", "よく考えて行動する"],
-      ["勤勉（きんべん）", "まじめに努力する"],
       ["素朴（そぼく）", "かざりけがなくすなお"],
       ["悠然（ゆうぜん）", "おちついていてゆったり"],
       ["勇敢（ゆうかん）", "こわがらずに立ち向かう"],
@@ -166,11 +183,11 @@
       ["和気藹藹（わきあいあい）", "なごやかでたのしい様子"]
     ];
 
-    // ランダムに1つ表示
+    // 🔹ランダムに1つ表示
     const [word, meaning] = muzutango[Math.floor(Math.random() * muzutango.length)];
     document.getElementById("muzutan").textContent = `今日のムズ単：${word} - ${meaning}`;
 
-    // 入試日カウントダウン
+    // 🔹入試日カウントダウン
     const examDate = new Date("2026-03-10");
     const today = new Date();
     const diff = Math.ceil((examDate - today) / (1000 * 60 * 60 * 24));
