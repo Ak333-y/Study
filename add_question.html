@@ -2,72 +2,104 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>問題追加 | AEP</title>
   <style>
     body {
       font-family: "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
-      background-color: #f5f6fa;
+      background-color: #f8f9fa;
       text-align: center;
-      padding: 40px;
+      margin: 0;
+      padding: 20px;
     }
 
     h1 {
       color: #333;
     }
 
-    input, select, button {
-      margin: 10px;
-      padding: 10px;
-      font-size: 16px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
+    input, select {
       width: 80%;
       max-width: 400px;
+      margin: 10px auto;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      display: block;
     }
 
     button {
-      background-color: #4caf50;
-      color: white;
+      font-size: 18px;
+      padding: 10px 20px;
+      border-radius: 10px;
       border: none;
       cursor: pointer;
       transition: 0.2s;
     }
 
-    button:hover {
-      background-color: #43a047;
+    #addButton {
+      background-color: #4CAF50;
+      color: white;
     }
 
-    .msg {
-      margin-top: 15px;
-      color: #2e7d32;
-      font-weight: bold;
+    #addButton:hover {
+      background-color: #45a049;
+    }
+
+    .home-button {
+      background-color: #2196F3;
+      color: white;
+      margin-top: 20px;
+    }
+
+    .home-button:hover {
+      background-color: #1976D2;
+    }
+
+    p {
+      font-size: 18px;
+      color: #333;
+    }
+
+    .container {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      max-width: 500px;
+      margin: 40px auto;
     }
   </style>
 </head>
 <body>
-  <h1>📘 問題追加ページ</h1>
 
-  <select id="subject">
-    <option value="kobu">古文単語</option>
-    <option value="syakai">社会</option>
-    <option value="kanji">漢字</option>
-  </select><br>
+  <div class="container">
+    <h1>📘 問題を追加</h1>
 
-  <input type="text" id="question" placeholder="問題文を入力"><br>
-  <input type="text" id="choice1" placeholder="選択肢1"><br>
-  <input type="text" id="choice2" placeholder="選択肢2"><br>
-  <input type="text" id="choice3" placeholder="選択肢3"><br>
-  <input type="text" id="choice4" placeholder="選択肢4"><br>
-  <input type="number" id="answer" placeholder="正解の番号 (1〜4)" min="1" max="4"><br>
+    <select id="subject">
+      <option value="kobu">古文</option>
+      <option value="syakai">社会</option>
+      <option value="kanji">漢字</option>
+    </select>
 
-  <button id="addBtn">追加</button>
-  <div class="msg" id="msg"></div>
+    <input id="question" placeholder="問題文を入力">
+    <input id="choice1" placeholder="選択肢1">
+    <input id="choice2" placeholder="選択肢2">
+    <input id="choice3" placeholder="選択肢3">
+    <input id="choice4" placeholder="選択肢4">
+    <input id="answer" placeholder="正解の番号（1〜4）">
+
+    <button id="addButton">問題を追加</button>
+    <button class="home-button" onclick="window.location.href='menu.html'">🏠 ホームに戻る</button>
+
+    <p id="status"></p>
+  </div>
 
   <script type="module">
+    // --- Firebaseの設定（ここは自分のやつを入れてね！） ---
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
     import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-    // 🟢 あきおのFirebase設定をここに入れて！
     const firebaseConfig = {
   apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
   authDomain: "akeducationalplatform.firebaseapp.com",
@@ -80,38 +112,34 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    document.getElementById("addBtn").addEventListener("click", async () => {
+    // --- 問題追加ボタン ---
+    document.getElementById("addButton").addEventListener("click", async () => {
       const subject = document.getElementById("subject").value;
       const q = document.getElementById("question").value;
-      const c1 = document.getElementById("choice1").value;
-      const c2 = document.getElementById("choice2").value;
-      const c3 = document.getElementById("choice3").value;
-      const c4 = document.getElementById("choice4").value;
+      const choices = [
+        document.getElementById("choice1").value,
+        document.getElementById("choice2").value,
+        document.getElementById("choice3").value,
+        document.getElementById("choice4").value
+      ];
       const answer = parseInt(document.getElementById("answer").value) - 1;
-      const msg = document.getElementById("msg");
 
-      if (!q || !c1 || !c2 || !c3 || !c4 || isNaN(answer)) {
-        msg.textContent = "⚠️ すべての項目を入力してね！";
-        msg.style.color = "#e53935";
+      if (!q || choices.some(c => !c) || isNaN(answer)) {
+        alert("すべての項目を入力してね！");
         return;
       }
 
       try {
         await addDoc(collection(db, "questions"), {
-          subject,
-          q,
-          choices: [c1, c2, c3, c4],
-          answer
+          subject: subject,
+          q: q,
+          choices: choices,
+          answer: answer
         });
-        msg.textContent = "✅ 問題を追加しました！";
-        msg.style.color = "#2e7d32";
-
-        // 入力欄をリセット
-        document.querySelectorAll("input").forEach(i => i.value = "");
+        document.getElementById("status").textContent = "✅ 問題を追加しました！";
       } catch (error) {
-        console.error(error);
-        msg.textContent = "❌ エラーが発生しました！";
-        msg.style.color = "#e53935";
+        console.error("Error adding document: ", error);
+        document.getElementById("status").textContent = "❌ 追加に失敗しました";
       }
     });
   </script>
