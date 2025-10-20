@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ユーザー情報</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", sans-serif;
+      background-color: #f0f4f8;
+      display: flex;
+      height: 100vh;
+    }
+
+    /* 左サイドバー */
+    .sidebar {
+      width: 220px;
+      background-color: #1e293b;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    .sidebar h2 {
+      margin-bottom: 30px;
+      text-align: center;
+    }
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      transition: 0.2s;
+      background-color: #334155;
+      text-align: center;
+    }
+    .sidebar a:hover {
+      background-color: #475569;
+    }
+
+    /* メインエリア */
+    .main {
+      flex: 1;
+      padding: 40px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      padding: 30px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #1e293b;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+      color: #334155;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    button {
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 15px;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      background-color: #1d4ed8;
+    }
+
+    .btn-group {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .delete-btn {
+      background-color: #dc2626;
+    }
+
+    .delete-btn:hover {
+      background-color: #b91c1c;
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- 左サイドバー -->
+  <div class="sidebar">
+    <h2>メニュー</h2>
+    <a href="menu.html">🏠 ホーム</a>
+    <a href="user.html" style="background-color:#2563eb;">👤 ユーザー情報</a>
+    <a href="#">🧪 テスト</a>
+    <a href="#">📊 過去の成績</a>
+  </div>
+
+  <!-- メインエリア -->
+  <div class="main">
+    <div class="card">
+      <h1>ユーザー情報</h1>
+
+      <label for="username">ユーザー名</label>
+      <input type="text" id="username" placeholder="ユーザー名を入力">
+
+      <label for="password">パスワード</label>
+      <input type="password" id="password" placeholder="パスワードを入力">
+
+      <div class="btn-group">
+        <button onclick="saveInfo()">💾 保存</button>
+        <button onclick="addUser()">➕ 新規登録</button>
+        <button class="delete-btn" onclick="deleteUser()">🗑️ ユーザー削除</button>
+        <button onclick="goHome()">🏠 ホームに戻る</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const currentUser = "akio"; // ← ログイン中のユーザー（後で動的化予定）
+
+    // 🔹 ユーザー情報読み込み
+    fetch(`http://localhost:3000/getUser/${currentUser}`)
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("username").value = data.id;
+        document.getElementById("password").value = data.password;
+      })
+      .catch(err => console.error("読み込みエラー:", err));
+
+    // 🔹 情報保存
+    function saveInfo() {
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+
+      fetch("http://localhost:3000/updateUser", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: currentUser, newId: username, password })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          alert("✅ ユーザー情報を更新しました！");
+        } else {
+          alert("❌ 更新に失敗：" + data.error);
+        }
+      });
+    }
+
+    // 🔹 新規ユーザー登録
+    function addUser() {
+      const newUser = prompt("新しいユーザー名を入力してね：");
+      const newPass = prompt("パスワードを入力してね：");
+      if (!newUser || !newPass) return;
+
+      fetch("http://localhost:3000/addUser", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: newUser, password: newPass })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          alert("✅ " + data.message);
+        } else {
+          alert("❌ " + data.error);
+        }
+      });
+    }
+
+    // 🔹 ユーザー削除
+    function deleteUser() {
+      const confirmDel = confirm("⚠️ 本当にこのユーザーを削除しますか？");
+      if (!confirmDel) return;
+
+      fetch("http://localhost:3000/deleteUser", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: currentUser })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          alert("🗑️ ユーザーを削除しました！");
+          window.location.href = "index.html";
+        } else {
+          alert("❌ 削除に失敗：" + data.error);
+        }
+      });
+    }
+
+    // 🔹 ホームへ戻る
+    function goHome() {
+      window.location.href = "menu.html";
+    }
+  </script>
+</body>
+</html>
