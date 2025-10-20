@@ -12,6 +12,7 @@
       margin: 0;
       padding: 0;
     }
+
     .progress-bar {
       width: 100%;
       height: 10px;
@@ -19,19 +20,23 @@
       margin-bottom: 20px;
       position: relative;
     }
+
     .progress {
       width: 100%;
       height: 100%;
       background-color: #4caf50;
       transition: width 0.1s linear;
     }
+
     .question-box {
       margin-top: 100px;
     }
+
     .question {
       font-size: 22px;
       margin-bottom: 20px;
     }
+
     .choices {
       display: flex;
       flex-direction: column;
@@ -39,6 +44,7 @@
       max-width: 300px;
       margin: 0 auto;
     }
+
     button.choice {
       background-color: #f0f0f0;
       border: none;
@@ -48,22 +54,30 @@
       cursor: pointer;
       transition: 0.2s;
     }
+
     button.choice:hover {
       background-color: #e6ffe6;
     }
+
     .feedback {
       position: fixed;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      font-size: 48px;
+      font-size: 60px;
       font-weight: bold;
       display: none;
       opacity: 0;
       transition: opacity 0.4s ease;
     }
-    .correct { color: #4caf50; }
-    .wrong { color: #e53935; }
+
+    .correct {
+      color: #4caf50;
+    }
+
+    .wrong {
+      color: #e53935;
+    }
   </style>
 </head>
 <body>
@@ -79,11 +93,12 @@
 
   <div id="feedback" class="feedback"></div>
 
+  <!-- Firebase SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-    // 🔥 自分のFirebase設定をここに！
+    // 🔥 あきおの Firebase 設定をここに入れて！
     const firebaseConfig = {
   apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
   authDomain: "akeducationalplatform.firebaseapp.com",
@@ -96,10 +111,12 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
+    // URLパラメータ
     const params = new URLSearchParams(window.location.search);
     const subject = params.get("subject");
-    const questionCount = parseInt(params.get("count"));
+    const questionCount = parseInt(params.get("count")) || 10;
 
+    let questions = [];
     let selected = [];
     let current = 0;
     let correctCount = 0;
@@ -111,19 +128,21 @@
     const progressEl = document.getElementById("progress");
     const feedbackEl = document.getElementById("feedback");
 
-    // 🔹 Firestoreから問題を読み込む関数
+    // --- Firestore から問題取得 ---
     async function loadQuestions() {
       const snapshot = await getDocs(collection(db, "questions"));
-      const allQuestions = snapshot.docs.map(doc => doc.data());
-      const currentSet = allQuestions.filter(q => q.subject === subject);
+      questions = snapshot.docs
+        .map(doc => doc.data())
+        .filter(q => q.subject === subject);
 
-      if (currentSet.length === 0) {
-        questionEl.textContent = "この教科の問題がありません😢";
+      if (questions.length === 0) {
+        questionEl.textContent = "問題が見つかりません。";
         return;
       }
 
+      // ランダム選択
       for (let i = 0; i < questionCount; i++) {
-        const rand = currentSet[Math.floor(Math.random() * currentSet.length)];
+        const rand = questions[Math.floor(Math.random() * questions.length)];
         selected.push(rand);
       }
 
@@ -137,11 +156,6 @@
       }
 
       const q = selected[current];
-      if (!q || !q.q || !q.choices) {
-        questionEl.textContent = "問題データが不正です";
-        return;
-      }
-
       questionEl.textContent = `${current + 1}. ${q.q}`;
       choicesEl.innerHTML = "";
 
@@ -185,50 +199,36 @@
       }, 800);
     }
 
-    // --- Firebaseを使って成績保存 ---
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    async function endTest() {
+      questionEl.textContent = `テスト終了！`;
+      choicesEl.innerHTML = `
+        <p>正解数：${correctCount} / ${selected.length}</p>
+        <p>正答率：${Math.round((correctCount / selected.length) * 100)}%</p>
+        <br>
+        <button onclick="location.reload()" 
+          style="background-color:#2196f3;color:white;border:none;border-radius:8px;
+          padding:10px 20px;font-size:16px;cursor:pointer;margin-right:10px;">
+          もう一度テストを受ける
+        </button>
+        <button onclick="location.href='menu.html'" 
+          style="background-color:#4caf50;color:white;border:none;border-radius:8px;
+          padding:10px 20px;font-size:16px;cursor:pointer;">
+          ホームに戻る
+        </button>
+      `;
+      progressEl.style.width = "0%";
 
-// 🔥 あきおのFirebase設定をここに入れる！
-const firebaseConfig = {
-  apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
-  authDomain: "akeducationalplatform.firebaseapp.com",
-  projectId: "akeducationalplatform"
-};
+      // Firestore に結果保存
+      await addDoc(collection(db, "results"), {
+        subject,
+        correct: correctCount,
+        total: selected.length,
+        rate: Math.round((correctCount / selected.length) * 100),
+        date: new Date().toLocaleString("ja-JP")
+      });
+    }
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-async function endTest() {
-  questionEl.textContent = `テスト終了！`;
-  choicesEl.innerHTML = `
-    <p>正解数：${correctCount} / ${selected.length}</p>
-    <p>正答率：${Math.round((correctCount / selected.length) * 100)}%</p>
-    <br>
-    <button onclick="location.reload()" 
-      style="background-color:#2196f3;color:white;border:none;border-radius:8px;
-      padding:10px 20px;font-size:16px;cursor:pointer;margin-right:10px;">
-      もう一度テストを受ける
-    </button>
-    <button onclick="location.href='menu.html'" 
-      style="background-color:#4caf50;color:white;border:none;border-radius:8px;
-      padding:10px 20px;font-size:16px;cursor:pointer;">
-      ホームに戻る
-    </button>
-  `;
-  progressEl.style.width = "0%";
-
-  // Firestoreに成績を保存
-  try {
-    await addDoc(collection(db, "results"), {
-      subject: subject,
-      correct: correctCount,
-      total: selected.length,
-      rate: Math.round((correctCount / selected.length) * 100),
-      timestamp: new Date().toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })
-    });
-    console.log("成績が保存されたよ！");
-  } catch (e) {
-    console.error("保存エラー:", e);
-  }
-}
+    loadQuestions();
+  </script>
+</body>
+</html>
