@@ -11,7 +11,54 @@
       display: flex;
       background-color: #f3f5f7;
     }
+/* 入試カウントダウンデザイン */
+.countdown-container {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
 
+.exam-card {
+  flex: 1;
+  min-width: 260px;
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.exam-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+}
+
+.exam-card h3 {
+  margin: 0 0 10px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.exam-card p {
+  font-size: 36px;
+  font-weight: bold;
+  margin: 0;
+}
+
+/* 公立＝青テーマ */
+.exam-card.public {
+  border-left: 8px solid #3b82f6;
+  background: linear-gradient(135deg, #e3f2fd, #ffffff);
+  color: #1e3a8a;
+}
+
+/* 私立＝紫テーマ */
+.exam-card.private {
+  border-left: 8px solid #8b5cf6;
+  background: linear-gradient(135deg, #f3e8ff, #ffffff);
+  color: #5b21b6;
+}
     /* サイドバー */
     .sidebar {
       width: 220px;
@@ -110,54 +157,6 @@
       margin-top: 0;
     }
   </style>
-  /* 入試カウントダウンデザイン */
-.countdown-container {
-  display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
-}
-
-.exam-card {
-  flex: 1;
-  min-width: 260px;
-  background: white;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  text-align: center;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.exam-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 6px 16px rgba(0,0,0,0.15);
-}
-
-.exam-card h3 {
-  margin: 0 0 10px;
-  font-size: 18px;
-  font-weight: bold;
-}
-
-.exam-card p {
-  font-size: 36px;
-  font-weight: bold;
-  margin: 0;
-}
-
-/* 公立＝青テーマ */
-.exam-card.public {
-  border-left: 8px solid #3b82f6;
-  background: linear-gradient(135deg, #e3f2fd, #ffffff);
-  color: #1e3a8a;
-}
-
-/* 私立＝紫テーマ */
-.exam-card.private {
-  border-left: 8px solid #8b5cf6;
-  background: linear-gradient(135deg, #f3e8ff, #ffffff);
-  color: #5b21b6;
-}
 </head>
 <body>
   <div class="sidebar">
