@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>成績履歴 | 勉強アプリ</title>
   <style>
     body {
@@ -106,12 +106,12 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // 🔥 Firestoreから最新10件の成績を取得（新しい順）
     async function loadResults() {
       const table = document.getElementById("resultsTable");
       table.innerHTML = "<tr><td colspan='4'>読み込み中...</td></tr>";
 
       try {
+        // 🔽 最新10件を新しい順で取得
         const q = query(collection(db, "results"), orderBy("date", "desc"), limit(10));
         const snapshot = await getDocs(q);
 
@@ -127,7 +127,7 @@
           const subject = data.subject || "不明";
           const correct = data.correct ?? "?";
           const total = data.total ?? "?";
-          const rate = data.rate ?? "-";
+          const rate = data.rate ?? "?";
 
           const row = `
             <tr>
