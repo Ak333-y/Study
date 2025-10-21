@@ -8,118 +8,82 @@
     body {
       margin: 0;
       font-family: "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
-      display: flex;
       background-color: #f3f5f7;
     }
-/* 入試カウントダウンデザイン */
-.countdown-container {
-  display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
-}
 
-.exam-card {
-  flex: 1;
-  min-width: 260px;
-  background: white;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  text-align: center;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.exam-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 6px 16px rgba(0,0,0,0.15);
-}
-
-.exam-card h3 {
-  margin: 0 0 10px;
-  font-size: 18px;
-  font-weight: bold;
-}
-
-.exam-card p {
-  font-size: 36px;
-  font-weight: bold;
-  margin: 0;
-}
-
-/* 公立＝青テーマ */
-.exam-card.public {
-  border-left: 8px solid #3b82f6;
-  background: linear-gradient(135deg, #e3f2fd, #ffffff);
-  color: #1e3a8a;
-}
-
-/* 私立＝紫テーマ */
-.exam-card.private {
-  border-left: 8px solid #8b5cf6;
-  background: linear-gradient(135deg, #f3e8ff, #ffffff);
-  color: #5b21b6;
-}
-    /* サイドバー */
-    .sidebar {
-      width: 220px;
-      background-color: #243447;
+    /* 上バー（ロゴ・メニュー・ムズ単・ログアウト） */
+    .top-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 65px;
+      background: linear-gradient(135deg, #1e3a8a, #3b82f6);
       color: white;
-      height: 100vh;
       display: flex;
-      flex-direction: column;
+      align-items: center;
       justify-content: space-between;
-      padding: 20px 0;
+      padding: 0 30px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+      z-index: 1000;
     }
 
-    /* 🔵 ロゴ部分（差し替え済み） */
-    .logo {
-      text-align: center;
-      margin-bottom: 30px;
+    /* ロゴ部分 */
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
 
-    .logo img {
-      width: 140px;
-      height: auto;
-      border-radius: 10px;
-      transition: transform 0.3s ease;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    .logo-area img {
+      height: 38px;
     }
 
-    .logo img:hover {
-      transform: scale(1.05);
+    .logo-text {
+      font-size: 22px;
+      font-weight: bold;
+      letter-spacing: 1px;
     }
 
+    /* メニュー */
     .menu {
       display: flex;
-      flex-direction: column;
-      gap: 15px;
-      padding-left: 25px;
+      gap: 30px;
     }
 
     .menu a {
       color: white;
       text-decoration: none;
       font-size: 15px;
+      font-weight: 500;
       transition: 0.2s;
     }
 
     .menu a:hover {
-      color: #60a5fa;
+      color: #93c5fd;
     }
 
-    .logout {
-      text-align: center;
-      margin-top: 1px;
+    /* ムズ単 */
+    .word-of-day {
+      font-size: 14px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 280px;
+      text-align: right;
     }
 
+    /* ログアウトボタン */
     .logout button {
       background-color: #e53935;
       color: white;
       border: none;
       border-radius: 20px;
-      padding: 10px 20px;
+      padding: 8px 18px;
       cursor: pointer;
       transition: 0.2s;
+      font-size: 14px;
     }
 
     .logout button:hover {
@@ -128,51 +92,72 @@
 
     /* メイン部分 */
     .main {
-      flex-grow: 1;
-      padding: 20px 40px;
+      padding: 100px 40px 40px;
     }
 
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 30px;
-    }
-
-    .header-right {
-      display: flex;
-      gap: 40px;
-      font-weight: bold;
-    }
-
+    /* カードデザイン */
     .card {
       background: white;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      padding: 20px;
-      margin-bottom: 20px;
+      border-radius: 12px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+      padding: 25px;
+      margin-bottom: 25px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.15);
     }
 
     .card h2 {
       margin-top: 0;
+      color: #1e3a8a;
     }
+
+    /* カウントダウン用デザイン */
+    .countdown-box {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .countdown-item {
+      background: linear-gradient(135deg, #2563eb, #1e40af);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 10px;
+      font-size: 18px;
+      font-weight: 600;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .countdown-item span {
+      font-size: 22px;
+      font-weight: bold;
+      color: #facc15;
+    }
+
   </style>
 </head>
 <body>
-  <div class="sidebar">
-    <div>
-      <!-- 🔵 ここを変更！ -->
-      <div class="logo">
-        <img src="logo.png" alt="StudyBase ロゴ">
-      </div>
-
-      <div class="menu">
-        <a href="menu.html">ホーム</a>
-        <a href="select.html">テスト</a>
-        <a href="history.html">過去の成績</a>
-        <a href="add_question.html">問題編集</a>
-      </div>
+  <div class="top-bar">
+    <div class="logo-area">
+      <img src="logo.png" alt="StudyBaseロゴ">
+      <span class="logo-text">StudyBase</span>
     </div>
+
+    <div class="menu">
+      <a href="menu.html">ホーム</a>
+      <a href="select.html">テスト</a>
+      <a href="history.html">過去の成績</a>
+      <a href="add_question.html">問題編集</a>
+    </div>
+
+    <div class="word-of-day" id="word">今日のムズ単：読み込み中...</div>
 
     <div class="logout">
       <button onclick="logout()">ログアウト</button>
@@ -180,72 +165,64 @@
   </div>
 
   <div class="main">
-    <div class="header">
-      <div></div>
-      <div class="header-right">
-        <div id="word">今日のムズ単：読み込み中...</div>
-      </div>
+    <div class="card">
+      <h2>ホーム</h2>
+      <p>ようこそ、اكيؤ さん。</p>
     </div>
 
     <div class="card">
-      <h2>ホーム</h2>
-      <p>ようこそ、akio さん。</p>
+      <h2>高校入試カウントダウン</h2>
+      <div class="countdown-box">
+        <div class="countdown-item">
+          大阪府公立高校入試まであと <span id="daysLeftPublic"></span> 日
+        </div>
+        <div class="countdown-item">
+          大阪府私立高校入試まであと <span id="daysLeftPrivate"></span> 日
+        </div>
+      </div>
     </div>
-
-    <div class="countdown-container">
-  <div class="exam-card public">
-    <h3>🏫 大阪府公立高校入試まで</h3>
-    <p><span id="daysLeftPublic"></span> 日</p>
   </div>
-  <div class="exam-card private">
-    <h3>🎓 大阪府私立高校入試まで</h3>
-    <p><span id="daysLeftPrivate"></span> 日</p>
-  </div>
-    </div>
 
   <script>
-    // --- 公立高校入試までの日数計算 ---
-    // --- 入試までの日数計算 ---
-// --- 入試までの日数計算 ---
-function updateCountdown() {
-  const today = new Date();
+    // --- 公立＆私立高校入試までの日数 ---
+    function updateCountdown() {
+      const publicExam = new Date("2026-03-11");
+      const privateExam = new Date("2026-02-10");
+      const today = new Date();
 
-  const examDatePublic = new Date("2026-03-11");
-  const examDatePrivate = new Date("2026-02-10");
+      const publicDiff = publicExam - today;
+      const privateDiff = privateExam - today;
 
-  const diffPublic = examDatePublic - today;
-  const diffPrivate = examDatePrivate - today;
+      const publicDays = Math.ceil(publicDiff / (1000 * 60 * 60 * 24));
+      const privateDays = Math.ceil(privateDiff / (1000 * 60 * 60 * 24));
 
-  const daysLeftPublic = Math.ceil(diffPublic / (1000 * 60 * 60 * 24));
-  const daysLeftPrivate = Math.ceil(diffPrivate / (1000 * 60 * 60 * 24));
+      document.getElementById("daysLeftPublic").textContent = publicDays;
+      document.getElementById("daysLeftPrivate").textContent = privateDays;
+    }
+    updateCountdown();
 
-  document.getElementById("daysLeftPublic").textContent = daysLeftPublic;
-  document.getElementById("daysLeftPrivate").textContent = daysLeftPrivate;
-}
-
-updateCountdown();
-    // --- 難しい日本語リスト ---
+    // --- 難しい日本語リスト（拡張版） ---
     const words = [
       ["恣意的（しいてき）", "自分の思うままに行うさま"],
       ["矛盾（むじゅん）", "つじつまが合わないこと"],
-      ["形而上（けいじじょう）", "目に見えない抽象的なもの"],
       ["帰納（きのう）", "個々の事例から一般法則を導くこと"],
       ["演繹（えんえき）", "一般的原理から個別の結論を導くこと"],
+      ["煩瑣（はんさ）", "細かくて面倒なこと"],
       ["齟齬（そご）", "物事がうまくかみ合わないこと"],
-      ["煩瑣（はんさ）", "細かいことが多くて面倒なさま"],
-      ["越権（えっけん）", "自分の権限を超えて行動すること"],
-      ["忖度（そんたく）", "他人の気持ちを推し量ること"],
-      ["迎合（げいごう）", "相手の考えに合わせて機嫌をとること"],
-      ["不遜（ふそん）", "謙虚さがなく傲慢なこと"],
-      ["詭弁（きべん）", "道理に合わないがもっともらしい議論"],
-      ["冗漫（じょうまん）", "無駄に長くてまとまりがないこと"],
-      ["稚拙（ちせつ）", "未熟で下手なこと"],
       ["傲慢（ごうまん）", "おごり高ぶること"],
-      ["頑健（がんけん）", "体が丈夫であること"],
-      ["多弁（たべん）", "よくしゃべること"],
-      ["寡黙（かもく）", "口数が少ないこと"],
-      ["博識（はくしき）", "広い知識を持っていること"],
-      ["怠惰（たいだ）", "なまけること"]
+      ["詭弁（きべん）", "もっともらしく見えるが道理に合わない議論"],
+      ["怠惰（たいだ）", "なまけること"],
+      ["曖昧（あいまい）", "はっきりしないこと"],
+      ["顕著（けんちょ）", "はっきりと目立つこと"],
+      ["抽象（ちゅうしょう）", "具体的でない、概念的なこと"],
+      ["滑稽（こっけい）", "おかしくて笑えること"],
+      ["陰鬱（いんうつ）", "気分が晴れず暗いこと"],
+      ["軽蔑（けいべつ）", "見下すこと"],
+      ["崇高（すうこう）", "けがれなく立派なこと"],
+      ["煩悶（はんもん）", "悩み苦しむこと"],
+      ["錯綜（さくそう）", "いくつものことが入り乱れること"],
+      ["堅実（けんじつ）", "しっかりしていて安心できること"],
+      ["高尚（こうしょう）", "上品で気高いこと"]
     ];
 
     // --- ムズ単ランダム表示 ---
