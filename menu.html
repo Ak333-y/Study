@@ -247,5 +247,40 @@
       window.location.href = "index.html";
     }
   </script>
+  <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
+    authDomain: "akeducationalplatform.firebaseapp.com",
+    projectId: "akeducationalplatform",
+    storageBucket: "akeducationalplatform.firebasestorage.app",
+    messagingSenderId: "778140595189",
+    appId: "1:778140595189:web:301e7490b813b44782a6bc"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  // 🔐 ログイン状態をチェック！
+  onAuthStateChanged(auth, (user) => {
+    if (!user) {
+      // ユーザーがいない＝ログインしてない
+      window.location.href = "index.html";
+    } else {
+      // ログインしてたら名前を表示（メールの前半）
+      const name = user.email.split("@")[0];
+      document.querySelector(".card p").textContent = `ようこそ、${name} さん。`;
+    }
+  });
+
+  // 🚪 ログアウトボタンの処理
+  window.logout = function() {
+    signOut(auth).then(() => {
+      window.location.href = "index.html";
+    });
+  };
+  </script>
 </body>
 </html>
