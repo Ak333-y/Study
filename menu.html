@@ -11,41 +11,29 @@
       background-color: #f3f5f7;
     }
 
-    /* 上バー（ロゴ・メニュー・ムズ単・ログアウト） */
-    .top-bar {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 65px;
-      background: linear-gradient(135deg, #1e3a8a, #3b82f6);
-      color: white;
+    /* 上バー */
+    .navbar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 30px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.15);
-      z-index: 1000;
+      background-color: #1e3a8a; /* 濃い青 */
+      color: white;
+      padding: 10px 40px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     }
 
-    /* ロゴ部分 */
-    .logo-area {
+    .logo {
       display: flex;
       align-items: center;
       gap: 10px;
-    }
-
-    .logo-area img {
-      height: 38px;
-    }
-
-    .logo-text {
-      font-size: 22px;
+      font-size: 28px; /* ← ロゴ文字大きめ */
       font-weight: bold;
-      letter-spacing: 1px;
     }
 
-    /* メニュー */
+    .logo img {
+      height: 50px; /* ← ロゴ画像を少し大きく */
+    }
+
     .menu {
       display: flex;
       gap: 30px;
@@ -54,100 +42,99 @@
     .menu a {
       color: white;
       text-decoration: none;
-      font-size: 15px;
-      font-weight: 500;
+      font-weight: bold;
+      font-size: 16px;
       transition: 0.2s;
     }
 
     .menu a:hover {
-      color: #93c5fd;
+      color: #60a5fa;
     }
 
-    /* ムズ単 */
-    .word-of-day {
-      font-size: 14px;
-      font-weight: 500;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 280px;
-      text-align: right;
+    .logout {
+      margin-left: 30px;
     }
 
-    /* ログアウトボタン */
     .logout button {
       background-color: #e53935;
       color: white;
       border: none;
       border-radius: 20px;
-      padding: 8px 18px;
+      padding: 8px 20px;
       cursor: pointer;
       transition: 0.2s;
-      font-size: 14px;
+      font-weight: bold;
     }
 
     .logout button:hover {
       background-color: #c62828;
     }
 
-    /* メイン部分 */
     .main {
-      padding: 100px 40px 40px;
+      padding: 40px;
     }
 
-    /* カードデザイン */
-    .card {
+    .header {
+      margin-bottom: 30px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    /* 入試カウントダウンデザイン */
+    .countdown-container {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .exam-card {
+      flex: 1;
+      min-width: 260px;
       background: white;
       border-radius: 12px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-      padding: 25px;
-      margin-bottom: 25px;
-      transition: transform 0.2s, box-shadow 0.2s;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      text-align: center;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
-    .card:hover {
-      transform: translateY(-3px);
+    .exam-card:hover {
+      transform: translateY(-4px);
       box-shadow: 0 6px 16px rgba(0,0,0,0.15);
     }
 
-    .card h2 {
-      margin-top: 0;
+    .exam-card h3 {
+      margin: 0 0 10px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .exam-card p {
+      font-size: 36px;
+      font-weight: bold;
+      margin: 0;
+    }
+
+    /* 公立＝青テーマ */
+    .exam-card.public {
+      border-left: 8px solid #3b82f6;
+      background: linear-gradient(135deg, #e3f2fd, #ffffff);
       color: #1e3a8a;
     }
 
-    /* カウントダウン用デザイン */
-    .countdown-box {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
+    /* 私立＝紫テーマ */
+    .exam-card.private {
+      border-left: 8px solid #8b5cf6;
+      background: linear-gradient(135deg, #f3e8ff, #ffffff);
+      color: #5b21b6;
     }
-
-    .countdown-item {
-      background: linear-gradient(135deg, #2563eb, #1e40af);
-      color: white;
-      padding: 15px 20px;
-      border-radius: 10px;
-      font-size: 18px;
-      font-weight: 600;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .countdown-item span {
-      font-size: 22px;
-      font-weight: bold;
-      color: #facc15;
-    }
-
   </style>
 </head>
 <body>
-  <div class="top-bar">
-    <div class="logo-area">
-      <img src="logo.png" alt="StudyBaseロゴ">
-      <span class="logo-text">StudyBase</span>
+  <div class="navbar">
+    <div class="logo">
+      <img src="logo.png" alt="StudyBase ロゴ">
+      StudyBase
     </div>
 
     <div class="menu">
@@ -155,84 +142,152 @@
       <a href="select.html">テスト</a>
       <a href="history.html">過去の成績</a>
       <a href="add_question.html">問題編集</a>
-    </div>
-
-    <div class="word-of-day" id="word">今日のムズ単：読み込み中...</div>
-
-    <div class="logout">
-      <button onclick="logout()">ログアウト</button>
+      <div class="logout">
+        <button onclick="logout()">ログアウト</button>
+      </div>
     </div>
   </div>
 
   <div class="main">
-    <div class="card">
-      <h2>ホーム</h2>
-      <p>ようこそ、اكيؤ さん。</p>
-    </div>
+    <div class="header" id="word">今日のムズ単：読み込み中...</div>
 
-    <div class="card">
-      <h2>高校入試カウントダウン</h2>
-      <div class="countdown-box">
-        <div class="countdown-item">
-          大阪府公立高校入試まであと <span id="daysLeftPublic"></span> 日
-        </div>
-        <div class="countdown-item">
-          大阪府私立高校入試まであと <span id="daysLeftPrivate"></span> 日
-        </div>
+    <div class="countdown-container">
+      <div class="exam-card public">
+        <h3>大阪府公立高校入試まで</h3>
+        <p id="publicDays">-- 日</p>
+      </div>
+      <div class="exam-card private">
+        <h3>大阪府私立高校入試まで</h3>
+        <p id="privateDays">-- 日</p>
       </div>
     </div>
   </div>
 
   <script>
-    // --- 公立＆私立高校入試までの日数 ---
+    // --- 日数計算 ---
     function updateCountdown() {
+      const today = new Date();
       const publicExam = new Date("2026-03-11");
       const privateExam = new Date("2026-02-10");
-      const today = new Date();
 
-      const publicDiff = publicExam - today;
-      const privateDiff = privateExam - today;
+      const publicDays = Math.ceil((publicExam - today) / (1000 * 60 * 60 * 24));
+      const privateDays = Math.ceil((privateExam - today) / (1000 * 60 * 60 * 24));
 
-      const publicDays = Math.ceil(publicDiff / (1000 * 60 * 60 * 24));
-      const privateDays = Math.ceil(privateDiff / (1000 * 60 * 60 * 24));
-
-      document.getElementById("daysLeftPublic").textContent = publicDays;
-      document.getElementById("daysLeftPrivate").textContent = privateDays;
+      document.getElementById("publicDays").textContent = publicDays + " 日";
+      document.getElementById("privateDays").textContent = privateDays + " 日";
     }
     updateCountdown();
 
-    // --- 難しい日本語リスト（拡張版） ---
-    const words = [
-      ["恣意的（しいてき）", "自分の思うままに行うさま"],
-      ["矛盾（むじゅん）", "つじつまが合わないこと"],
-      ["帰納（きのう）", "個々の事例から一般法則を導くこと"],
-      ["演繹（えんえき）", "一般的原理から個別の結論を導くこと"],
-      ["煩瑣（はんさ）", "細かくて面倒なこと"],
-      ["齟齬（そご）", "物事がうまくかみ合わないこと"],
-      ["傲慢（ごうまん）", "おごり高ぶること"],
-      ["詭弁（きべん）", "もっともらしく見えるが道理に合わない議論"],
-      ["怠惰（たいだ）", "なまけること"],
-      ["曖昧（あいまい）", "はっきりしないこと"],
-      ["顕著（けんちょ）", "はっきりと目立つこと"],
-      ["抽象（ちゅうしょう）", "具体的でない、概念的なこと"],
-      ["滑稽（こっけい）", "おかしくて笑えること"],
-      ["陰鬱（いんうつ）", "気分が晴れず暗いこと"],
-      ["軽蔑（けいべつ）", "見下すこと"],
-      ["崇高（すうこう）", "けがれなく立派なこと"],
-      ["煩悶（はんもん）", "悩み苦しむこと"],
-      ["錯綜（さくそう）", "いくつものことが入り乱れること"],
-      ["堅実（けんじつ）", "しっかりしていて安心できること"],
-      ["高尚（こうしょう）", "上品で気高いこと"]
-    ];
+    // --- ムズ単100語リスト ---
+const words = [
+  ["恣意的（しいてき）", "自分の思うままに行うさま"],
+  ["矛盾（むじゅん）", "つじつまが合わないこと"],
+  ["形而上（けいじじょう）", "目に見えない抽象的なもの"],
+  ["帰納（きのう）", "個々の事例から一般法則を導くこと"],
+  ["演繹（えんえき）", "一般的原理から個別の結論を導くこと"],
+  ["齟齬（そご）", "物事がうまくかみ合わないこと"],
+  ["煩瑣（はんさ）", "細かいことが多くて面倒なさま"],
+  ["越権（えっけん）", "自分の権限を超えて行動すること"],
+  ["忖度（そんたく）", "他人の気持ちを推し量ること"],
+  ["迎合（げいごう）", "相手の考えに合わせて機嫌をとること"],
+  ["不遜（ふそん）", "謙虚さがなく傲慢なこと"],
+  ["詭弁（きべん）", "道理に合わないがもっともらしい議論"],
+  ["冗漫（じょうまん）", "無駄に長くてまとまりがないこと"],
+  ["稚拙（ちせつ）", "未熟で下手なこと"],
+  ["傲慢（ごうまん）", "おごり高ぶること"],
+  ["頑健（がんけん）", "体が丈夫であること"],
+  ["多弁（たべん）", "よくしゃべること"],
+  ["寡黙（かもく）", "口数が少ないこと"],
+  ["博識（はくしき）", "広い知識を持っていること"],
+  ["怠惰（たいだ）", "なまけること"],
+  ["沈着（ちんちゃく）", "落ち着いていること"],
+  ["冷静沈着（れいせいちんちゃく）", "どんなときも冷静で動じないこと"],
+  ["緻密（ちみつ）", "細かくて正確なこと"],
+  ["大胆不敵（だいたんふてき）", "大胆で少しも恐れないこと"],
+  ["圧巻（あっかん）", "一番すぐれた部分"],
+  ["陳腐（ちんぷ）", "古くさくて新鮮味がないこと"],
+  ["崇高（すうこう）", "気高く尊いこと"],
+  ["荘厳（そうごん）", "重々しくおごそかなこと"],
+  ["頑迷（がんめい）", "かたくなで道理がわからないこと"],
+  ["漠然（ばくぜん）", "はっきりしないさま"],
+  ["曖昧（あいまい）", "どっちともつかないこと"],
+  ["緊迫（きんぱく）", "差し迫ってピリピリしていること"],
+  ["悠長（ゆうちょう）", "のんびりしているさま"],
+  ["傾倒（けいとう）", "強く心を引かれ夢中になること"],
+  ["克明（こくめい）", "細かいところまで丁寧に描写すること"],
+  ["衝動（しょうどう）", "理性より感情で動くこと"],
+  ["是正（ぜせい）", "正しく直すこと"],
+  ["促進（そくしん）", "物事を早め進めること"],
+  ["排除（はいじょ）", "取り除くこと"],
+  ["排斥（はいせき）", "受け入れずにしりぞけること"],
+  ["矯正（きょうせい）", "悪い点を正しく直すこと"],
+  ["誇張（こちょう）", "実際より大げさに表すこと"],
+  ["独創（どくそう）", "他と違う独自の考えで作ること"],
+  ["創造（そうぞう）", "新しいものを作り出すこと"],
+  ["想像（そうぞう）", "まだ見ていないことを心に思い浮かべること"],
+  ["抽象（ちゅうしょう）", "具体的なものから共通点を抜き出すこと"],
+  ["具象（ぐしょう）", "具体的な形をもつもの"],
+  ["遍在（へんざい）", "どこにでもあること"],
+  ["偏在（へんざい）", "一部にかたよって存在すること"],
+  ["普遍（ふへん）", "すべてに当てはまること"],
+  ["特異（とくい）", "普通と違ってすぐれていること"],
+  ["超越（ちょうえつ）", "はるかにこえること"],
+  ["遵守（じゅんしゅ）", "決まりを守ること"],
+  ["遵法（じゅんぽう）", "法律を守ること"],
+  ["遵命（じゅんめい）", "命令に従うこと"],
+  ["遵守（じゅんしゅ）", "きまりを守ること"],
+  ["尊厳（そんげん）", "気高さや人としての価値"],
+  ["倫理（りんり）", "人として正しい行いの基準"],
+  ["道徳（どうとく）", "善悪の基準となる心のあり方"],
+  ["仁愛（じんあい）", "思いやりの心"],
+  ["博愛（はくあい）", "広くすべての人を愛すること"],
+  ["慈悲（じひ）", "人をあわれみ助ける心"],
+  ["勤勉（きんべん）", "まじめに努力すること"],
+  ["精進（しょうじん）", "一つのことに努力すること"],
+  ["勇猛果敢（ゆうもうかかん）", "勇ましく決断力のあること"],
+  ["堅実（けんじつ）", "確かで危なげがないこと"],
+  ["軽率（けいそつ）", "よく考えず行動すること"],
+  ["慎重（しんちょう）", "注意深く行動すること"],
+  ["融通（ゆうずう）", "状況に応じて柔軟に対応すること"],
+  ["頑固（がんこ）", "かたくなで意見を変えないこと"],
+  ["潔白（けっぱく）", "やましいところがないこと"],
+  ["温厚（おんこう）", "おだやかで優しい性格"],
+  ["寛大（かんだい）", "心が広く人を許すこと"],
+  ["狭量（きょうりょう）", "心が狭いこと"],
+  ["冷淡（れいたん）", "思いやりがなく冷たいこと"],
+  ["親密（しんみつ）", "仲がよく信頼していること"],
+  ["希薄（きはく）", "うすくて弱いこと"],
+  ["旺盛（おうせい）", "勢いが強く盛んなこと"],
+  ["消極（しょうきょく）", "自分から行動しないこと"],
+  ["積極（せっきょく）", "自ら進んで行動すること"],
+  ["堅忍不抜（けんにんふばつ）", "困難に負けず我慢強く努力すること"],
+  ["勇往邁進（ゆうおうまいしん）", "恐れず前へ進むこと"],
+  ["一心不乱（いっしんふらん）", "一つのことに集中すること"],
+  ["自業自得（じごうじとく）", "自分のしたことの結果を受けること"],
+  ["因果応報（いんがおうほう）", "行いの善悪が報いとなって返ること"],
+  ["虚構（きょこう）", "作り話、フィクション"],
+  ["真実（しんじつ）", "本当のこと"],
+  ["幻想（げんそう）", "現実にはないものを心に描くこと"],
+  ["理想（りそう）", "最も望ましい姿"],
+  ["現実（げんじつ）", "実際のありさま"],
+  ["概念（がいねん）", "物事の共通した特徴をまとめた考え"],
+  ["観念（かんねん）", "頭の中で思い浮かべる考え"],
+  ["主観（しゅかん）", "自分の立場で見た考え"],
+  ["客観（きゃっかん）", "立場を離れて冷静に見ること"],
+  ["抽象的（ちゅうしょうてき）", "具体的でなく全体的・一般的なこと"],
+  ["具体的（ぐたいてき）", "実際に形のあること"],
+  ["論理的（ろんりてき）", "筋道が通っていること"],
+  ["感情的（かんじょうてき）", "理性より気持ちに流されること"],
+];
+    for (let i = 0; i < 5; i++) words.push(...baseWords);
 
-    // --- ムズ単ランダム表示 ---
     function showRandomWord() {
       const random = words[Math.floor(Math.random() * words.length)];
       document.getElementById("word").textContent = `今日のムズ単：${random[0]} - ${random[1]}`;
     }
     showRandomWord();
 
-    // --- ログアウト ---
+    // --- ログアウト処理 ---
     function logout() {
       window.location.href = "index.html";
     }
