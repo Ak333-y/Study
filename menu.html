@@ -110,6 +110,54 @@
       margin-top: 0;
     }
   </style>
+  /* 入試カウントダウンデザイン */
+.countdown-container {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.exam-card {
+  flex: 1;
+  min-width: 260px;
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.exam-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+}
+
+.exam-card h3 {
+  margin: 0 0 10px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.exam-card p {
+  font-size: 36px;
+  font-weight: bold;
+  margin: 0;
+}
+
+/* 公立＝青テーマ */
+.exam-card.public {
+  border-left: 8px solid #3b82f6;
+  background: linear-gradient(135deg, #e3f2fd, #ffffff);
+  color: #1e3a8a;
+}
+
+/* 私立＝紫テーマ */
+.exam-card.private {
+  border-left: 8px solid #8b5cf6;
+  background: linear-gradient(135deg, #f3e8ff, #ffffff);
+  color: #5b21b6;
+}
 </head>
 <body>
   <div class="sidebar">
@@ -145,21 +193,26 @@
       <p>ようこそ、akio さん。</p>
     </div>
 
-    <div class="card" id="exam-countdown">
-  <p>★大阪府公立高校入試まであと <span id="daysLeftPublic"></span> 日</p>
-  <p>★大阪府私立高校入試まであと <span id="daysLeftPrivate"></span> 日</p>
-    </div>
+    <div class="countdown-container">
+  <div class="exam-card public">
+    <h3>🏫 大阪府公立高校入試まで</h3>
+    <p><span id="daysLeftPublic"></span> 日</p>
   </div>
+  <div class="exam-card private">
+    <h3>🎓 大阪府私立高校入試まで</h3>
+    <p><span id="daysLeftPrivate"></span> 日</p>
+  </div>
+    </div>
 
   <script>
     // --- 公立高校入試までの日数計算 ---
     // --- 入試までの日数計算 ---
+// --- 入試までの日数計算 ---
 function updateCountdown() {
   const today = new Date();
 
-  // 日付は実際の予定に合わせて変更してOK！
-  const examDatePublic = new Date("2026-03-11");  // 公立入試
-  const examDatePrivate = new Date("2026-02-10"); // 私立入試（仮）
+  const examDatePublic = new Date("2026-03-11");
+  const examDatePrivate = new Date("2026-02-10");
 
   const diffPublic = examDatePublic - today;
   const diffPrivate = examDatePrivate - today;
