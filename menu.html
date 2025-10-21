@@ -16,7 +16,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: linear-gradient(90deg, #1e3a8a, #2563eb); /* 濃いめ青グラデーション */
+      background: linear-gradient(90deg, #1e3a8a, #2563eb);
       color: white;
       padding: 10px 40px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.3);
@@ -160,7 +160,7 @@
 
     <div class="card">
       <h2>ホーム</h2>
-      <p>ようこそ、اكيؤ さん。</p>
+      <p id="welcome">ようこそ、ゲスト さん。</p>
     </div>
 
     <div class="countdown-container">
@@ -175,8 +175,49 @@
     </div>
   </div>
 
-  <script>
-    // --- ムズ単 ---
+  <!-- Firebase 認証＋機能まとめ -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { 
+      getAuth, 
+      onAuthStateChanged, 
+      signOut, 
+      setPersistence, 
+      browserLocalPersistence 
+    } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+
+    // --- Firebase設定 ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
+      authDomain: "akeducationalplatform.firebaseapp.com",
+      projectId: "akeducationalplatform",
+      storageBucket: "akeducationalplatform.firebasestorage.app",
+      messagingSenderId: "778140595189",
+      appId: "1:778140595189:web:301e7490b813b44782a6bc"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    // --- ログイン状態の永続化設定 ---
+    await setPersistence(auth, browserLocalPersistence).catch(console.error);
+
+    // --- ログインチェック ---
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        window.location.href = "index.html";
+      } else {
+        const name = user.email.split("@")[0];
+        document.getElementById("welcome").textContent = `ようこそ、${name} さん。`;
+      }
+    });
+
+    // --- ログアウト処理 ---
+    window.logout = function() {
+      signOut(auth).then(() => window.location.href = "index.html");
+    };
+
+    // --- ムズ単リスト ---
     const words = [
       ["恣意的（しいてき）", "自分の思うままに行うさま"],
       ["矛盾（むじゅん）", "つじつまが合わないこと"],
@@ -197,27 +238,7 @@
       ["真実（しんじつ）", "本当のこと"],
       ["幻想（げんそう）", "現実にはないものを心に描くこと"],
       ["倫理（りんり）", "人として正しい行いの基準"],
-      ["博識（はくしき）", "広い知識を持っていること"],
-      ["勇猛果敢（ゆうもうかかん）", "勇ましく決断力があること"],
-      ["堅忍不抜（けんにんふばつ）", "我慢強く努力を続けること"],
-      ["一心不乱（いっしんふらん）", "集中して物事に取り組むこと"],
-      ["因果応報（いんがおうほう）", "行いの善悪が報いとなって返ること"],
-      ["温厚（おんこう）", "おだやかで優しいこと"],
-      ["寛大（かんだい）", "心が広く人を許すこと"],
-      ["冷淡（れいたん）", "思いやりがなく冷たいこと"],
-      ["積極（せっきょく）", "自ら進んで行動すること"],
-      ["慎重（しんちょう）", "注意深く行動すること"],
-      ["傲慢（ごうまん）", "おごり高ぶること"],
-      ["頑健（がんけん）", "体が丈夫なこと"],
-      ["多弁（たべん）", "よくしゃべること"],
-      ["寡黙（かもく）", "口数が少ないこと"],
-      ["怠惰（たいだ）", "なまけること"],
-      ["陳腐（ちんぷ）", "古くさくて新鮮味がないこと"],
-      ["沈着（ちんちゃく）", "落ち着いて動じないこと"],
-      ["悠長（ゆうちょう）", "のんびりしていること"],
-      ["克明（こくめい）", "細かいところまで丁寧なこと"],
-      ["是正（ぜせい）", "誤りを正しく直すこと"],
-      ["尊厳（そんげん）", "気高さや人としての価値"],
+      ["博識（はくしき）", "広い知識を持っていること"]
     ];
 
     function showRandomWord() {
@@ -239,69 +260,9 @@
       document.getElementById("privateDays").textContent = privateDays + " 日";
     }
 
-    // --- 実行 ---
+    // --- 初期実行 ---
     showRandomWord();
     updateCountdown();
-
-    function logout() {
-      window.location.href = "index.html";
-    }
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-  import { 
-    getAuth, 
-    onAuthStateChanged, 
-    signOut, 
-    setPersistence, 
-    browserLocalPersistence 
-  } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-
-  // --- Firebase設定 ---
-  const firebaseConfig = {
-    apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
-    authDomain: "akeducationalplatform.firebaseapp.com",
-    projectId: "akeducationalplatform",
-    storageBucket: "akeducationalplatform.firebasestorage.app",
-    messagingSenderId: "778140595189",
-    appId: "1:778140595189:web:301e7490b813b44782a6bc"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-
-  // --- ログイン状態の永続化（GitHub Pages対応） ---
-  setPersistence(auth, browserLocalPersistence)
-    .then(() => {
-      console.log("ログイン情報をローカルに保持中。");
-    })
-    .catch((error) => {
-      console.error("永続化設定エラー:", error);
-    });
-
-  // --- ログイン状態チェック ---
-  onAuthStateChanged(auth, (user) => {
-    if (!user) {
-      console.warn("未ログイン → index.html にリダイレクト");
-      window.location.href = "index.html";
-    } else {
-      console.log("ログイン中ユーザー:", user.email);
-      const name = user.email.split("@")[0];
-      const welcomeText = document.querySelector(".card p");
-      if (welcomeText) welcomeText.textContent = `ようこそ、${name} さん。`;
-    }
-  });
-
-  // --- ログアウト機能 ---
-  window.logout = function() {
-    signOut(auth)
-      .then(() => {
-        console.log("ログアウト完了 → index.html へ");
-        window.location.href = "index.html";
-      })
-      .catch((error) => {
-        console.error("ログアウト失敗:", error);
-      });
-  };
-</script>
+  </script>
 </body>
 </html>
