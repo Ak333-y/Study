@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>成績履歴 | 勉強アプリ</title>
   <style>
     body {
@@ -95,7 +95,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
@@ -111,30 +111,32 @@
       table.innerHTML = "<tr><td colspan='4'>読み込み中...</td></tr>";
 
       try {
-        // 🔽 最新10件を新しい順で取得
-        const q = query(collection(db, "results"), orderBy("date", "desc"), limit(10));
-        const snapshot = await getDocs(q);
+        const snapshot = await getDocs(collection(db, "results"));
+        let results = [];
 
-        if (snapshot.empty) {
+        snapshot.forEach(doc => {
+          results.push(doc.data());
+        });
+
+        // 🔽 date(文字列)で新しい順に並び替え
+        results.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        // 🔽 最新10件だけ表示
+        results = results.slice(0, 10);
+
+        if (results.length === 0) {
           table.innerHTML = "<tr><td colspan='4'>まだ記録がありません</td></tr>";
           return;
         }
 
         table.innerHTML = "";
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          const date = data.date || "不明";
-          const subject = data.subject || "不明";
-          const correct = data.correct ?? "?";
-          const total = data.total ?? "?";
-          const rate = data.rate ?? "?";
-
+        results.forEach(data => {
           const row = `
             <tr>
-              <td>${date}</td>
-              <td>${subject}</td>
-              <td>${correct}/${total}</td>
-              <td>${rate}%</td>
+              <td>${data.date || "不明"}</td>
+              <td>${data.subject || "不明"}</td>
+              <td>${data.correct ?? "?"}/${data.total ?? "?"}</td>
+              <td>${data.rate ?? "-"}%</td>
             </tr>`;
           table.innerHTML += row;
         });
