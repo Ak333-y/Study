@@ -146,21 +146,32 @@
     </div>
 
     <div class="card" id="exam-countdown">
-      <p>★大阪府公立高校入試まであと <span id="daysLeft"></span> 日</p>
+  <p>★大阪府公立高校入試まであと <span id="daysLeftPublic"></span> 日</p>
+  <p>★大阪府私立高校入試まであと <span id="daysLeftPrivate"></span> 日</p>
     </div>
   </div>
 
   <script>
     // --- 公立高校入試までの日数計算 ---
-    function updateCountdown() {
-      const examDate = new Date("2026-03-11");
-      const today = new Date();
-      const diff = examDate - today;
-      const daysLeft = Math.ceil(diff / (1000 * 60 * 60 * 24));
-      document.getElementById("daysLeft").textContent = daysLeft;
-    }
-    updateCountdown();
+    // --- 入試までの日数計算 ---
+function updateCountdown() {
+  const today = new Date();
 
+  // 日付は実際の予定に合わせて変更してOK！
+  const examDatePublic = new Date("2026-03-11");  // 公立入試
+  const examDatePrivate = new Date("2026-02-10"); // 私立入試（仮）
+
+  const diffPublic = examDatePublic - today;
+  const diffPrivate = examDatePrivate - today;
+
+  const daysLeftPublic = Math.ceil(diffPublic / (1000 * 60 * 60 * 24));
+  const daysLeftPrivate = Math.ceil(diffPrivate / (1000 * 60 * 60 * 24));
+
+  document.getElementById("daysLeftPublic").textContent = daysLeftPublic;
+  document.getElementById("daysLeftPrivate").textContent = daysLeftPrivate;
+}
+
+updateCountdown();
     // --- 難しい日本語リスト ---
     const words = [
       ["恣意的（しいてき）", "自分の思うままに行うさま"],
