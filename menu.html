@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AEP メニュー</title>
+  <title>StudyBase メニュー</title>
   <style>
     body {
       margin: 0;
@@ -24,11 +24,22 @@
       padding: 20px 0;
     }
 
+    /* 🔵 ロゴ部分（差し替え済み） */
     .logo {
       text-align: center;
-      font-size: 24px;
-      font-weight: bold;
       margin-bottom: 30px;
+    }
+
+    .logo img {
+      width: 140px;
+      height: auto;
+      border-radius: 10px;
+      transition: transform 0.3s ease;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+
+    .logo img:hover {
+      transform: scale(1.05);
     }
 
     .menu {
@@ -103,7 +114,11 @@
 <body>
   <div class="sidebar">
     <div>
-      <div class="logo">AEP</div>
+      <!-- 🔵 ここを変更！ -->
+      <div class="logo">
+        <img src="logo.png" alt="StudyBase ロゴ">
+      </div>
+
       <div class="menu">
         <a href="menu.html">ホーム</a>
         <a href="select.html">テスト</a>
@@ -111,6 +126,7 @@
         <a href="add_question.html">問題編集</a>
       </div>
     </div>
+
     <div class="logout">
       <button onclick="logout()">ログアウト</button>
     </div>
