@@ -51,22 +51,23 @@
       color: #93c5fd;
     }
 
-    .logout button {
-  background: linear-gradient(180deg, #ff4d4d, #c62828); /* 上が明るく下が濃い赤 */
+.logout button {
+  background: #ef4444; /* 赤系（濃いめ） */
   color: white;
   border: none;
-  border-radius: 24px;
-  padding: 8px 22px;
+  border-radius: 8px;
+  padding: 10px 22px;
   cursor: pointer;
-  transition: all 0.25s ease;
   font-weight: bold;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.2); /* 下に影を追加で立体感UP */
+  font-size: 15px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2); /* 影だけ追加 */
+  transition: all 0.2s ease;
 }
 
 .logout button:hover {
-  background: linear-gradient(180deg, #ff6666, #d32f2f);
-  transform: translateY(-2px);
-  box-shadow: 0 5px 10px rgba(0,0,0,0.25);
+  background: #dc2626; /* 少し濃く */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25); /* ホバー時影を強く */
+  transform: translateY(-1px); /* ちょっと浮く感じ */
 }
 
 
