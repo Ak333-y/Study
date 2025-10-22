@@ -3,37 +3,39 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>StudyBase ログイン</title>
+  <title>StudyBase - ログイン</title>
   <style>
+    /* ======== 全体スタイル ======== */
     body {
-      font-family: "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
-      background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+      font-family: "Noto Sans JP", sans-serif;
+      background: linear-gradient(135deg, #0b2e87, #1e40af);
       height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
       margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
-    .login-box {
-      background-color: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(12px);
-      padding: 40px;
+    /* ======== ログインボックス ======== */
+    .login-container {
+      background-color: rgba(255, 255, 255, 0.08);
       border-radius: 15px;
+      padding: 40px 45px;
       width: 320px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
       text-align: center;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      backdrop-filter: blur(8px);
     }
 
-    .login-box h1 {
-      font-size: 28px;
+    /* ======== ロゴ ======== */
+    .logo {
+      width: 180px;
       margin-bottom: 25px;
-      font-weight: bold;
     }
 
+    /* ======== 入力欄 ======== */
     input {
-      width: 85%;
+      width: 100%;
       padding: 10px;
       margin: 10px 0;
       border: none;
@@ -42,45 +44,54 @@
       font-size: 14px;
     }
 
-    button {
-      width: 90%;
+    input:focus {
+      box-shadow: 0 0 6px #22c55e;
+    }
+
+    /* ======== ログインボタン ======== */
+    .login-btn {
+      width: 100%;
       padding: 10px;
-      background-color: #2563eb;
+      background-color: #22c55e;
       color: white;
       border: none;
       border-radius: 8px;
-      font-size: 16px;
+      font-weight: bold;
+      font-size: 15px;
       cursor: pointer;
-      transition: background 0.3s;
-    }
-
-    button:hover {
-      background-color: #1d4ed8;
-    }
-
-    .error {
-      color: #ffbaba;
+      transition: all 0.25s ease;
       margin-top: 10px;
-      font-size: 14px;
-      height: 18px;
+    }
+
+    .login-btn:hover {
+      background-color: #16a34a;
+      box-shadow: 0 4px 10px rgba(22, 163, 74, 0.45);
+      transform: translateY(-1px);
+    }
+
+    /* ======== フッターテキスト（任意） ======== */
+    .footer {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 12px;
+      margin-top: 15px;
     }
   </style>
 </head>
 <body>
-  <div class="login-box">
-    <h1>StudyBase</h1>
-    <input type="email" id="email" placeholder="メールアドレス" />
-    <input type="password" id="password" placeholder="パスワード" />
-    <button onclick="login()">ログイン</button>
-    <div class="error" id="error"></div>
+  <div class="login-container">
+    <img src="logo.png" alt="StudyBase ロゴ" class="logo">
+    <input type="email" id="email" placeholder="メールアドレス">
+    <input type="password" id="password" placeholder="パスワード">
+    <button class="login-btn" onclick="login()">ログイン</button>
+    <div class="footer">© 2025 StudyBase</div>
   </div>
 
-  <!-- Firebase設定 -->
-  <script type="module">
-    // Firebase SDKの読み込み
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js"></script>
 
+  <script>
+    // ======== Firebase設定 ========
     const firebaseConfig = {
       apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
       authDomain: "akeducationalplatform.firebaseapp.com",
@@ -90,20 +101,29 @@
       appId: "1:778140595189:web:301e7490b813b44782a6bc"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
+    // Firebase初期化
+    const app = firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
 
-    window.login = function() {
+    // ======== ログイン関数 ========
+    function login() {
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
 
-      signInWithEmailAndPassword(auth, email, password)
-        .then(() => {
-          window.location.href = "menu.html"; // ✅ 成功したらメニュー画面へ
+      if (email === "" || password === "") {
+        alert("メールアドレスとパスワードを入力してね！");
+        return;
+      }
+
+      auth.signInWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+          console.log("ログイン成功:", userCredential.user.email);
+          alert("ログイン成功！");
+          window.location.href = "menu.html"; // ログイン後のページへ
         })
         .catch((error) => {
-          document.getElementById("error").textContent = "メールまたはパスワードが違います。";
-          console.error(error);
+          console.error("ログイン失敗:", error);
+          alert("メールアドレスまたはパスワードが違うよ！");
         });
     }
   </script>
