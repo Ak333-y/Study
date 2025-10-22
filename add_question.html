@@ -1,22 +1,19 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>StudyBase | 問題追加</title>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>問題追加 | StudyBase</title>
   <style>
     body {
-      font-family: "Noto Sans JP", sans-serif;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #001d6e, #000814);
+      color: #333;
       margin: 0;
-      background: linear-gradient(135deg, #001a4d, #003b8f);
-      color: white;
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
     }
 
-    /* === ナビバー === */
+    /* ナビバー */
     .navbar {
       display: flex;
       align-items: center;
@@ -27,7 +24,7 @@
       box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
       position: sticky;
       top: 0;
-      z-index: 10;
+      z-index: 1000;
     }
 
     .logo {
@@ -60,7 +57,7 @@
       color: #93c5fd;
     }
 
-    /* ログアウト（フラットで小さめ・暗め） */
+    /* ログアウトボタン（小さめ＆暗めフラット） */
     .logout button {
       background: #b91c1c;
       color: #ffffff;
@@ -80,69 +77,55 @@
       transform: translateY(-1px);
     }
 
-    .logout button:focus {
-      outline: 3px solid rgba(185,28,28,0.16);
-      outline-offset: 2px;
+    .main {
+      padding: 40px;
     }
 
-    /* === フォーム === */
-    .container {
-      flex: 1;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 60px 20px;
-    }
-
-    .form-box {
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-      border-radius: 15px;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+    .form-container {
+      max-width: 600px;
+      margin: 40px auto;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 12px;
       padding: 30px;
-      width: 90%;
-      max-width: 500px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
 
-    h2 {
+    h1 {
       text-align: center;
-      margin-bottom: 25px;
-      font-size: 1.6em;
-      color: #fff;
+      color: #001d6e;
+      margin-bottom: 20px;
     }
 
-    input, textarea {
+    label {
+      display: block;
+      font-weight: bold;
+      margin: 12px 0 6px;
+    }
+
+    input, textarea, select {
       width: 100%;
       padding: 10px;
-      margin: 8px 0;
-      border-radius: 8px;
-      border: none;
-      outline: none;
-      font-size: 1em;
+      border: 1px solid #aaa;
+      border-radius: 6px;
+      font-size: 16px;
     }
 
-    button {
+    button#submit {
       width: 100%;
-      background-color: #4CAF50;
+      background: #2563eb;
       color: white;
       border: none;
-      padding: 10px;
-      border-radius: 8px;
+      padding: 12px;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 6px;
+      margin-top: 20px;
       cursor: pointer;
-      font-size: 1em;
-      transition: 0.3s;
-      font-weight: bold;
+      transition: 0.2s;
     }
 
-    button:hover {
-      background-color: #43a047;
-    }
-
-    .message {
-      text-align: center;
-      margin-top: 15px;
-      font-weight: bold;
-      color: #fff;
+    button#submit:hover {
+      background: #1d4ed8;
     }
 
   </style>
@@ -165,67 +148,62 @@
     </div>
   </div>
 
-  <div class="container">
-    <div class="form-box">
-      <h2>問題追加フォーム</h2>
-      <input type="text" id="subject" placeholder="教科名（例：英語）" />
-      <textarea id="question" rows="3" placeholder="問題文を入力"></textarea>
-      <input type="text" id="option1" placeholder="選択肢1" />
-      <input type="text" id="option2" placeholder="選択肢2" />
-      <input type="text" id="option3" placeholder="選択肢3" />
-      <input type="text" id="option4" placeholder="選択肢4" />
-      <input type="text" id="answer" placeholder="正解（例：選択肢1）" />
-      <button id="addBtn">追加する</button>
-      <div class="message" id="message"></div>
+  <div class="main">
+    <div class="form-container">
+      <h1>問題を追加する</h1>
+      <label for="subject">教科</label>
+      <select id="subject">
+        <option value="kokugo">国語</option>
+        <option value="sansu">数学</option>
+        <option value="rika">理科</option>
+        <option value="syakai">社会</option>
+        <option value="eigo">英語</option>
+      </select>
+
+      <label for="question">問題文</label>
+      <textarea id="question" rows="4" placeholder="問題を入力"></textarea>
+
+      <label for="answer">答え</label>
+      <input type="text" id="answer" placeholder="答えを入力">
+
+      <button id="submit">追加</button>
     </div>
   </div>
 
+  <!-- Firebase関連 -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
-    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    // Firebase設定
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_AUTH_DOMAIN",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_STORAGE_BUCKET",
-      messagingSenderId: "YOUR_MSG_SENDER_ID",
-      appId: "YOUR_APP_ID"
+      apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
+      authDomain: "akeducationalplatform.firebaseapp.com",
+      projectId: "akeducationalplatform",
+      storageBucket: "akeducationalplatform.firebasestorage.app",
+      messagingSenderId: "778140595189",
+      appId: "1:778140595189:web:301e7490b813b44782a6bc"
     };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // 認証チェック
+    // ログイン状態確認
     onAuthStateChanged(auth, (user) => {
       if (!user) {
-        window.location.href = "login.html";
+        window.location.href = "index.html";
       }
     });
 
-    // ログアウト処理
-    window.logout = async function () {
-      await signOut(auth);
-      window.location.href = "login.html";
-    };
-
     // 問題追加処理
-    document.getElementById("addBtn").addEventListener("click", async () => {
-      const subject = document.getElementById("subject").value.trim();
-      const question = document.getElementById("question").value.trim();
-      const options = [
-        document.getElementById("option1").value.trim(),
-        document.getElementById("option2").value.trim(),
-        document.getElementById("option3").value.trim(),
-        document.getElementById("option4").value.trim(),
-      ];
-      const answer = document.getElementById("answer").value.trim();
+    document.getElementById("submit").addEventListener("click", async () => {
+      const subject = document.getElementById("subject").value;
+      const question = document.getElementById("question").value;
+      const answer = document.getElementById("answer").value;
 
-      if (!subject || !question || options.some(o => !o) || !answer) {
-        document.getElementById("message").textContent = "⚠️ 全ての項目を入力してね！";
+      if (!question || !answer) {
+        alert("すべての項目を入力してください。");
         return;
       }
 
@@ -233,16 +211,24 @@
         await addDoc(collection(db, "questions"), {
           subject,
           question,
-          options,
           answer,
-          date: new Date()
+          date: serverTimestamp()
         });
-        document.getElementById("message").textContent = "✅ 追加完了！";
-      } catch (err) {
-        document.getElementById("message").textContent = "❌ 追加に失敗しました";
-        console.error(err);
+        alert("問題を追加しました！");
+        document.getElementById("question").value = "";
+        document.getElementById("answer").value = "";
+      } catch (error) {
+        alert("エラー: " + error.message);
       }
     });
+
+    // ログアウト機能
+    function logout() {
+      signOut(auth).then(() => {
+        window.location.href = "index.html";
+      });
+    }
+    window.logout = logout;
   </script>
 </body>
 </html>
