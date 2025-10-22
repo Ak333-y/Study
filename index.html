@@ -1,85 +1,95 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>StudyBase - ログイン</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StudyBase ログイン</title>
   <style>
     body {
       margin: 0;
-      font-family: "Noto Sans JP", sans-serif;
+      font-family: "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+      background: linear-gradient(135deg, #1e3a8a, #1d4ed8); /* 濃い青グラデーション */
       height: 100vh;
-      background: linear-gradient(135deg, #003c8f, #1a73e8);
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
     .login-container {
-      background: rgba(255, 255, 255, 0.95);
-      border-radius: 16px;
-      padding: 50px 40px;
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+      background: linear-gradient(
+        135deg,
+        rgba(30, 58, 138, 0.85),
+        rgba(37, 99, 235, 0.85)
+      ); /* 半透明グラデーション */
+      border-radius: 20px;
+      padding: 40px 50px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
       text-align: center;
-      width: 340px;
+      color: white;
+      width: 350px;
+      backdrop-filter: blur(10px); /* 背景ぼかしで高級感UP */
     }
 
-    .logo {
-      width: 150px;
+    .login-container img {
+      width: 140px;
       margin-bottom: 20px;
     }
 
-    h2 {
-      margin-bottom: 25px;
-      color: #0d47a1;
-      font-size: 22px;
+    .login-container h1 {
+      margin-bottom: 30px;
+      font-size: 28px;
+      font-weight: bold;
+      letter-spacing: 1px;
     }
 
-    input {
+    input[type="email"],
+    input[type="password"] {
       width: 100%;
       padding: 12px;
-      margin: 8px 0;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 14px;
-    }
-
-    #loginBtn {
-      width: 100%;
-      background: #22c55e;
-      color: white;
+      margin-bottom: 20px;
       border: none;
-      padding: 12px;
       border-radius: 8px;
       font-size: 16px;
-      margin-top: 15px;
+      box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    input[type="email"]:focus,
+    input[type="password"]:focus {
+      outline: 2px solid #60a5fa;
+    }
+
+    button {
+      background-color: #22c55e; /* 緑のボタン */
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 20px;
+      font-size: 16px;
       cursor: pointer;
-      box-shadow: 0 4px 10px rgba(0, 128, 0, 0.3);
-      transition: background 0.3s ease, transform 0.2s ease;
+      width: 100%;
+      transition: 0.2s;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
     }
 
-    #loginBtn:hover {
-      background: #16a34a;
-      transform: translateY(-2px);
+    button:hover {
+      background-color: #16a34a;
     }
 
-    p {
-      color: #666;
-      font-size: 13px;
+    .footer {
       margin-top: 20px;
+      font-size: 12px;
+      opacity: 0.7;
     }
   </style>
 </head>
 <body>
   <div class="login-container">
-    <!-- 👇 ロゴ画像を入れる（logo.png は同じフォルダに置く） -->
-    <img src="logo.png" alt="StudyBase ロゴ" class="logo" />
-    
-    <h2>StudyBase ログイン</h2>
-    <input type="email" id="email" placeholder="メールアドレス" />
-    <input type="password" id="password" placeholder="パスワード" />
+    <img src="logo.png" alt="StudyBase ロゴ">
+    <h1>ログイン</h1>
+    <input type="email" id="email" placeholder="メールアドレス">
+    <input type="password" id="password" placeholder="パスワード">
     <button id="loginBtn">ログイン</button>
-    <p>© 2025 StudyBase</p>
+    <div class="footer">© 2025 StudyBase</div>
   </div>
 
   <script type="module">
@@ -98,17 +108,17 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
-    document.getElementById("loginBtn").addEventListener("click", () => {
+    document.getElementById("loginBtn").addEventListener("click", async () => {
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
 
-      signInWithEmailAndPassword(auth, email, password)
-        .then(() => {
-          window.location.href = "menu.html";
-        })
-        .catch((error) => {
-          alert("ログイン失敗: " + error.message);
-        });
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        alert("ログイン成功！");
+        window.location.href = "menu.html";
+      } catch (error) {
+        alert("ログイン失敗: " + error.message);
+      }
     });
   </script>
 </body>
