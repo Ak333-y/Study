@@ -108,18 +108,18 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
-    document.getElementById("loginBtn").addEventListener("click", async () => {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
+   document.getElementById("loginBtn").addEventListener("click", async () => {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
 
-      try {
-        await signInWithEmailAndPassword(auth, email, password);
-        alert("ログイン成功！");
-        window.location.href = "menu.html";
-      } catch (error) {
-        alert("ログイン失敗: " + error.message);
-      }
-    });
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    // ✅ 成功時のアラート削除！
+    window.location.href = "menu.html"; // すぐメニューへGO
+  } catch (error) {
+    alert("ログイン失敗: " + error.message);
+  }
+});
   </script>
 </body>
 </html>
