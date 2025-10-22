@@ -1,145 +1,246 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>問題追加 | AEP</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StudyBase | 問題追加</title>
+
   <style>
     body {
-      font-family: "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
-      background-color: #f8f9fa;
-      text-align: center;
+      font-family: "Noto Sans JP", sans-serif;
       margin: 0;
-      padding: 20px;
+      background: linear-gradient(135deg, #001a4d, #003b8f);
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
 
-    h1 {
-      color: #333;
+    /* === ナビバー === */
+    .navbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(90deg, #000814, #001d6e);
+      color: white;
+      padding: 10px 40px;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
 
-    input, select {
-      width: 80%;
-      max-width: 400px;
-      margin: 10px auto;
-      padding: 10px;
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .logo img {
+      height: 50px;
+    }
+
+    .menu {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+    }
+
+    .menu a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
       font-size: 16px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      display: block;
-    }
-
-    button {
-      font-size: 18px;
-      padding: 10px 20px;
-      border-radius: 10px;
-      border: none;
-      cursor: pointer;
       transition: 0.2s;
     }
 
-    #addButton {
+    .menu a:hover {
+      color: #93c5fd;
+    }
+
+    /* ログアウト（フラットで小さめ・暗め） */
+    .logout button {
+      background: #b91c1c;
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      padding: 6px 16px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 14px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+      transition: background 0.18s ease, box-shadow 0.18s ease, transform 0.12s ease;
+    }
+
+    .logout button:hover {
+      background: #991b1b;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.30);
+      transform: translateY(-1px);
+    }
+
+    .logout button:focus {
+      outline: 3px solid rgba(185,28,28,0.16);
+      outline-offset: 2px;
+    }
+
+    /* === フォーム === */
+    .container {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 60px 20px;
+    }
+
+    .form-box {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+      padding: 30px;
+      width: 90%;
+      max-width: 500px;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 25px;
+      font-size: 1.6em;
+      color: #fff;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+      font-size: 1em;
+    }
+
+    button {
+      width: 100%;
       background-color: #4CAF50;
       color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1em;
+      transition: 0.3s;
+      font-weight: bold;
     }
 
-    #addButton:hover {
-      background-color: #45a049;
+    button:hover {
+      background-color: #43a047;
     }
 
-    .home-button {
-      background-color: #2196F3;
-      color: white;
-      margin-top: 20px;
+    .message {
+      text-align: center;
+      margin-top: 15px;
+      font-weight: bold;
+      color: #fff;
     }
 
-    .home-button:hover {
-      background-color: #1976D2;
-    }
-
-    p {
-      font-size: 18px;
-      color: #333;
-    }
-
-    .container {
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      max-width: 500px;
-      margin: 40px auto;
-    }
   </style>
 </head>
 <body>
+  <div class="navbar">
+    <div class="logo">
+      <img src="logo.png" alt="StudyBase ロゴ">
+      StudyBase — Your Daily Step to Success.
+    </div>
+
+    <div class="menu">
+      <a href="menu.html">ホーム</a>
+      <a href="select.html">テスト</a>
+      <a href="history.html">過去の成績</a>
+      <a href="add_question.html">問題編集</a>
+      <div class="logout">
+        <button onclick="logout()">ログアウト</button>
+      </div>
+    </div>
+  </div>
 
   <div class="container">
-    <h1>📘 問題を追加</h1>
-
-    <select id="subject">
-      <option value="kobu">古文</option>
-      <option value="syakai">社会</option>
-      <option value="kanji">漢字</option>
-    </select>
-
-    <input id="question" placeholder="問題文を入力">
-    <input id="choice1" placeholder="選択肢1">
-    <input id="choice2" placeholder="選択肢2">
-    <input id="choice3" placeholder="選択肢3">
-    <input id="choice4" placeholder="選択肢4">
-    <input id="answer" placeholder="正解の番号（1〜4）">
-
-    <button id="addButton">問題を追加</button>
-    <button class="home-button" onclick="window.location.href='menu.html'">🏠 ホームに戻る</button>
-
-    <p id="status"></p>
+    <div class="form-box">
+      <h2>問題追加フォーム</h2>
+      <input type="text" id="subject" placeholder="教科名（例：英語）" />
+      <textarea id="question" rows="3" placeholder="問題文を入力"></textarea>
+      <input type="text" id="option1" placeholder="選択肢1" />
+      <input type="text" id="option2" placeholder="選択肢2" />
+      <input type="text" id="option3" placeholder="選択肢3" />
+      <input type="text" id="option4" placeholder="選択肢4" />
+      <input type="text" id="answer" placeholder="正解（例：選択肢1）" />
+      <button id="addBtn">追加する</button>
+      <div class="message" id="message"></div>
+    </div>
   </div>
 
   <script type="module">
-    // --- Firebaseの設定（ここは自分のやつを入れてね！） ---
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
 
+    // Firebase設定
     const firebaseConfig = {
-  apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
-  authDomain: "akeducationalplatform.firebaseapp.com",
-  projectId: "akeducationalplatform",
-  storageBucket: "akeducationalplatform.firebasestorage.app",
-  messagingSenderId: "778140595189",
-  appId: "1:778140595189:web:301e7490b813b44782a6bc"
-};
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MSG_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
 
     const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // --- 問題追加ボタン ---
-    document.getElementById("addButton").addEventListener("click", async () => {
-      const subject = document.getElementById("subject").value;
-      const q = document.getElementById("question").value;
-      const choices = [
-        document.getElementById("choice1").value,
-        document.getElementById("choice2").value,
-        document.getElementById("choice3").value,
-        document.getElementById("choice4").value
-      ];
-      const answer = parseInt(document.getElementById("answer").value) - 1;
+    // 認証チェック
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        window.location.href = "login.html";
+      }
+    });
 
-      if (!q || choices.some(c => !c) || isNaN(answer)) {
-        alert("すべての項目を入力してね！");
+    // ログアウト処理
+    window.logout = async function () {
+      await signOut(auth);
+      window.location.href = "login.html";
+    };
+
+    // 問題追加処理
+    document.getElementById("addBtn").addEventListener("click", async () => {
+      const subject = document.getElementById("subject").value.trim();
+      const question = document.getElementById("question").value.trim();
+      const options = [
+        document.getElementById("option1").value.trim(),
+        document.getElementById("option2").value.trim(),
+        document.getElementById("option3").value.trim(),
+        document.getElementById("option4").value.trim(),
+      ];
+      const answer = document.getElementById("answer").value.trim();
+
+      if (!subject || !question || options.some(o => !o) || !answer) {
+        document.getElementById("message").textContent = "⚠️ 全ての項目を入力してね！";
         return;
       }
 
       try {
         await addDoc(collection(db, "questions"), {
-          subject: subject,
-          q: q,
-          choices: choices,
-          answer: answer
+          subject,
+          question,
+          options,
+          answer,
+          date: new Date()
         });
-        document.getElementById("status").textContent = "✅ 問題を追加しました！";
-      } catch (error) {
-        console.error("Error adding document: ", error);
-        document.getElementById("status").textContent = "❌ 追加に失敗しました";
+        document.getElementById("message").textContent = "✅ 追加完了！";
+      } catch (err) {
+        document.getElementById("message").textContent = "❌ 追加に失敗しました";
+        console.error(err);
       }
     });
   </script>
