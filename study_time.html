@@ -1,31 +1,31 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>学習時間管理 - StudyBase</title>
-  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js"></script>
+  <meta charset="UTF-8">
+  <title>学習時間記録 - StudyBase</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <style>
     body {
-      font-family: "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+      font-family: 'Segoe UI', sans-serif;
       margin: 0;
-      background: linear-gradient(120deg, #001d6e, #003c8f);
+      background: linear-gradient(135deg, #0a0a23, #001d6e);
       color: white;
-      min-height: 100vh;
     }
 
-   .navbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: linear-gradient(90deg, #000814, #001d6e); /* 夜空みたいな深い青 */
-  color: white;
-  padding: 10px 40px;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5); /* 影をちょい強め */
-}
+    .navbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(90deg, #000814, #001d6e);
+      color: white;
+      padding: 10px 40px;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
+    }
 
     .logo {
       display: flex;
@@ -59,84 +59,110 @@
 
     .logout button {
       background: #b91c1c;
-      color: #fff;
+      color: #ffffff;
       border: none;
       border-radius: 8px;
       padding: 6px 16px;
       cursor: pointer;
       font-weight: 700;
       font-size: 14px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
-      transition: 0.18s;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+      transition: background 0.18s ease, box-shadow 0.18s ease, transform 0.12s ease;
     }
 
     .logout button:hover {
       background: #991b1b;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.30);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.30);
       transform: translateY(-1px);
     }
 
     .main {
-      display: flex;
-      gap: 40px;
       padding: 40px;
-      align-items: flex-start;
     }
 
-    .left, .right {
-      flex: 1;
+    .card {
       background: rgba(255, 255, 255, 0.9);
       color: black;
-      padding: 20px;
       border-radius: 12px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+      padding: 25px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      margin-bottom: 30px;
     }
 
-    .form-section {
+    h2 {
+      text-align: center;
+      font-size: 26px;
+      margin-bottom: 20px;
+    }
+
+    form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      align-items: center;
+      justify-content: center;
       margin-bottom: 20px;
     }
 
     select, input, button {
-      padding: 8px;
-      font-size: 16px;
-      margin-right: 10px;
+      padding: 10px;
       border-radius: 6px;
       border: 1px solid #ccc;
+      font-size: 16px;
     }
 
     button {
       background: #2563eb;
       color: white;
-      border: none;
+      font-weight: bold;
       cursor: pointer;
       transition: 0.2s;
     }
 
     button:hover {
-      background: #1e40af;
+      background: #1d4ed8;
     }
 
-    h2 {
-      margin-top: 0;
+    #chart-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: row-reverse; /* グラフと表の左右逆に */
+      gap: 40px;
+      flex-wrap: wrap;
     }
 
-    ul {
-      list-style: none;
-      padding: 0;
+    canvas {
+      background: white;
+      border-radius: 10px;
+      padding: 10px;
+      max-width: 700px;
     }
 
-    li {
-      font-size: 18px;
-      margin-bottom: 6px;
+    table {
+      background: white;
+      color: black;
+      border-radius: 10px;
+      padding: 10px;
+      border-collapse: collapse;
+      width: 250px;
     }
+
+    th, td {
+      padding: 8px;
+      text-align: center;
+      border-bottom: 1px solid #ccc;
+    }
+
   </style>
 </head>
 <body>
   <div class="navbar">
     <div class="logo">
       <img src="logo.png" alt="StudyBase ロゴ">
-      StudyBase — Your Daily Step to Success.
+      StudyBase — <span style="font-size:14px; opacity:0.8;">Step to Success</span>
     </div>
+
     <div class="menu">
       <a href="menu.html">ホーム</a>
       <a href="select.html">テスト</a>
@@ -150,121 +176,139 @@
   </div>
 
   <div class="main">
-    <div class="left">
-      <h2>📊 学習時間グラフ</h2>
-      <canvas id="studyChart"></canvas>
-    </div>
-    <div class="right">
-      <h2>⏱ 学習時間を追加</h2>
-      <div class="form-section">
-        <select id="subject">
+    <div class="card">
+      <h2>📘 学習時間の記録</h2>
+
+      <form id="studyForm">
+        <select id="subject" required>
+          <option value="">教科を選択</option>
           <option value="国語">国語</option>
           <option value="数学">数学</option>
           <option value="英語">英語</option>
           <option value="理科">理科</option>
           <option value="社会">社会</option>
         </select>
-        <input type="number" id="minutes" placeholder="時間（分）" min="1" />
-        <button onclick="addStudyTime()">追加</button>
+
+        <input type="number" id="minutes" placeholder="勉強時間（分）" min="1" required>
+
+        <button type="submit">追加</button>
+      </form>
+
+      <div id="chart-container">
+        <table id="timeTable">
+          <thead>
+            <tr>
+              <th>教科</th>
+              <th>合計(分)</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <canvas id="studyChart" width="600" height="400"></canvas>
       </div>
-      <h3>📘 教科別合計時間</h3>
-      <ul id="totalList"></ul>
     </div>
   </div>
 
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
-      authDomain: "akeducationalplatform.firebaseapp.com",
-      projectId: "akeducationalplatform",
-      storageBucket: "akeducationalplatform.firebasestorage.app",
-      messagingSenderId: "778140595189",
-      appId: "1:778140595189:web:301e7490b813b44782a6bc"
+ 　　 authDomain: "akeducationalplatform.firebaseapp.com",
+ 　　 projectId: "akeducationalplatform"",
     };
 
     const app = firebase.initializeApp(firebaseConfig);
-    const auth = firebase.getAuth();
-    const db = firebase.getFirestore();
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
-    const ctx = document.getElementById('studyChart').getContext('2d');
+    const form = document.getElementById("studyForm");
+    const chartCanvas = document.getElementById("studyChart");
+    const tableBody = document.querySelector("#timeTable tbody");
+
     let chart;
+    let userId;
 
-    firebase.onAuthStateChanged(auth, user => {
+    auth.onAuthStateChanged(user => {
       if (!user) {
         window.location.href = "index.html";
       } else {
-        loadData(user.uid);
+        userId = user.uid;
+        loadStudyData();
       }
     });
 
-    async function addStudyTime() {
-      const user = auth.currentUser;
-      if (!user) return;
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
       const subject = document.getElementById("subject").value;
       const minutes = parseInt(document.getElementById("minutes").value);
-      const date = new Date().toISOString().split('T')[0];
+      const date = new Date().toISOString().split("T")[0];
 
-      if (!minutes || minutes <= 0) return alert("時間を入力してね！");
+      if (!subject || !minutes) return;
 
-      await firebase.addDoc(firebase.collection(db, "study_times"), {
-        uid: user.uid,
+      await db.collection("study_times").add({
+        userId,
         subject,
         minutes,
         date,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
       });
-      alert("保存完了！");
-      loadData(user.uid);
-    }
 
-    async function loadData(uid) {
-      const q = firebase.query(firebase.collection(db, "study_times"), firebase.where("uid", "==", uid));
-      const snapshot = await firebase.getDocs(q);
+      form.reset();
+      loadStudyData();
+    });
+
+    async function loadStudyData() {
+      const snapshot = await db.collection("study_times")
+        .where("userId", "==", userId)
+        .get();
+
       const data = {};
-      const totals = { 国語: 0, 数学: 0, 英語: 0, 理科: 0, 社会: 0 };
-
       snapshot.forEach(doc => {
         const d = doc.data();
-        if (!data[d.date]) data[d.date] = { 国語: 0, 数学: 0, 英語: 0, 理科: 0, 社会: 0 };
-        data[d.date][d.subject] += d.minutes;
-        totals[d.subject] += d.minutes;
+        data[d.subject] = (data[d.subject] || 0) + d.minutes;
       });
 
       updateChart(data);
-      updateTotals(totals);
+      updateTable(data);
     }
 
     function updateChart(data) {
-      const dates = Object.keys(data).sort();
-      const subjects = ["国語", "数学", "英語", "理科", "社会"];
+      const labels = Object.keys(data);
+      const values = Object.values(data);
       const colors = ["#ef4444", "#3b82f6", "#10b981", "#f59e0b", "#8b5cf6"];
 
-      const datasets = subjects.map((sub, i) => ({
-        label: sub,
-        data: dates.map(d => data[d][sub]),
-        backgroundColor: colors[i],
-      }));
-
       if (chart) chart.destroy();
-      chart = new Chart(ctx, {
-        type: 'bar',
-        data: { labels: dates, datasets },
-        options: { responsive: true, scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } } }
+      chart = new Chart(chartCanvas, {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [{
+            label: "合計学習時間（分）",
+            data: values,
+            backgroundColor: colors,
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
       });
     }
 
-    function updateTotals(totals) {
-      const ul = document.getElementById("totalList");
-      ul.innerHTML = "";
-      for (const [sub, time] of Object.entries(totals)) {
-        ul.innerHTML += `<li>${sub}: ${time}分</li>`;
+    function updateTable(data) {
+      tableBody.innerHTML = "";
+      for (const [subject, minutes] of Object.entries(data)) {
+        const row = `<tr><td>${subject}</td><td>${minutes}</td></tr>`;
+        tableBody.insertAdjacentHTML("beforeend", row);
       }
     }
 
     function logout() {
-      firebase.signOut(auth).then(() => {
-        window.location.href = "index.html";
-      });
+      auth.signOut().then(() => window.location.href = "index.html");
     }
   </script>
 </body>
+</html>
+
 </html>
