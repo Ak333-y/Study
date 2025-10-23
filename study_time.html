@@ -3,14 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>学習時間 | StudyBase</title>
-
-  <!-- Firebase & Chart.js -->
-  <script type="module" src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js"></script>
-  <script type="module" src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js"></script>
-  <script type="module" src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js"></script>
+  <title>StudyBase - 学習時間</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
   <style>
     body {
       margin: 0;
@@ -30,17 +24,21 @@
     }
 
     .logo {
-      font-size: 26px;
-      font-weight: bold;
       display: flex;
       align-items: center;
       gap: 10px;
+      font-size: 26px;
+      font-weight: bold;
+    }
+
+    .logo img {
+      height: 50px;
     }
 
     .menu {
       display: flex;
       align-items: center;
-      gap: 25px;
+      gap: 30px;
     }
 
     .menu a {
@@ -55,6 +53,7 @@
       color: #93c5fd;
     }
 
+    /* ログアウトボタン */
     .logout button {
       background: #b91c1c;
       color: #ffffff;
@@ -74,15 +73,17 @@
       transform: translateY(-1px);
     }
 
-    /* コンテンツ */
-    .container {
+    /* メイン部分 */
+    .main {
       display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
       padding: 40px;
       gap: 30px;
     }
 
     .chart-container {
-      flex: 2;
+      width: 60%;
       background: white;
       border-radius: 10px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
@@ -90,7 +91,7 @@
     }
 
     .summary-container {
-      flex: 1;
+      width: 35%;
       background: white;
       border-radius: 10px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
@@ -99,21 +100,26 @@
 
     .summary-container h2 {
       margin-top: 0;
-      border-bottom: 2px solid #ccc;
-      padding-bottom: 10px;
+      border-bottom: 2px solid #ddd;
+      padding-bottom: 8px;
+      margin-bottom: 15px;
     }
 
     .subject-item {
-      display: flex;
-      justify-content: space-between;
-      padding: 6px 0;
+      font-size: 16px;
       font-weight: bold;
+      margin-bottom: 10px;
     }
+
   </style>
 </head>
 <body>
+  <!-- ナビバー -->
   <div class="navbar">
-    <div class="logo">📘 StudyBase</div>
+    <div class="logo">
+      <img src="logo.png" alt="ロゴ">
+      StudyBase
+    </div>
     <div class="menu">
       <a href="menu.html">ホーム</a>
       <a href="select.html">テスト</a>
@@ -126,122 +132,109 @@
     </div>
   </div>
 
-  <div class="container">
+  <!-- メインエリア -->
+  <div class="main">
     <div class="chart-container">
       <canvas id="studyChart"></canvas>
     </div>
-
     <div class="summary-container">
-      <h2>教科別合計</h2>
-      <div id="summaryList"></div>
+      <h2>教科ごとの合計時間</h2>
+      <div id="summary"></div>
     </div>
   </div>
 
+  <!-- Firebase & グラフ連携 -->
   <script type="module">
-    import { app } from "./firebaseConfig.js";
-    import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
-    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+    import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
+    // 🔥 あきおのFirebase設定をここに！
+    const firebaseConfig = {
+      apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
+  authDomain: "akeducationalplatform.firebaseapp.com",
+  projectId: "akeducationalplatform",
+  storageBucket: "akeducationalplatform.firebasestorage.app",
+  messagingSenderId: "778140595189",
+  appId: "1:778140595189:web:301e7490b813b44782a6bc"
+};
+    const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // ログアウト
+    // 🔒ログインチェック
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = "index.html";
+        return;
+      }
+
+      // Firestoreからデータ取得
+      const q = query(collection(db, "study_time"), where("uid", "==", user.uid));
+      const snapshot = await getDocs(q);
+
+      // 教科ごとの合計を集計
+      const totals = {};
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        const subject = data.subject || "その他";
+        const minutes = Number(data.minutes) || 0;
+        totals[subject] = (totals[subject] || 0) + minutes;
+      });
+
+      // 教科と色設定
+      const subjects = Object.keys(totals);
+      const values = Object.values(totals);
+      const colors = [
+        "#3b82f6", // 青
+        "#ef4444", // 赤
+        "#22c55e", // 緑
+        "#eab308", // 黄
+        "#8b5cf6", // 紫
+        "#f97316"  // オレンジ
+      ];
+
+      // グラフ描画
+      const ctx = document.getElementById("studyChart").getContext("2d");
+      new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: subjects,
+          datasets: [{
+            label: "勉強時間（分）",
+            data: values,
+            backgroundColor: subjects.map((_, i) => colors[i % colors.length]),
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false },
+            title: { display: true, text: "教科ごとの学習時間" }
+          },
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      });
+
+      // 合計時間リスト生成
+      const summaryDiv = document.getElementById("summary");
+      summaryDiv.innerHTML = "";
+      for (let s of subjects) {
+        const div = document.createElement("div");
+        div.classList.add("subject-item");
+        div.textContent = `${s}：${totals[s]} 分`;
+        summaryDiv.appendChild(div);
+      }
+    });
+
+    // 🚪 ログアウト
     document.getElementById("logoutBtn").addEventListener("click", () => {
       signOut(auth).then(() => {
         window.location.href = "index.html";
       });
     });
-
-    // 認証チェック
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        window.location.href = "index.html";
-      } else {
-        loadStudyData(user.uid);
-      }
-    });
-
-    // Firestoreから学習データ取得
-    async function loadStudyData(uid) {
-      const colRef = collection(db, "study_times", uid, "records");
-      const snapshot = await getDocs(colRef);
-
-      const data = {};
-      const totals = { kokugo: 0, eigo: 0, shakai: 0, rika: 0, sugaku: 0 };
-
-      snapshot.forEach((doc) => {
-        const { date, subject, time } = doc.data();
-        if (!data[date]) data[date] = { kokugo: 0, eigo: 0, shakai: 0, rika: 0, sugaku: 0 };
-        data[date][subject] += time;
-        totals[subject] += time;
-      });
-
-      const dates = Object.keys(data).sort();
-      const subjects = ["kokugo", "eigo", "shakai", "rika", "sugaku"];
-      const colors = {
-        kokugo: "#ef4444",
-        eigo: "#3b82f6",
-        shakai: "#f59e0b",
-        rika: "#10b981",
-        sugaku: "#7c3aed"
-      };
-
-      const datasets = subjects.map(subj => ({
-        label: subj,
-        data: dates.map(d => data[d][subj] / 60),
-        backgroundColor: colors[subj],
-        stack: "stack1"
-      }));
-
-      new Chart(document.getElementById("studyChart"), {
-        type: "bar",
-        data: { labels: dates, datasets },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { position: "bottom" },
-            title: { display: true, text: "学習推移（時間）" }
-          },
-          scales: {
-            x: { stacked: true },
-            y: { stacked: true, title: { display: true, text: "時間（h）" } }
-          }
-        }
-      });
-
-      const summaryList = document.getElementById("summaryList");
-      summaryList.innerHTML = subjects.map(subj => `
-        <div class="subject-item" style="color:${colors[subj]}">
-          <span>${subj.toUpperCase()}</span>
-          <span>${(totals[subj] / 60).toFixed(1)} 時間</span>
-        </div>
-      `).join("");
-    }
-  </script>
-  <script type="module">
-  import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
-  import { app } from "./firebaseConfig.js";
-
-  const auth = getAuth(app);
-
-  // ログアウト関数（アラートなし）
-  window.logout = () => {
-    signOut(auth)
-      .then(() => {
-        // ログアウト後に直接ログインページへ移動
-        window.location.href = "index.html";
-      })
-      .catch((error) => {
-        console.error("ログアウトエラー:", error);
-      });
-  };
-
-  // 認証されてない人はログインページへ飛ばす
-  onAuthStateChanged(auth, (user) => {
-    if (!user) {
-      window.location.href = "index.html";
-    }
-  });
   </script>
 </body>
 </html>
