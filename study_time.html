@@ -220,103 +220,116 @@
   </div>
 
   <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
- 　　 authDomain: "akeducationalplatform.firebaseapp.com",
- 　　 projectId: "akeducationalplatform"",
-    };
+  
+   <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    const app = firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
+  const firebaseConfig = {
+    apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
+    authDomain: "akeducationalplatform.firebaseapp.com",
+    projectId: "akeducationalplatform"
+  };
 
-    const form = document.getElementById("studyForm");
-    const chartCanvas = document.getElementById("studyChart");
-    const tableBody = document.querySelector("#timeTable tbody");
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
 
-    let chart;
-    let userId;
+  const form = document.getElementById("studyForm");
+  const chartCanvas = document.getElementById("studyChart");
+  const tableBody = document.querySelector("#timeTable tbody");
 
-    auth.onAuthStateChanged(user => {
-      if (!user) {
-        window.location.href = "index.html";
-      } else {
-        userId = user.uid;
-        loadStudyData();
-      }
-    });
+  let chart;
+  let userId;
 
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const subject = document.getElementById("subject").value;
-      const minutes = parseInt(document.getElementById("minutes").value);
-      const date = new Date().toISOString().split("T")[0];
-
-      if (!subject || !minutes) return;
-
-      await db.collection("study_times").add({
-        userId,
-        subject,
-        minutes,
-        date,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-      });
-
-      form.reset();
+  onAuthStateChanged(auth, (user) => {
+    if (!user) {
+      window.location.href = "index.html";
+    } else {
+      userId = user.uid;
       loadStudyData();
+    }
+  });
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const subject = document.getElementById("subject").value;
+    const minutes = parseInt(document.getElementById("minutes").value);
+    const date = new Date().toISOString().split("T")[0];
+
+    if (!subject || !minutes) return;
+
+    await addDoc(collection(db, "study_times"), {
+      userId,
+      subject,
+      minutes,
+      date,
+      timestamp: new Date()
     });
 
-    async function loadStudyData() {
-      const snapshot = await db.collection("study_times")
-        .where("userId", "==", userId)
-        .get();
+    form.reset();
+    loadStudyData();
+  });
 
-      const data = {};
-      snapshot.forEach(doc => {
-        const d = doc.data();
-        data[d.subject] = (data[d.subject] || 0) + d.minutes;
-      });
+  async function loadStudyData() {
+    const q = query(collection(db, "study_times"), where("userId", "==", userId));
+    const snapshot = await getDocs(q);
 
-      updateChart(data);
-      updateTable(data);
-    }
+    const data = {};
+    snapshot.forEach(doc => {
+      const d = doc.data();
+      data[d.subject] = (data[d.subject] || 0) + d.minutes;
+    });
 
-    function updateChart(data) {
-      const labels = Object.keys(data);
-      const values = Object.values(data);
-      const colors = ["#ef4444", "#3b82f6", "#10b981", "#f59e0b", "#8b5cf6"];
+    updateChart(data);
+    updateTable(data);
+  }
 
-      if (chart) chart.destroy();
-      chart = new Chart(chartCanvas, {
-        type: "bar",
-        data: {
-          labels,
-          datasets: [{
-            label: "合計学習時間（分）",
-            data: values,
-            backgroundColor: colors,
-          }]
-        },
-        options: {
-          responsive: true,
-          scales: {
-            y: { beginAtZero: true }
-          }
+  function updateChart(data) {
+    const labels = Object.keys(data);
+    const values = Object.values(data);
+    const colors = ["#ef4444", "#3b82f6", "#10b981", "#f59e0b", "#8b5cf6"];
+
+    if (chart) chart.destroy();
+    chart = new Chart(chartCanvas, {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [{
+          label: "合計学習時間（分）",
+          data: values,
+          backgroundColor: colors,
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: { beginAtZero: true }
         }
-      });
-    }
-
-    function updateTable(data) {
-      tableBody.innerHTML = "";
-      for (const [subject, minutes] of Object.entries(data)) {
-        const row = `<tr><td>${subject}</td><td>${minutes}</td></tr>`;
-        tableBody.insertAdjacentHTML("beforeend", row);
       }
-    }
+    });
+  }
 
-    function logout() {
-      auth.signOut().then(() => window.location.href = "index.html");
+  function updateTable(data) {
+    tableBody.innerHTML = "";
+    for (const [subject, minutes] of Object.entries(data)) {
+      const row = `<tr><td>${subject}</td><td>${minutes}</td></tr>`;
+      tableBody.insertAdjacentHTML("beforeend", row);
     }
+  }
+
+  // ✅ログアウトボタン用
+  window.logout = function() {
+    signOut(auth).then(() => {
+      alert("ログアウトしました！");
+      window.location.href = "index.html";
+    }).catch((error) => {
+      console.error("ログアウトエラー:", error);
+    });
+  };
+</script>
+
   </script>
 </body>
 </html>
