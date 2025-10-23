@@ -320,13 +320,14 @@
 
   // ✅ログアウトボタン用
   window.logout = function() {
-    signOut(auth).then(() => {
-      alert("ログアウトしました！");
-      window.location.href = "index.html";
-    }).catch((error) => {
-      console.error("ログアウトエラー:", error);
-    });
-  };
+    signOut(auth)
+  .then(() => {
+    window.location.href = "index.html"; // ログインページへ
+  })
+  .catch((error) => {
+    console.error("ログアウトエラー:", error);
+  });
+
 </script>
 
   <script type="module">
