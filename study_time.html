@@ -2,31 +2,23 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>学習時間記録 - StudyBase</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <meta name="robots" content="noindex, nofollow">
-<script>
-  const allowedDomain = "ak333-y.github.io";
-  const ref = document.referrer;
-  if (ref && !ref.includes(allowedDomain)) {
-    alert("不正なアクセスです。");
-    window.location.href = "https://" + allowedDomain + "/StudyBase/";
-  }
-</script>
+  <title>学習時間 | StudyBase</title>
 
+  <!-- Firebase & Chart.js -->
+  <script type="module" src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
     body {
-      font-family: "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
       margin: 0;
-      background: linear-gradient(135deg, #0a0a23, #001d6e);
-      color: white;
+      font-family: "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+      background-color: #f3f5f7;
     }
 
+    /* ナビバー */
     .navbar {
       display: flex;
       align-items: center;
@@ -38,21 +30,17 @@
     }
 
     .logo {
+      font-size: 26px;
+      font-weight: bold;
       display: flex;
       align-items: center;
       gap: 10px;
-      font-size: 26px;
-      font-weight: bold;
-    }
-
-    .logo img {
-      height: 50px;
     }
 
     .menu {
       display: flex;
       align-items: center;
-      gap: 30px;
+      gap: 25px;
     }
 
     .menu a {
@@ -86,93 +74,46 @@
       transform: translateY(-1px);
     }
 
-    .main {
+    /* コンテンツ */
+    .container {
+      display: flex;
       padding: 40px;
+      gap: 30px;
     }
 
-    .card {
-      background: rgba(255, 255, 255, 0.9);
-      color: black;
-      border-radius: 12px;
-      padding: 25px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-      margin-bottom: 30px;
+    .chart-container {
+      flex: 2;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      padding: 20px;
     }
 
-    h2 {
-      text-align: center;
-      font-size: 26px;
-      margin-bottom: 20px;
+    .summary-container {
+      flex: 1;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      padding: 20px;
     }
 
-    form {
+    .summary-container h2 {
+      margin-top: 0;
+      border-bottom: 2px solid #ccc;
+      padding-bottom: 10px;
+    }
+
+    .subject-item {
       display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 20px;
-    }
-
-    select, input, button {
-      padding: 10px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      font-size: 16px;
-    }
-
-    button {
-      background: #2563eb;
-      color: white;
+      justify-content: space-between;
+      padding: 6px 0;
       font-weight: bold;
-      cursor: pointer;
-      transition: 0.2s;
     }
-
-    button:hover {
-      background: #1d4ed8;
-    }
-
-    #chart-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-direction: row-reverse; /* グラフと表の左右逆に */
-      gap: 40px;
-      flex-wrap: wrap;
-    }
-
-    canvas {
-      background: white;
-      border-radius: 10px;
-      padding: 10px;
-      max-width: 700px;
-    }
-
-    table {
-      background: white;
-      color: black;
-      border-radius: 10px;
-      padding: 10px;
-      border-collapse: collapse;
-      width: 250px;
-    }
-
-    th, td {
-      padding: 8px;
-      text-align: center;
-      border-bottom: 1px solid #ccc;
-    }
-
   </style>
 </head>
 <body>
   <div class="navbar">
-    <div class="logo">
-      <img src="logo.png" alt="StudyBase ロゴ">
-       StudyBase — Your Daily Step to Success.
-    </div>
-
+    <div class="logo">📘 StudyBase</div>
     <div class="menu">
       <a href="menu.html">ホーム</a>
       <a href="select.html">テスト</a>
@@ -180,156 +121,127 @@
       <a href="add_question.html">問題編集</a>
       <a href="study_time.html">学習時間</a>
       <div class="logout">
-        <button onclick="logout()">ログアウト</button>
+        <button id="logoutBtn">ログアウト</button>
       </div>
     </div>
   </div>
 
-  <div class="main">
-    <div class="card">
-      <h2>📘 学習時間の記録</h2>
+  <div class="container">
+    <div class="chart-container">
+      <canvas id="studyChart"></canvas>
+    </div>
 
-      <form id="studyForm">
-        <select id="subject" required>
-          <option value="">教科を選択</option>
-          <option value="国語">国語</option>
-          <option value="数学">数学</option>
-          <option value="英語">英語</option>
-          <option value="理科">理科</option>
-          <option value="社会">社会</option>
-        </select>
-
-        <input type="number" id="minutes" placeholder="勉強時間（分）" min="1" required>
-
-        <button type="submit">追加</button>
-      </form>
-
-      <div id="chart-container">
-        <table id="timeTable">
-          <thead>
-            <tr>
-              <th>教科</th>
-              <th>合計(分)</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-        <canvas id="studyChart" width="600" height="400"></canvas>
-      </div>
+    <div class="summary-container">
+      <h2>教科別合計</h2>
+      <div id="summaryList"></div>
     </div>
   </div>
 
-  
-   <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-  import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  <script type="module">
+    import { app } from "./firebaseConfig.js";
+    import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
-    authDomain: "akeducationalplatform.firebaseapp.com",
-    projectId: "akeducationalplatform"
-  };
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
-
-  const form = document.getElementById("studyForm");
-  const chartCanvas = document.getElementById("studyChart");
-  const tableBody = document.querySelector("#timeTable tbody");
-
-  let chart;
-  let userId;
-
-  onAuthStateChanged(auth, (user) => {
-    if (!user) {
-      window.location.href = "index.html";
-    } else {
-      userId = user.uid;
-      loadStudyData();
-    }
-  });
-
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const subject = document.getElementById("subject").value;
-    const minutes = parseInt(document.getElementById("minutes").value);
-    const date = new Date().toISOString().split("T")[0];
-
-    if (!subject || !minutes) return;
-
-    await addDoc(collection(db, "study_times"), {
-      userId,
-      subject,
-      minutes,
-      date,
-      timestamp: new Date()
+    // ログアウト
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      signOut(auth).then(() => {
+        window.location.href = "index.html";
+      });
     });
 
-    form.reset();
-    loadStudyData();
-  });
-
-  async function loadStudyData() {
-    const q = query(collection(db, "study_times"), where("userId", "==", userId));
-    const snapshot = await getDocs(q);
-
-    const data = {};
-    snapshot.forEach(doc => {
-      const d = doc.data();
-      data[d.subject] = (data[d.subject] || 0) + d.minutes;
-    });
-
-    updateChart(data);
-    updateTable(data);
-  }
-
-  function updateChart(data) {
-    const labels = Object.keys(data);
-    const values = Object.values(data);
-    const colors = ["#ef4444", "#3b82f6", "#10b981", "#f59e0b", "#8b5cf6"];
-
-    if (chart) chart.destroy();
-    chart = new Chart(chartCanvas, {
-      type: "bar",
-      data: {
-        labels,
-        datasets: [{
-          label: "合計学習時間（分）",
-          data: values,
-          backgroundColor: colors,
-        }]
-      },
-      options: {
-        responsive: true,
-        scales: {
-          y: { beginAtZero: true }
-        }
+    // 認証チェック
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = "index.html";
+      } else {
+        loadStudyData(user.uid);
       }
     });
-  }
 
-  function updateTable(data) {
-    tableBody.innerHTML = "";
-    for (const [subject, minutes] of Object.entries(data)) {
-      const row = `<tr><td>${subject}</td><td>${minutes}</td></tr>`;
-      tableBody.insertAdjacentHTML("beforeend", row);
+    // Firestoreから学習データ取得
+    async function loadStudyData(uid) {
+      const colRef = collection(db, "study_times", uid, "records");
+      const snapshot = await getDocs(colRef);
+
+      const data = {};
+      const totals = { kokugo: 0, eigo: 0, shakai: 0, rika: 0, sugaku: 0 };
+
+      snapshot.forEach((doc) => {
+        const { date, subject, time } = doc.data();
+        if (!data[date]) data[date] = { kokugo: 0, eigo: 0, shakai: 0, rika: 0, sugaku: 0 };
+        data[date][subject] += time;
+        totals[subject] += time;
+      });
+
+      const dates = Object.keys(data).sort();
+      const subjects = ["kokugo", "eigo", "shakai", "rika", "sugaku"];
+      const colors = {
+        kokugo: "#ef4444",
+        eigo: "#3b82f6",
+        shakai: "#f59e0b",
+        rika: "#10b981",
+        sugaku: "#7c3aed"
+      };
+
+      const datasets = subjects.map(subj => ({
+        label: subj,
+        data: dates.map(d => data[d][subj] / 60),
+        backgroundColor: colors[subj],
+        stack: "stack1"
+      }));
+
+      new Chart(document.getElementById("studyChart"), {
+        type: "bar",
+        data: { labels: dates, datasets },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: "bottom" },
+            title: { display: true, text: "学習推移（時間）" }
+          },
+          scales: {
+            x: { stacked: true },
+            y: { stacked: true, title: { display: true, text: "時間（h）" } }
+          }
+        }
+      });
+
+      const summaryList = document.getElementById("summaryList");
+      summaryList.innerHTML = subjects.map(subj => `
+        <div class="subject-item" style="color:${colors[subj]}">
+          <span>${subj.toUpperCase()}</span>
+          <span>${(totals[subj] / 60).toFixed(1)} 時間</span>
+        </div>
+      `).join("");
     }
-  }
+  </script>
+  <script type="module">
+  import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+  import { app } from "./firebaseConfig.js";
 
+  const auth = getAuth(app);
 
-
-</script>
-  window.logout = function() {
+  // ログアウト関数（アラートなし）
+  window.logout = () => {
     signOut(auth)
       .then(() => {
-        window.location.href = "index.html"; // ログインページへ
+        // ログアウト後に直接ログインページへ移動
+        window.location.href = "index.html";
       })
       .catch((error) => {
         console.error("ログアウトエラー:", error);
       });
   };
-</script>
+
+  // 認証されてない人はログインページへ飛ばす
+  onAuthStateChanged(auth, (user) => {
+    if (!user) {
+      window.location.href = "index.html";
+    }
+  });
+  </script>
 </body>
 </html>
