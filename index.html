@@ -18,7 +18,7 @@
     body {
       margin: 0;
       font-family: "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
-      background: linear-gradient(135deg, #0a1128, #1e293b); /* 🔥 黒に近い濃紺グラデーション */
+      background: linear-gradient(135deg, #0a1128, #1e3a8a); /* 💙 青強めの濃紺グラデーション */
       height: 100vh;
       display: flex;
       align-items: center;
@@ -29,8 +29,8 @@
       background: linear-gradient(
         135deg,
         rgba(15, 23, 42, 0.9),
-        rgba(30, 41, 59, 0.9)
-      ); /* 濃紺の半透明グラデーション */
+        rgba(30, 58, 138, 0.9)
+      ); /* 紺＋青の半透明グラデーション */
       border-radius: 20px;
       padding: 40px 50px;
       box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
@@ -38,6 +38,12 @@
       color: white;
       width: 350px;
       backdrop-filter: blur(12px);
+      animation: fadeIn 0.8s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .login-container img {
@@ -69,7 +75,7 @@
     }
 
     button {
-      background-color: #f97316; /* 🍊 明るめのオレンジ */
+      background-color: #f97316; /* 🍊 オレンジボタン */
       color: white;
       border: none;
       border-radius: 8px;
@@ -77,12 +83,12 @@
       font-size: 16px;
       cursor: pointer;
       width: 100%;
-      transition: 0.2s;
+      transition: 0.25s;
       box-shadow: 0 4px 12px rgba(249, 115, 22, 0.4);
     }
 
     button:hover {
-      background-color: #ea580c; /* 濃いオレンジに変化 */
+      background-color: #ea580c;
       box-shadow: 0 6px 15px rgba(249, 115, 22, 0.6);
       transform: translateY(-1px);
     }
