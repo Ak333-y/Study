@@ -267,31 +267,52 @@ async function loadStudyData(uid) {
   }));
 
   // グラフ破棄して再描画
-  if (chartInstance) chartInstance.destroy();
+ // グラフ破棄して再描画
+if (chartInstance) chartInstance.destroy();
 
-  const ctx = document.getElementById("studyChart").getContext("2d");
-  chartInstance = new Chart(ctx, {
-    type: "bar",
-    data: { labels, datasets },
-    options: {
-      responsive: true,
-      plugins: {
-        title: {
-          display: true,
-          text: "📅 日ごとの学習時間推移（教科別）"
-        },
-        legend: { position: "bottom" }
+// 🔹日ごとの合計（折れ線用）
+const totalData = sortedDates.map(date =>
+  Object.values(dataMap[date]).reduce((sum, val) => sum + val, 0)
+);
+
+// 🔹折れ線グラフのデータ追加
+datasets.push({
+  label: "合計時間",
+  data: totalData,
+  type: "line",
+  borderColor: "#000000",
+  borderWidth: 2,
+  backgroundColor: "rgba(0,0,0,0.1)",
+  tension: 0.3,
+  yAxisID: "y",
+  pointRadius: 5,
+  pointStyle: "circle",
+});
+
+const ctx = document.getElementById("studyChart").getContext("2d");
+chartInstance = new Chart(ctx, {
+  type: "bar",
+  data: { labels, datasets },
+  options: {
+    responsive: true,
+    plugins: {
+      title: {
+        display: true,
+        text: "📅 日ごとの学習時間推移（教科別＋合計）"
       },
-      scales: {
-        x: { stacked: true },
-        y: {
-          stacked: true,
-          beginAtZero: true,
-          title: { display: true, text: "分" }
-        }
+      legend: { position: "bottom" }
+    },
+    scales: {
+      x: { stacked: true },
+      y: {
+        stacked: true,
+        beginAtZero: true,
+        title: { display: true, text: "分" }
       }
     }
-  });
+  }
+});
+
 }
 
 // 🧾 合計時間リスト
