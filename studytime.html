@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StudyBase - 学習時間</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+      background-color: #f3f5f7;
+    }
+
+    /* ナビバー */
+    .navbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(90deg, #000814, #001d6e);
+      color: white;
+      padding: 10px 40px;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 26px;
+      font-weight: bold;
+    }
+
+    .logo img {
+      height: 50px;
+    }
+
+    .menu {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+    }
+
+    .menu a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 16px;
+      transition: 0.2s;
+    }
+
+    .menu a:hover {
+      color: #93c5fd;
+    }
+
+    .logout button {
+      background: #b91c1c;
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      padding: 6px 16px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 14px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+      transition: background 0.18s ease, box-shadow 0.18s ease, transform 0.12s ease;
+    }
+
+    .logout button:hover {
+      background: #991b1b;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.30);
+      transform: translateY(-1px);
+    }
+
+    .main {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px;
+      gap: 30px;
+    }
+
+    .chart-container {
+      width: 80%;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      padding: 20px;
+    }
+
+    .week-switch {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .week-switch button {
+      background: #1d4ed8;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 14px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .week-switch button:hover {
+      background: #1e40af;
+    }
+
+    .goal-progress {
+      width: 80%;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      padding: 20px;
+      text-align: center;
+    }
+
+    .goal-progress h2 {
+      margin-top: 0;
+      border-bottom: 2px solid #ddd;
+      padding-bottom: 8px;
+      margin-bottom: 10px;
+    }
+
+    .goal-progress p {
+      font-size: 18px;
+      font-weight: bold;
+      margin: 0;
+    }
+
+    .summary-container, .form-container {
+      width: 80%;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      padding: 20px;
+    }
+
+    .summary-container h2, .form-container h2 {
+      margin-top: 0;
+      border-bottom: 2px solid #ddd;
+      padding-bottom: 8px;
+      margin-bottom: 15px;
+    }
+
+    .subject-item {
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    form {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    select, input {
+      padding: 8px 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 15px;
+    }
+
+    button {
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    /* 🎉 目標達成アニメーション */
+    .goal-congrats {
+      display: none;
+      position: fixed;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255, 255, 255, 0.15);
+      padding: 30px 50px;
+      border-radius: 15px;
+      color: #fff;
+      font-size: 28px;
+      font-weight: bold;
+      text-align: center;
+      z-index: 9999;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 0 20px rgba(255, 200, 100, 0.7);
+      animation: popIn 0.6s ease-out, fadeOut 3s ease 2s forwards;
+    }
+
+    @keyframes popIn {
+      0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+      70% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    }
+
+    @keyframes fadeOut {
+      to { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <div class="logo">
+      <img src="logo.png" alt="ロゴ">
+      StudyBase — Your Daily Step to Success.
+    </div>
+    <div class="menu">
+      <a href="menu.html">ホーム</a>
+      <a href="select.html">テスト</a>
+      <a href="history.html">過去の成績</a>
+      <a href="add_question.html">問題編集</a>
+      <a href="study_time.html">学習時間</a>
+      <div class="logout">
+        <button id="logoutBtn">ログアウト</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="chart-container">
+      <div class="week-switch">
+        <button id="prevWeek">← 前の週</button>
+        <h3 id="weekLabel"></h3>
+        <button id="nextWeek">次の週 →</button>
+      </div>
+      <canvas id="studyChart"></canvas>
+    </div>
+
+    <!-- 🎯 学習目標の進捗表示 -->
+    <div class="goal-progress">
+      <h2>🎯 学習目標の進捗</h2>
+      <p id="goalStatus">目標が設定されていません。</p>
+    </div>
+
+    <div class="summary-container">
+      <h2>教科ごとの合計時間</h2>
+      <div id="summary"></div>
+    </div>
+
+    <div class="form-container">
+      <h2>📘 学習目標を設定</h2>
+      <form id="goalForm">
+        <input type="number" id="goalInput" placeholder="目標時間（h）" min="1" required>
+        <button type="submit">保存</button>
+      </form>
+    </div>
+
+    <div class="form-container">
+      <h2>🕒 学習時間を追加</h2>
+      <form id="studyForm">
+        <select id="subject" required>
+          <option value="">教科を選択</option>
+          <option value="国語">国語</option>
+          <option value="数学">数学</option>
+          <option value="英語">英語</option>
+          <option value="理科">理科</option>
+          <option value="社会">社会</option>
+        </select>
+        <input type="number" id="minutes" placeholder="勉強時間（分）" min="1" required>
+        <button type="submit">追加</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="goalCongrats" class="goal-congrats">🎉 目標達成おめでとう！！ 🎉</div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+    import { getFirestore, collection, query, where, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
+      authDomain: "akeducationalplatform.firebaseapp.com",
+      projectId: "akeducationalplatform",
+      storageBucket: "akeducationalplatform.firebasestorage.app",
+      messagingSenderId: "778140595189",
+      appId: "1:778140595189:web:301e7490b813b44782a6bc"
+    };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let currentUser = null;
+    let chartInstance = null;
+    let currentWeekOffset = 0;
+    let totalStudyTime = 0;
+
+    const goalStatus = document.getElementById("goalStatus");
+    const goalCongrats = document.getElementById("goalCongrats");
+
+    function showCongrats() {
+      goalCongrats.style.display = "block";
+      setTimeout(() => goalCongrats.style.display = "none", 4000);
+    }
+
+    function updateGoalStatus() {
+      const goal = parseFloat(localStorage.getItem("studyGoal") || 0);
+      const totalHours = totalStudyTime / 60;
+      if (goal > 0) {
+        const remaining = Math.max(goal - totalHours, 0);
+        goalStatus.textContent = `合計 ${totalHours.toFixed(1)}h / 目標 ${goal}h　残り ${remaining.toFixed(1)}h`;
+        if (totalHours >= goal) showCongrats();
+      } else {
+        goalStatus.textContent = "目標が設定されていません。";
+      }
+    }
+
+    function getWeekRange(offset = 0) {
+      const now = new Date();
+      const currentDay = now.getDay();
+      const diffToMonday = currentDay === 0 ? -6 : 1 - currentDay;
+      const monday = new Date(now);
+      monday.setDate(now.getDate() + diffToMonday + offset * 7);
+      const sunday = new Date(monday);
+      sunday.setDate(monday.getDate() + 6);
+      return { monday, sunday };
+    }
+
+    function formatDateLabel(dateStr) {
+      const d = new Date(dateStr);
+      return `${d.getMonth() + 1}/${d.getDate()}(${["日","月","火","水","木","金","土"][d.getDay()]})`;
+    }
+
+    async function loadStudyData(uid) {
+      const q = query(collection(db, "study_time"), where("uid", "==", uid));
+      const snapshot = await getDocs(q);
+      const dataMap = {};
+
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        const date = data.date;
+        const subject = data.subject || "その他";
+        const minutes = Number(data.minutes) || 0;
+        if (!dataMap[date]) dataMap[date] = {};
+        dataMap[date][subject] = (dataMap[date][subject] || 0) + minutes;
+      });
+
+      const { monday, sunday } = getWeekRange(currentWeekOffset);
+      const weekLabel = `${monday.getMonth() + 1}/${monday.getDate()}〜${sunday.getMonth() + 1}/${sunday.getDate()}`;
+      document.getElementById("weekLabel").textContent = `📅 ${weekLabel}`;
+
+      const weekDates = [];
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(monday);
+        d.setDate(monday.getDate() + i);
+        weekDates.push(d.toISOString().split("T")[0]);
+      }
+
+      const allSubjects = ["国語", "数学", "英語", "理科", "社会"];
+      const colors = {
+        国語: "#ef4444",
+        数学: "#3b82f6",
+        英語: "#8b5cf6",
+        理科: "#22c55e",
+        社会: "#eab308",
+        その他: "#9ca3af"
+      };
+
+      const labels = weekDates.map(d => formatDateLabel(d));
+      const datasets = allSubjects.map(subject => ({
+        label: subject,
+        data: weekDates.map(date => dataMap[date]?.[subject] || 0),
+        backgroundColor: colors[subject],
+        stack: "stack1"
+      }));
+
+      const totalData = weekDates.map(date =>
+        Object.values(dataMap[date] || {}).reduce((sum, val) => sum + val, 0)
+      );
+      totalStudyTime = Object.values(dataMap).flatMap(o => Object.values(o)).reduce((a,b)=>a+b,0);
+      updateGoalStatus();
+
+      datasets.push({
+        label: "合計時間",
+        data: totalData,
+        type: "line",
+        borderColor: "#000000",
+        borderWidth: 2,
+        backgroundColor: "rgba(0,0,0,0.1)",
+        tension: 0.3,
+        yAxisID: "y",
+        pointRadius: 5,
+      });
+
+      if (chartInstance) chartInstance.destroy();
+      const ctx = document.getElementById("studyChart").getContext("2d");
+      chartInstance = new Chart(ctx, {
+        type: "bar",
+        data: { labels, datasets },
+        options: {
+          responsive: true,
+          plugins: {
+            title: { display: true, text: "📊 週ごとの学習時間（教科別＋合計）" },
+            legend: { position: "bottom" }
+          },
+          scales: {
+            x: { stacked: true },
+            y: { stacked: true, beginAtZero: true, title: { display: true, text: "分" } }
+          }
+        }
+      });
+    }
+
+    async function showSummary(uid) {
+      const q = query(collection(db, "study_time"), where("uid", "==", uid));
+      const snapshot = await getDocs(q);
+      const totals = {};
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        const subject = data.subject || "その他";
+        const minutes = Number(data.minutes) || 0;
+        totals[subject] = (totals[subject] || 0) + minutes;
+      });
+      const summaryDiv = document.getElementById("summary");
+      summaryDiv.innerHTML = "";
+      Object.entries(totals).forEach(([s, m]) => {
+        const div = document.createElement("div");
+        div.classList.add("subject-item");
+        div.textContent = `${s}：${m}分`;
+        summaryDiv.appendChild(div);
+      });
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = "index.html";
+        return;
+      }
+      currentUser = user;
+      await loadStudyData(user.uid);
+      await showSummary(user.uid);
+    });
+
+    document.getElementById("goalForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const val = parseFloat(document.getElementById("goalInput").value);
+      if (val > 0) {
+        localStorage.setItem("studyGoal", val);
+        updateGoalStatus();
+        alert("目標を設定しました！");
+        e.target.reset();
+      }
+    });
+
+    document.getElementById("studyForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const subject = document.getElementById("subject").value;
+      const minutes = parseInt(document.getElementById("minutes").value);
+      if (!subject || !minutes || !currentUser) return;
+      const today = new Date().toISOString().split("T")[0];
+
+      await addDoc(collection(db, "study_time"), {
+        uid: currentUser.uid,
+        subject,
+        minutes,
+        date: today,
+        timestamp: new Date()
+      });
+
+      e.target.reset();
+      await loadStudyData(currentUser.uid);
+      await showSummary(currentUser.uid);
+    });
+
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      signOut(auth).then(() => window.location.href = "index.html");
+    });
+
+    document.getElementById("prevWeek").addEventListener("click", async () => {
+      currentWeekOffset--;
+      await loadStudyData(currentUser.uid);
+    });
+    document.getElementById("nextWeek").addEventListener("click", async () => {
+      currentWeekOffset++;
+      await loadStudyData(currentUser.uid);
+    });
+  </script>
+</body>
+</html>
