@@ -18,7 +18,7 @@
     body {
       margin: 0;
       font-family: "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
-      background: linear-gradient(135deg, #0a1128, #1e3a8a); /* 💙 青強めの濃紺グラデーション */
+      background: linear-gradient(135deg, #0a1128, #1e276d); /* 🌙 紺寄りの深いグラデーション */
       height: 100vh;
       display: flex;
       align-items: center;
@@ -28,16 +28,16 @@
     .login-container {
       background: linear-gradient(
         135deg,
-        rgba(15, 23, 42, 0.9),
-        rgba(30, 58, 138, 0.9)
-      ); /* 紺＋青の半透明グラデーション */
+        rgba(10, 15, 35, 0.92),
+        rgba(25, 30, 70, 0.92)
+      ); /* ほんのり青みのある紺系グラデーション */
       border-radius: 20px;
       padding: 40px 50px;
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.65);
       text-align: center;
       color: white;
       width: 350px;
-      backdrop-filter: blur(12px);
+      backdrop-filter: blur(10px);
       animation: fadeIn 0.8s ease;
     }
 
@@ -71,7 +71,7 @@
 
     input[type="email"]:focus,
     input[type="password"]:focus {
-      outline: 2px solid #f97316; /* オレンジに合わせてフォーカス色も変更 */
+      outline: 2px solid #f97316; /* オレンジのアクセントで統一 */
     }
 
     button {
