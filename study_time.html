@@ -110,7 +110,29 @@
       background: #1e40af;
     }
 
-    .summary-container, .form-container, .goal-container {
+    .goal-progress {
+      width: 80%;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      padding: 20px;
+      text-align: center;
+    }
+
+    .goal-progress h2 {
+      margin-top: 0;
+      border-bottom: 2px solid #ddd;
+      padding-bottom: 8px;
+      margin-bottom: 10px;
+    }
+
+    .goal-progress p {
+      font-size: 18px;
+      font-weight: bold;
+      margin: 0;
+    }
+
+    .summary-container, .form-container {
       width: 80%;
       background: white;
       border-radius: 10px;
@@ -118,7 +140,7 @@
       padding: 20px;
     }
 
-    .summary-container h2, .form-container h2, .goal-container h2 {
+    .summary-container h2, .form-container h2 {
       margin-top: 0;
       border-bottom: 2px solid #ddd;
       padding-bottom: 8px;
@@ -158,36 +180,7 @@
       background: #1d4ed8;
     }
 
-    /* 🎯 学習目標 */
-    .goal-container input {
-      width: 150px;
-      padding: 8px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      margin-right: 10px;
-      text-align: center;
-    }
-
-    .goal-container button {
-      background-color: #f97316;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      padding: 8px 14px;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-
-    .goal-container button:hover {
-      background-color: #ea580c;
-    }
-
-    #goalStatus {
-      margin-top: 15px;
-      font-weight: bold;
-    }
-
-    /* 🎉 お祝いアニメーション */
+    /* 🎉 目標達成アニメーション */
     .goal-congrats {
       display: none;
       position: fixed;
@@ -246,20 +239,27 @@
       <canvas id="studyChart"></canvas>
     </div>
 
+    <!-- 🎯 学習目標の進捗表示 -->
+    <div class="goal-progress">
+      <h2>🎯 学習目標の進捗</h2>
+      <p id="goalStatus">目標が設定されていません。</p>
+    </div>
+
     <div class="summary-container">
       <h2>教科ごとの合計時間</h2>
       <div id="summary"></div>
     </div>
 
-    <div class="goal-container">
-      <h2>🎯 学習目標</h2>
-      <input type="number" id="goalInput" placeholder="目標時間（h）を入力">
-      <button id="saveGoalBtn">保存</button>
-      <p id="goalStatus"></p>
+    <div class="form-container">
+      <h2>📘 学習目標を設定</h2>
+      <form id="goalForm">
+        <input type="number" id="goalInput" placeholder="目標時間（h）" min="1" required>
+        <button type="submit">保存</button>
+      </form>
     </div>
 
     <div class="form-container">
-      <h2>📘 学習時間を追加</h2>
+      <h2>🕒 学習時間を追加</h2>
       <form id="studyForm">
         <select id="subject" required>
           <option value="">教科を選択</option>
@@ -269,16 +269,13 @@
           <option value="理科">理科</option>
           <option value="社会">社会</option>
         </select>
-
         <input type="number" id="minutes" placeholder="勉強時間（分）" min="1" required>
         <button type="submit">追加</button>
       </form>
     </div>
   </div>
 
-  <div id="goalCongrats" class="goal-congrats">
-    🎉 目標達成おめでとう！！ 🎉
-  </div>
+  <div id="goalCongrats" class="goal-congrats">🎉 目標達成おめでとう！！ 🎉</div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
@@ -293,7 +290,6 @@
       messagingSenderId: "778140595189",
       appId: "1:778140595189:web:301e7490b813b44782a6bc"
     };
-
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
@@ -303,9 +299,24 @@
     let currentWeekOffset = 0;
     let totalStudyTime = 0;
 
-    function formatDateLabel(dateStr) {
-      const d = new Date(dateStr);
-      return `${d.getMonth() + 1}/${d.getDate()}(${["日","月","火","水","木","金","土"][d.getDay()]})`;
+    const goalStatus = document.getElementById("goalStatus");
+    const goalCongrats = document.getElementById("goalCongrats");
+
+    function showCongrats() {
+      goalCongrats.style.display = "block";
+      setTimeout(() => goalCongrats.style.display = "none", 4000);
+    }
+
+    function updateGoalStatus() {
+      const goal = parseFloat(localStorage.getItem("studyGoal") || 0);
+      const totalHours = totalStudyTime / 60;
+      if (goal > 0) {
+        const remaining = Math.max(goal - totalHours, 0);
+        goalStatus.textContent = `合計 ${totalHours.toFixed(1)}h / 目標 ${goal}h　残り ${remaining.toFixed(1)}h`;
+        if (totalHours >= goal) showCongrats();
+      } else {
+        goalStatus.textContent = "目標が設定されていません。";
+      }
     }
 
     function getWeekRange(offset = 0) {
@@ -317,6 +328,11 @@
       const sunday = new Date(monday);
       sunday.setDate(monday.getDate() + 6);
       return { monday, sunday };
+    }
+
+    function formatDateLabel(dateStr) {
+      const d = new Date(dateStr);
+      return `${d.getMonth() + 1}/${d.getDate()}(${["日","月","火","水","木","金","土"][d.getDay()]})`;
     }
 
     async function loadStudyData(uid) {
@@ -365,7 +381,8 @@
       const totalData = weekDates.map(date =>
         Object.values(dataMap[date] || {}).reduce((sum, val) => sum + val, 0)
       );
-      totalStudyTime = totalData.reduce((a, b) => a + b, 0) / 60;
+      totalStudyTime = Object.values(dataMap).flatMap(o => Object.values(o)).reduce((a,b)=>a+b,0);
+      updateGoalStatus();
 
       datasets.push({
         label: "合計時間",
@@ -396,8 +413,6 @@
           }
         }
       });
-
-      updateGoalStatus();
     }
 
     async function showSummary(uid) {
@@ -420,39 +435,6 @@
       });
     }
 
-    // 🎯 学習目標
-    const goalInput = document.getElementById("goalInput");
-    const saveGoalBtn = document.getElementById("saveGoalBtn");
-    const goalStatus = document.getElementById("goalStatus");
-    const goalCongrats = document.getElementById("goalCongrats");
-
-    saveGoalBtn.addEventListener("click", () => {
-      const goal = parseFloat(goalInput.value);
-      if (isNaN(goal) || goal <= 0) {
-        alert("正しい数値を入力してね！");
-        return;
-      }
-      localStorage.setItem("studyGoal", goal);
-      updateGoalStatus();
-    });
-
-    function updateGoalStatus() {
-      const goal = parseFloat(localStorage.getItem("studyGoal") || 0);
-      const totalHours = totalStudyTime || 0;
-      if (goal > 0) {
-        const remaining = Math.max(goal - totalHours, 0);
-        goalStatus.textContent = `合計 ${totalHours.toFixed(1)}h / 目標 ${goal}h　残り ${remaining.toFixed(1)}h`;
-        if (totalHours >= goal) showCongrats();
-      } else {
-        goalStatus.textContent = "目標が設定されていません。";
-      }
-    }
-
-    function showCongrats() {
-      goalCongrats.style.display = "block";
-      setTimeout(() => goalCongrats.style.display = "none", 4000);
-    }
-
     onAuthStateChanged(auth, async (user) => {
       if (!user) {
         window.location.href = "index.html";
@@ -461,6 +443,17 @@
       currentUser = user;
       await loadStudyData(user.uid);
       await showSummary(user.uid);
+    });
+
+    document.getElementById("goalForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const val = parseFloat(document.getElementById("goalInput").value);
+      if (val > 0) {
+        localStorage.setItem("studyGoal", val);
+        updateGoalStatus();
+        alert("目標を設定しました！");
+        e.target.reset();
+      }
     });
 
     document.getElementById("studyForm").addEventListener("submit", async (e) => {
@@ -491,11 +484,10 @@
       currentWeekOffset--;
       await loadStudyData(currentUser.uid);
     });
-
     document.getElementById("nextWeek").addEventListener("click", async () => {
       currentWeekOffset++;
       await loadStudyData(currentUser.uid);
     });
   </script>
 </body>
-</html
+</html>
