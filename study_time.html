@@ -110,7 +110,7 @@
       background: #1e40af;
     }
 
-    .summary-container, .form-container {
+    .summary-container, .form-container, .goal-container {
       width: 80%;
       background: white;
       border-radius: 10px;
@@ -118,7 +118,7 @@
       padding: 20px;
     }
 
-    .summary-container h2, .form-container h2 {
+    .summary-container h2, .form-container h2, .goal-container h2 {
       margin-top: 0;
       border-bottom: 2px solid #ddd;
       padding-bottom: 8px;
@@ -157,6 +157,65 @@
     button:hover {
       background: #1d4ed8;
     }
+
+    /* 🎯 学習目標 */
+    .goal-container input {
+      width: 150px;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      margin-right: 10px;
+      text-align: center;
+    }
+
+    .goal-container button {
+      background-color: #f97316;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 14px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .goal-container button:hover {
+      background-color: #ea580c;
+    }
+
+    #goalStatus {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    /* 🎉 お祝いアニメーション */
+    .goal-congrats {
+      display: none;
+      position: fixed;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255, 255, 255, 0.15);
+      padding: 30px 50px;
+      border-radius: 15px;
+      color: #fff;
+      font-size: 28px;
+      font-weight: bold;
+      text-align: center;
+      z-index: 9999;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 0 20px rgba(255, 200, 100, 0.7);
+      animation: popIn 0.6s ease-out, fadeOut 3s ease 2s forwards;
+    }
+
+    @keyframes popIn {
+      0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+      70% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    }
+
+    @keyframes fadeOut {
+      to { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+    }
   </style>
 </head>
 <body>
@@ -192,6 +251,13 @@
       <div id="summary"></div>
     </div>
 
+    <div class="goal-container">
+      <h2>🎯 学習目標</h2>
+      <input type="number" id="goalInput" placeholder="目標時間（h）を入力">
+      <button id="saveGoalBtn">保存</button>
+      <p id="goalStatus"></p>
+    </div>
+
     <div class="form-container">
       <h2>📘 学習時間を追加</h2>
       <form id="studyForm">
@@ -210,6 +276,10 @@
     </div>
   </div>
 
+  <div id="goalCongrats" class="goal-congrats">
+    🎉 目標達成おめでとう！！ 🎉
+  </div>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
@@ -223,6 +293,7 @@
       messagingSenderId: "778140595189",
       appId: "1:778140595189:web:301e7490b813b44782a6bc"
     };
+
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
@@ -230,6 +301,7 @@
     let currentUser = null;
     let chartInstance = null;
     let currentWeekOffset = 0;
+    let totalStudyTime = 0;
 
     function formatDateLabel(dateStr) {
       const d = new Date(dateStr);
@@ -293,6 +365,8 @@
       const totalData = weekDates.map(date =>
         Object.values(dataMap[date] || {}).reduce((sum, val) => sum + val, 0)
       );
+      totalStudyTime = totalData.reduce((a, b) => a + b, 0) / 60;
+
       datasets.push({
         label: "合計時間",
         data: totalData,
@@ -322,6 +396,8 @@
           }
         }
       });
+
+      updateGoalStatus();
     }
 
     async function showSummary(uid) {
@@ -342,6 +418,39 @@
         div.textContent = `${s}：${m}分`;
         summaryDiv.appendChild(div);
       });
+    }
+
+    // 🎯 学習目標
+    const goalInput = document.getElementById("goalInput");
+    const saveGoalBtn = document.getElementById("saveGoalBtn");
+    const goalStatus = document.getElementById("goalStatus");
+    const goalCongrats = document.getElementById("goalCongrats");
+
+    saveGoalBtn.addEventListener("click", () => {
+      const goal = parseFloat(goalInput.value);
+      if (isNaN(goal) || goal <= 0) {
+        alert("正しい数値を入力してね！");
+        return;
+      }
+      localStorage.setItem("studyGoal", goal);
+      updateGoalStatus();
+    });
+
+    function updateGoalStatus() {
+      const goal = parseFloat(localStorage.getItem("studyGoal") || 0);
+      const totalHours = totalStudyTime || 0;
+      if (goal > 0) {
+        const remaining = Math.max(goal - totalHours, 0);
+        goalStatus.textContent = `合計 ${totalHours.toFixed(1)}h / 目標 ${goal}h　残り ${remaining.toFixed(1)}h`;
+        if (totalHours >= goal) showCongrats();
+      } else {
+        goalStatus.textContent = "目標が設定されていません。";
+      }
+    }
+
+    function showCongrats() {
+      goalCongrats.style.display = "block";
+      setTimeout(() => goalCongrats.style.display = "none", 4000);
     }
 
     onAuthStateChanged(auth, async (user) => {
@@ -378,15 +487,15 @@
       signOut(auth).then(() => window.location.href = "index.html");
     });
 
-    // 🗓️ 週切り替えボタン
     document.getElementById("prevWeek").addEventListener("click", async () => {
       currentWeekOffset--;
       await loadStudyData(currentUser.uid);
     });
+
     document.getElementById("nextWeek").addEventListener("click", async () => {
       currentWeekOffset++;
       await loadStudyData(currentUser.uid);
     });
   </script>
 </body>
-</html>
+</html
