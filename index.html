@@ -18,7 +18,7 @@
     body {
       margin: 0;
       font-family: "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
-      background: linear-gradient(135deg, #1e3a8a, #1d4ed8); /* 濃い青グラデーション */
+      background: linear-gradient(135deg, #0a1128, #1e293b); /* 🔥 黒に近い濃紺グラデーション */
       height: 100vh;
       display: flex;
       align-items: center;
@@ -28,16 +28,16 @@
     .login-container {
       background: linear-gradient(
         135deg,
-        rgba(30, 58, 138, 0.85),
-        rgba(37, 99, 235, 0.85)
-      ); /* 半透明グラデーション */
+        rgba(15, 23, 42, 0.9),
+        rgba(30, 41, 59, 0.9)
+      ); /* 濃紺の半透明グラデーション */
       border-radius: 20px;
       padding: 40px 50px;
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
       text-align: center;
       color: white;
       width: 350px;
-      backdrop-filter: blur(10px); /* 背景ぼかしで高級感UP */
+      backdrop-filter: blur(12px);
     }
 
     .login-container img {
@@ -60,16 +60,16 @@
       border: none;
       border-radius: 8px;
       font-size: 16px;
-      box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
+      box-shadow: inset 0 2px 5px rgba(0,0,0,0.3);
     }
 
     input[type="email"]:focus,
     input[type="password"]:focus {
-      outline: 2px solid #60a5fa;
+      outline: 2px solid #f97316; /* オレンジに合わせてフォーカス色も変更 */
     }
 
     button {
-      background-color: #22c55e; /* 緑のボタン */
+      background-color: #f97316; /* 🍊 明るめのオレンジ */
       color: white;
       border: none;
       border-radius: 8px;
@@ -78,11 +78,13 @@
       cursor: pointer;
       width: 100%;
       transition: 0.2s;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 4px 12px rgba(249, 115, 22, 0.4);
     }
 
     button:hover {
-      background-color: #16a34a;
+      background-color: #ea580c; /* 濃いオレンジに変化 */
+      box-shadow: 0 6px 15px rgba(249, 115, 22, 0.6);
+      transform: translateY(-1px);
     }
 
     .footer {
@@ -118,18 +120,17 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
-   document.getElementById("loginBtn").addEventListener("click", async () => {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
+    document.getElementById("loginBtn").addEventListener("click", async () => {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
 
-  try {
-    await signInWithEmailAndPassword(auth, email, password);
-    // ✅ 成功時のアラート削除！
-    window.location.href = "menu.html"; // すぐメニューへGO
-  } catch (error) {
-    alert("ログイン失敗: " + error.message);
-  }
-});
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        window.location.href = "menu.html";
+      } catch (error) {
+        alert("ログイン失敗: " + error.message);
+      }
+    });
   </script>
 </body>
 </html>
