@@ -199,114 +199,160 @@
   </div>
 
   <!-- Firebase & グラフ連携 -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
-    import { getFirestore, collection, query, where, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+<!-- Firebase & グラフ連携 -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+import { getFirestore, collection, query, where, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
-    // Firebase設定
-    const firebaseConfig = {
-      apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
-      authDomain: "akeducationalplatform.firebaseapp.com",
-      projectId: "akeducationalplatform",
-      storageBucket: "akeducationalplatform.firebasestorage.app",
-      messagingSenderId: "778140595189",
-      appId: "1:778140595189:web:301e7490b813b44782a6bc"
-    };
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+// Firebase設定
+const firebaseConfig = {
+  apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
+  authDomain: "akeducationalplatform.firebaseapp.com",
+  projectId: "akeducationalplatform",
+  storageBucket: "akeducationalplatform.firebasestorage.app",
+  messagingSenderId: "778140595189",
+  appId: "1:778140595189:web:301e7490b813b44782a6bc"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-    let currentUser = null;
-    let chartInstance = null;
+let currentUser = null;
+let chartInstance = null;
 
-    async function loadStudyData(uid) {
-      const q = query(collection(db, "study_time"), where("uid", "==", uid));
-      const snapshot = await getDocs(q);
+// 📅 日付フォーマットを日本風に
+function formatDateLabel(dateStr) {
+  const d = new Date(dateStr);
+  return `${d.getMonth() + 1}/${d.getDate()}(${["日","月","火","水","木","金","土"][d.getDay()]})`;
+}
 
-      const totals = {};
-      snapshot.forEach((doc) => {
-        const data = doc.data();
-        const subject = data.subject || "その他";
-        const minutes = Number(data.minutes) || 0;
-        totals[subject] = (totals[subject] || 0) + minutes;
-      });
+// 📊 Firestoreからデータをロードして積み上げグラフに
+async function loadStudyData(uid) {
+  const q = query(collection(db, "study_time"), where("uid", "==", uid));
+  const snapshot = await getDocs(q);
 
-      const subjects = Object.keys(totals);
-      const values = Object.values(totals);
-      const colors = ["#3b82f6","#ef4444","#22c55e","#eab308","#8b5cf6","#f97316"];
+  // 直近7日分だけ取得
+  const dataMap = {}; // date -> { subject -> minutes }
 
-      // 既存のグラフを破棄して更新
-      if (chartInstance) chartInstance.destroy();
+  snapshot.forEach((doc) => {
+    const data = doc.data();
+    const date = data.date || new Date().toISOString().split("T")[0];
+    const subject = data.subject || "その他";
+    const minutes = Number(data.minutes) || 0;
+    if (!dataMap[date]) dataMap[date] = {};
+    dataMap[date][subject] = (dataMap[date][subject] || 0) + minutes;
+  });
 
-      const ctx = document.getElementById("studyChart").getContext("2d");
-      chartInstance = new Chart(ctx, {
-        type: "bar",
-        data: {
-          labels: subjects,
-          datasets: [{
-            label: "勉強時間（分）",
-            data: values,
-            backgroundColor: subjects.map((_, i) => colors[i % colors.length]),
-          }]
+  const allSubjects = ["国語", "数学", "英語", "理科", "社会"];
+  const colors = {
+    国語: "#ef4444",
+    数学: "#3b82f6",
+    英語: "#8b5cf6",
+    理科: "#22c55e",
+    社会: "#eab308",
+    その他: "#9ca3af"
+  };
+
+  // ソートされた日付配列
+  const sortedDates = Object.keys(dataMap).sort().slice(-7);
+  const labels = sortedDates.map(d => formatDateLabel(d));
+
+  // 教科ごとにデータを整形（積み上げ用）
+  const datasets = allSubjects.map(subject => ({
+    label: subject,
+    data: sortedDates.map(date => dataMap[date][subject] || 0),
+    backgroundColor: colors[subject],
+    stack: "stack1"
+  }));
+
+  // グラフ破棄して再描画
+  if (chartInstance) chartInstance.destroy();
+
+  const ctx = document.getElementById("studyChart").getContext("2d");
+  chartInstance = new Chart(ctx, {
+    type: "bar",
+    data: { labels, datasets },
+    options: {
+      responsive: true,
+      plugins: {
+        title: {
+          display: true,
+          text: "📅 日ごとの学習時間推移（教科別）"
         },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { display: false },
-            title: { display: true, text: "教科ごとの学習時間" }
-          },
-          scales: { y: { beginAtZero: true } }
+        legend: { position: "bottom" }
+      },
+      scales: {
+        x: { stacked: true },
+        y: {
+          stacked: true,
+          beginAtZero: true,
+          title: { display: true, text: "分" }
         }
-      });
-
-      const summaryDiv = document.getElementById("summary");
-      summaryDiv.innerHTML = "";
-      for (let s of subjects) {
-        const div = document.createElement("div");
-        div.classList.add("subject-item");
-        div.textContent = `${s}：${totals[s]} 分`;
-        summaryDiv.appendChild(div);
       }
     }
+  });
+}
 
-    // ログインチェック
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        window.location.href = "index.html";
-        return;
-      }
-      currentUser = user;
-      loadStudyData(user.uid);
-    });
+// 🧾 合計時間リスト
+async function showSummary(uid) {
+  const q = query(collection(db, "study_time"), where("uid", "==", uid));
+  const snapshot = await getDocs(q);
+  const totals = {};
+  snapshot.forEach((doc) => {
+    const data = doc.data();
+    const subject = data.subject || "その他";
+    const minutes = Number(data.minutes) || 0;
+    totals[subject] = (totals[subject] || 0) + minutes;
+  });
+  const summaryDiv = document.getElementById("summary");
+  summaryDiv.innerHTML = "";
+  Object.entries(totals).forEach(([s, m]) => {
+    const div = document.createElement("div");
+    div.classList.add("subject-item");
+    div.textContent = `${s}：${m}分`;
+    summaryDiv.appendChild(div);
+  });
+}
 
-    // フォーム送信（Firestoreに追加）
-    const form = document.getElementById("studyForm");
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const subject = document.getElementById("subject").value;
-      const minutes = parseInt(document.getElementById("minutes").value);
+// 🧑‍🎓 ログインチェック
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    window.location.href = "index.html";
+    return;
+  }
+  currentUser = user;
+  await loadStudyData(user.uid);
+  await showSummary(user.uid);
+});
 
-      if (!subject || !minutes || !currentUser) return;
+// ✏️ フォーム送信でFirestoreに追加
+const form = document.getElementById("studyForm");
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const subject = document.getElementById("subject").value;
+  const minutes = parseInt(document.getElementById("minutes").value);
+  if (!subject || !minutes || !currentUser) return;
+  const today = new Date().toISOString().split("T")[0];
 
-      await addDoc(collection(db, "study_time"), {
-        uid: currentUser.uid,
-        subject,
-        minutes,
-        date: new Date().toISOString().split("T")[0],
-        timestamp: new Date()
-      });
+  await addDoc(collection(db, "study_time"), {
+    uid: currentUser.uid,
+    subject,
+    minutes,
+    date: today,
+    timestamp: new Date()
+  });
 
-      form.reset();
-      loadStudyData(currentUser.uid);
-    });
+  form.reset();
+  await loadStudyData(currentUser.uid);
+  await showSummary(currentUser.uid);
+});
 
-    // ログアウト
-    document.getElementById("logoutBtn").addEventListener("click", () => {
-      signOut(auth).then(() => {
-        window.location.href = "index.html";
-      });
-    });
-  </script>
+// 🚪 ログアウト
+document.getElementById("logoutBtn").addEventListener("click", () => {
+  signOut(auth).then(() => window.location.href = "index.html");
+});
+</script>
+
 </body>
 </html>
