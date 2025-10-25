@@ -12,7 +12,7 @@
       background-color: #f3f5f7;
     }
 
-    /* ナビバー */
+    /* ナビバー（共通デザインそのまま） */
     .navbar {
       display: flex;
       align-items: center;
@@ -278,9 +278,10 @@
   <div id="goalCongrats" class="goal-congrats">🎉 目標達成おめでとう！！ 🎉</div>
 
   <script type="module">
+    // Firebase (認証は必須だがデータは共有)
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
-    import { getFirestore, collection, query, where, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, addDoc, query, where } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
@@ -294,7 +295,6 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    let currentUser = null;
     let chartInstance = null;
     let currentWeekOffset = 0;
     let totalStudyTime = 0;
@@ -335,11 +335,11 @@
       return `${d.getMonth() + 1}/${d.getDate()}(${["日","月","火","水","木","金","土"][d.getDay()]})`;
     }
 
-    async function loadStudyData(uid) {
-      const q = query(collection(db, "study_time"), where("uid", "==", uid));
-      const snapshot = await getDocs(q);
+    // ※ ここで uid を使わず、全員共通の "study_time" コレクションを参照する
+    async function loadStudyData() {
+      // 全データ取得（全ユーザー共通データ）
+      const snapshot = await getDocs(collection(db, "study_time"));
       const dataMap = {};
-
       snapshot.forEach((doc) => {
         const data = doc.data();
         const date = data.date;
@@ -349,16 +349,16 @@
         dataMap[date][subject] = (dataMap[date][subject] || 0) + minutes;
       });
 
+      // 週範囲でフィルタ表示（前週・次週切替）
       const { monday, sunday } = getWeekRange(currentWeekOffset);
-      const weekLabel = `${monday.getMonth() + 1}/${monday.getDate()}〜${sunday.getMonth() + 1}/${sunday.getDate()}`;
-      document.getElementById("weekLabel").textContent = `📅 ${weekLabel}`;
-
       const weekDates = [];
       for (let i = 0; i < 7; i++) {
         const d = new Date(monday);
         d.setDate(monday.getDate() + i);
         weekDates.push(d.toISOString().split("T")[0]);
       }
+      const weekLabel = `${monday.getMonth() + 1}/${monday.getDate()}〜${sunday.getMonth() + 1}/${sunday.getDate()}`;
+      document.getElementById("weekLabel").textContent = `📅 ${weekLabel}`;
 
       const allSubjects = ["国語", "数学", "英語", "理科", "社会"];
       const colors = {
@@ -378,10 +378,11 @@
         stack: "stack1"
       }));
 
+      // 週合計を totalStudyTime（分）に入れる
       const totalData = weekDates.map(date =>
         Object.values(dataMap[date] || {}).reduce((sum, val) => sum + val, 0)
       );
-      totalStudyTime = Object.values(dataMap).flatMap(o => Object.values(o)).reduce((a,b)=>a+b,0);
+      totalStudyTime = totalData.reduce((a,b) => a + b, 0);
       updateGoalStatus();
 
       datasets.push({
@@ -413,21 +414,16 @@
           }
         }
       });
-    }
 
-    async function showSummary(uid) {
-      const q = query(collection(db, "study_time"), where("uid", "==", uid));
-      const snapshot = await getDocs(q);
+      // summary（教科合計）表示（週範囲内の合計）
       const totals = {};
-      snapshot.forEach((doc) => {
-        const data = doc.data();
-        const subject = data.subject || "その他";
-        const minutes = Number(data.minutes) || 0;
-        totals[subject] = (totals[subject] || 0) + minutes;
+      weekDates.forEach(date => {
+        const row = dataMap[date] || {};
+        Object.entries(row).forEach(([s,m]) => totals[s] = (totals[s] || 0) + m);
       });
       const summaryDiv = document.getElementById("summary");
       summaryDiv.innerHTML = "";
-      Object.entries(totals).forEach(([s, m]) => {
+      Object.entries(totals).forEach(([s,m]) => {
         const div = document.createElement("div");
         div.classList.add("subject-item");
         div.textContent = `${s}：${m}分`;
@@ -435,16 +431,18 @@
       });
     }
 
+    // ログイン済みでないと開けないようにする（他ページでログインしていればOK）
     onAuthStateChanged(auth, async (user) => {
       if (!user) {
+        // ログインしていなければログインページへ
         window.location.href = "index.html";
         return;
       }
-      currentUser = user;
-      await loadStudyData(user.uid);
-      await showSummary(user.uid);
+      // ログイン済みならデータ読み込み
+      await loadStudyData();
     });
 
+    // 目標フォーム
     document.getElementById("goalForm").addEventListener("submit", (e) => {
       e.preventDefault();
       const val = parseFloat(document.getElementById("goalInput").value);
@@ -456,15 +454,15 @@
       }
     });
 
+    // 学習時間追加（共有コレクションに保存、uidは保存しない）
     document.getElementById("studyForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const subject = document.getElementById("subject").value;
       const minutes = parseInt(document.getElementById("minutes").value);
-      if (!subject || !minutes || !currentUser) return;
+      if (!subject || !minutes) return;
       const today = new Date().toISOString().split("T")[0];
 
       await addDoc(collection(db, "study_time"), {
-        uid: currentUser.uid,
         subject,
         minutes,
         date: today,
@@ -472,21 +470,22 @@
       });
 
       e.target.reset();
-      await loadStudyData(currentUser.uid);
-      await showSummary(currentUser.uid);
+      await loadStudyData();
     });
 
+    // ログアウト
     document.getElementById("logoutBtn").addEventListener("click", () => {
       signOut(auth).then(() => window.location.href = "index.html");
     });
 
+    // 週切替
     document.getElementById("prevWeek").addEventListener("click", async () => {
       currentWeekOffset--;
-      await loadStudyData(currentUser.uid);
+      await loadStudyData();
     });
     document.getElementById("nextWeek").addEventListener("click", async () => {
       currentWeekOffset++;
-      await loadStudyData(currentUser.uid);
+      await loadStudyData();
     });
   </script>
 </body>
