@@ -1,15 +1,168 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>問題編集 - StudyBase</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>問題追加 - StudyBase</title>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
+      authDomain: "akeducationalplatform.firebaseapp.com",
+      projectId: "akeducationalplatform",
+      storageBucket: "akeducationalplatform.firebasestorage.app",
+      messagingSenderId: "778140595189",
+      appId: "1:778140595189:web:301e7490b813b44782a6bc"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // 認証チェック
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = "index.html";
+      } else {
+        loadSubjects();
+      }
+    });
+
+    async function loadSubjects() {
+      const subjectSelect = document.getElementById("subject");
+      subjectSelect.innerHTML = "";
+      const snapshot = await getDocs(collection(db, "subjects"));
+      if (snapshot.empty) {
+        // 初期教科を追加
+        const defaultSubjects = ["古文単語", "地理", "歴史", "公民", "生命", "地学", "物質", "エネルギー", "数学"];
+        for (const sub of defaultSubjects) {
+          await setDoc(doc(db, "subjects", sub), { name: sub });
+        }
+        defaultSubjects.forEach(sub => {
+          const opt = document.createElement("option");
+          opt.value = sub;
+          opt.textContent = sub;
+          subjectSelect.appendChild(opt);
+        });
+      } else {
+        snapshot.forEach(docSnap => {
+          const opt = document.createElement("option");
+          opt.value = docSnap.id;
+          opt.textContent = docSnap.id;
+          subjectSelect.appendChild(opt);
+        });
+      }
+    }
+
+    // 新しい教科を追加
+    window.addSubject = async () => {
+      const newSubject = prompt("追加する教科名を入力してください：");
+      if (!newSubject) return;
+      await setDoc(doc(db, "subjects", newSubject), { name: newSubject });
+      alert("教科を追加しました！");
+      loadSubjects();
+    };
+
+    // 問題を追加
+    window.addQuestion = async () => {
+      const subject = document.getElementById("subject").value;
+      const type = document.getElementById("type").value;
+      const question = document.getElementById("question").value.trim();
+      const answer = document.getElementById("answer").value.trim();
+
+      if (!subject || !type || !question || !answer) {
+        alert("すべての項目を入力してください。");
+        return;
+      }
+
+      await addDoc(collection(db, "questions"), {
+        subject,
+        type,
+        question,
+        answer,
+        timestamp: new Date()
+      });
+
+      alert("問題を追加しました！");
+      document.getElementById("question").value = "";
+      document.getElementById("answer").value = "";
+    };
+
+    // ログアウト
+    window.logout = () => {
+      signOut(auth).then(() => window.location.href = "index.html");
+    };
+  </script>
+
   <style>
     body {
-      font-family: "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
-      background: #f3f4f6;
       margin: 0;
+      font-family: "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+      background-color: #f3f5f7;
+    }
+
+    .navbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(90deg, #000814, #001d6e);
+      color: white;
+      padding: 10px 40px;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 26px;
+      font-weight: bold;
+    }
+
+    .logo img {
+      height: 50px;
+    }
+
+    .menu {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+    }
+
+    .menu a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 16px;
+      transition: 0.2s;
+    }
+
+    .menu a:hover {
+      color: #93c5fd;
+    }
+
+    .logout button {
+      background: #b91c1c;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 6px 16px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 14px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+      transition: background 0.18s ease, box-shadow 0.18s ease, transform 0.12s ease;
+    }
+
+    .logout button:hover {
+      background: #991b1b;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.30);
+      transform: translateY(-1px);
     }
 
     .main {
@@ -21,13 +174,19 @@
       padding: 40px;
     }
 
+    h1 {
+      text-align: center;
+      color: #001d6e;
+      margin-bottom: 30px;
+    }
+
     label {
       display: block;
       margin-top: 15px;
       font-weight: bold;
     }
 
-    input, select, textarea {
+    select, input, textarea {
       width: 100%;
       padding: 10px;
       margin-top: 5px;
@@ -36,7 +195,12 @@
       font-size: 16px;
     }
 
-    button#addBtn {
+    textarea {
+      height: 100px;
+      resize: vertical;
+    }
+
+    #addBtn {
       display: block;
       margin: 25px auto 0;
       padding: 10px 30px;
@@ -50,9 +214,23 @@
       transition: transform 0.2s, box-shadow 0.2s;
     }
 
-    button#addBtn:hover {
+    #addBtn:hover {
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    }
+
+    #addSubjectBtn {
+      background: #059669;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    #addSubjectBtn:hover {
+      background: #047857;
     }
   </style>
 </head>
@@ -63,7 +241,6 @@
       <img src="logo.png" alt="StudyBase ロゴ">
       StudyBase — Your Daily Step to Success.
     </div>
-
     <div class="menu">
       <a href="menu.html">ホーム</a>
       <a href="select.html">テスト</a>
@@ -76,95 +253,25 @@
   </div>
 
   <div class="main">
-    <h1>問題を追加</h1>
-    <label>教科を選択</label>
-    <select id="subjectSelect"></select>
+    <h1>📝 問題を追加</h1>
 
-    <label>問題文</label>
-    <textarea id="questionText" placeholder="例：『古今和歌集』を編集した人物は？"></textarea>
+    <label>教科：</label>
+    <select id="subject"></select>
+    <button id="addSubjectBtn" onclick="addSubject()">＋ 新しい教科を追加</button>
 
-    <label>答え</label>
-    <input type="text" id="answerText" placeholder="例：紀貫之">
+    <label>問題タイプ：</label>
+    <select id="type">
+      <option value="一問一答">一問一答</option>
+      <option value="並び替え">並び替え</option>
+    </select>
 
-    <button id="addBtn">追加する</button>
+    <label>問題文：</label>
+    <textarea id="question" placeholder="問題を入力"></textarea>
+
+    <label>答え：</label>
+    <textarea id="answer" placeholder="答えを入力"></textarea>
+
+    <button id="addBtn" onclick="addQuestion()">追加する</button>
   </div>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyCp-6D2vX7ymQ-TXwZsWWr4_HprZrAhOEI",
-      authDomain: "akeducationalplatform.firebaseapp.com",
-      projectId: "akeducationalplatform",
-      storageBucket: "akeducationalplatform.firebasestorage.app",
-      messagingSenderId: "778140595189",
-      appId: "1:778140595189:web:301e7490b813b44782a6bc"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    const subjectSelect = document.getElementById("subjectSelect");
-    const addBtn = document.getElementById("addBtn");
-
-    // 🔐 ログイン確認
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        alert("ログインが必要です。");
-        window.location.href = "login.html";
-      } else {
-        // 教科リスト読み込み
-        await loadSubjects();
-      }
-    });
-
-    async function loadSubjects() {
-      subjectSelect.innerHTML = "";
-      const snapshot = await getDocs(collection(db, "subjects"));
-      if (snapshot.empty) {
-        const subjects = ["古文単語","地理","歴史","公民","生命","地学","物質","エネルギー","数学"];
-        for (let s of subjects) {
-          await addDoc(collection(db, "subjects"), { name: s });
-        }
-        await loadSubjects();
-        return;
-      }
-      snapshot.forEach((doc) => {
-        const option = document.createElement("option");
-        option.value = doc.data().name;
-        option.textContent = doc.data().name;
-        subjectSelect.appendChild(option);
-      });
-    }
-
-    addBtn.addEventListener("click", async () => {
-      const subject = subjectSelect.value;
-      const question = document.getElementById("questionText").value.trim();
-      const answer = document.getElementById("answerText").value.trim();
-
-      if (!subject || !question || !answer) {
-        alert("全ての項目を入力してください。");
-        return;
-      }
-
-      await addDoc(collection(db, "questions"), {
-        subject, question, answer, createdAt: new Date()
-      });
-
-      alert("追加完了！");
-      document.getElementById("questionText").value = "";
-      document.getElementById("answerText").value = "";
-    });
-
-    // 🔒 ログアウト機能
-    window.logout = function() {
-      signOut(auth).then(() => {
-        window.location.href = "login.html";
-      });
-    };
-  </script>
 </body>
 </html>
