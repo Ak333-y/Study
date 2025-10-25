@@ -3,13 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>問題追加 - StudyBase</title>
+  <title>問題編集 - StudyBase</title>
 
-  <!-- Firebase SDK -->
+  <!-- Firebase 認証チェック -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
-    import { getFirestore, collection, addDoc, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
@@ -22,78 +21,15 @@
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    const db = getFirestore(app);
 
-    // 認証チェック
-    onAuthStateChanged(auth, async (user) => {
+    // ログインチェック
+    onAuthStateChanged(auth, (user) => {
       if (!user) {
         window.location.href = "index.html";
-      } else {
-        loadSubjects();
       }
     });
 
-    async function loadSubjects() {
-      const subjectSelect = document.getElementById("subject");
-      subjectSelect.innerHTML = "";
-      const snapshot = await getDocs(collection(db, "subjects"));
-      if (snapshot.empty) {
-        // 初期教科を追加
-        const defaultSubjects = ["古文単語", "地理", "歴史", "公民", "生命", "地学", "物質", "エネルギー", "数学"];
-        for (const sub of defaultSubjects) {
-          await setDoc(doc(db, "subjects", sub), { name: sub });
-        }
-        defaultSubjects.forEach(sub => {
-          const opt = document.createElement("option");
-          opt.value = sub;
-          opt.textContent = sub;
-          subjectSelect.appendChild(opt);
-        });
-      } else {
-        snapshot.forEach(docSnap => {
-          const opt = document.createElement("option");
-          opt.value = docSnap.id;
-          opt.textContent = docSnap.id;
-          subjectSelect.appendChild(opt);
-        });
-      }
-    }
-
-    // 新しい教科を追加
-    window.addSubject = async () => {
-      const newSubject = prompt("追加する教科名を入力してください：");
-      if (!newSubject) return;
-      await setDoc(doc(db, "subjects", newSubject), { name: newSubject });
-      alert("教科を追加しました！");
-      loadSubjects();
-    };
-
-    // 問題を追加
-    window.addQuestion = async () => {
-      const subject = document.getElementById("subject").value;
-      const type = document.getElementById("type").value;
-      const question = document.getElementById("question").value.trim();
-      const answer = document.getElementById("answer").value.trim();
-
-      if (!subject || !type || !question || !answer) {
-        alert("すべての項目を入力してください。");
-        return;
-      }
-
-      await addDoc(collection(db, "questions"), {
-        subject,
-        type,
-        question,
-        answer,
-        timestamp: new Date()
-      });
-
-      alert("問題を追加しました！");
-      document.getElementById("question").value = "";
-      document.getElementById("answer").value = "";
-    };
-
-    // ログアウト
+    // ログアウト処理
     window.logout = () => {
       signOut(auth).then(() => window.location.href = "index.html");
     };
@@ -113,7 +49,7 @@
       background: linear-gradient(90deg, #000814, #001d6e);
       color: white;
       padding: 10px 40px;
-      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.5);
     }
 
     .logo {
@@ -167,80 +103,64 @@
 
     .main {
       max-width: 700px;
-      margin: 60px auto;
+      margin: 80px auto;
       background: white;
-      border-radius: 10px;
+      border-radius: 12px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      padding: 40px;
+      padding: 50px;
+      text-align: center;
     }
 
     h1 {
-      text-align: center;
       color: #001d6e;
-      margin-bottom: 30px;
+      margin-bottom: 40px;
     }
 
-    label {
-      display: block;
-      margin-top: 15px;
+    .btn-container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .add-btn {
+      width: 80%;
+      padding: 18px;
+      font-size: 18px;
       font-weight: bold;
+      border: none;
+      border-radius: 12px;
+      color: white;
+      cursor: pointer;
+      transition: 0.25s;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
     }
 
-    select, input, textarea {
-      width: 100%;
-      padding: 10px;
-      margin-top: 5px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 16px;
+    .add-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 15px rgba(0,0,0,0.25);
     }
 
-    textarea {
-      height: 100px;
-      resize: vertical;
-    }
-
-    #addBtn {
-      display: block;
-      margin: 25px auto 0;
-      padding: 10px 30px;
+    .btn-one {
       background: linear-gradient(90deg, #2563eb, #1e3a8a);
-      color: white;
-      font-weight: bold;
-      border: none;
-      border-radius: 30px;
-      font-size: 16px;
-      cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
     }
 
-    #addBtn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    .btn-choice {
+      background: linear-gradient(90deg, #16a34a, #166534);
     }
 
-    #addSubjectBtn {
-      background: #059669;
-      color: white;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 6px;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-
-    #addSubjectBtn:hover {
-      background: #047857;
+    .btn-order {
+      background: linear-gradient(90deg, #eab308, #b45309);
     }
   </style>
 </head>
-
 <body>
   <div class="navbar">
     <div class="logo">
       <img src="logo.png" alt="StudyBase ロゴ">
       StudyBase — Your Daily Step to Success.
     </div>
+
     <div class="menu">
       <a href="menu.html">ホーム</a>
       <a href="select.html">テスト</a>
@@ -253,21 +173,13 @@
   </div>
 
   <div class="main">
-    <h1>📝 一問一答を追加</h1>
+    <h1>🧩 追加する問題の種類を選択</h1>
 
-    <label>教科：</label>
-    <select id="subject"></select>
-    <button id="addSubjectBtn" onclick="addSubject()">＋ 新しい教科を追加</button>
-
-    
-
-    <label>問題文：</label>
-    <textarea id="question" placeholder="問題を入力"></textarea>
-
-    <label>答え：</label>
-    <textarea id="answer" placeholder="答えを入力"></textarea>
-
-    <button id="addBtn" onclick="addQuestion()">追加する</button>
+    <div class="btn-container">
+      <button class="add-btn btn-choice" onclick="location.href='add_choice.html'">四択問題を追加</button>
+      <button class="add-btn btn-one" onclick="location.href='add_one.html'">一問一答を追加</button>
+      <button class="add-btn btn-order" onclick="location.href='add_order.html'">並び替え問題を追加</button>
+    </div>
   </div>
 </body>
 </html>
