@@ -176,126 +176,127 @@
   </div>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-    import { 
-      getFirestore, collection, addDoc, getDocs 
-    } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+  import { 
+    getFirestore, collection, addDoc, getDocs 
+  } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
-      authDomain: "akeducationalplatform.firebaseapp.com",
-      projectId: "akeducationalplatform",
-      storageBucket: "akeducationalplatform.firebasestorage.app",
-      messagingSenderId: "778140595189",
-      appId: "1:778140595189:web:301e7490b813b44782a6bc"
+  const firebaseConfig = {
+    apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
+    authDomain: "akeducationalplatform.firebaseapp.com",
+    projectId: "akeducationalplatform",
+    storageBucket: "akeducationalplatform.firebasestorage.app",
+    messagingSenderId: "778140595189",
+    appId: "1:778140595189:web:301e7490b813b44782a6bc"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
+
+  // 🔐 ログインチェック
+  onAuthStateChanged(auth, (user) => {
+    if (!user) {
+      alert("ログインしてください！");
+      window.location.href = "index.html";
+    } else {
+      loadSubjects();
+    }
+  });
+
+  // 🔸 教科一覧読み込み
+  async function loadSubjects() {
+    const select = document.getElementById("subject");
+    select.innerHTML = `<option value="">教科を選択</option>`;
+    const snapshot = await getDocs(collection(db, "subjects"));
+    snapshot.forEach(doc => {
+      const name = doc.data().name;
+      const option = document.createElement("option");
+      option.value = name;
+      option.textContent = name;
+      select.appendChild(option);
+    });
+  }
+
+  // 🔹 教科を追加
+  window.addNewSubject = async function() {
+    const newSubject = prompt("追加する教科名を入力してください：");
+    if (!newSubject) return;
+    await addDoc(collection(db, "subjects"), { name: newSubject });
+    alert("新しい教科を追加しました！");
+    loadSubjects();
+  };
+
+  // 🔸 答え欄生成
+  window.generateAnswerInputs = function() {
+    const choices = [
+      document.getElementById("choiceA").value.trim(),
+      document.getElementById("choiceB").value.trim(),
+      document.getElementById("choiceC").value.trim(),
+      document.getElementById("choiceD").value.trim(),
+      document.getElementById("choiceE").value.trim()
+    ];
+
+    const validChoices = choices.filter(c => c !== "");
+    const container = document.getElementById("answerOrderContainer");
+    container.innerHTML = "";
+
+    validChoices.forEach((_, i) => {
+      const input = document.createElement("input");
+      input.type = "text";
+      input.placeholder = `${i + 1}番目の記号（例：ア）`;
+      input.id = `answer${i + 1}`;
+      container.appendChild(input);
+      container.appendChild(document.createElement("br"));
+    });
+  };
+
+  // 🔹 Firestore保存
+  window.saveOrderQuestion = async function() {
+    const subject = document.getElementById("subject").value;
+    const question = document.getElementById("question").value;
+    const choices = {
+      A: document.getElementById("choiceA").value.trim(),
+      B: document.getElementById("choiceB").value.trim(),
+      C: document.getElementById("choiceC").value.trim(),
+      D: document.getElementById("choiceD").value.trim(),
+      E: document.getElementById("choiceE").value.trim()
     };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
-
-    // 🔐 ログインチェック
-    onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        alert("ログインしてください！");
-        window.location.href = "index.html";
-      } else {
-        loadSubjects();
-      }
-    });
-
-    // 🔸 教科一覧読み込み
-    async function loadSubjects() {
-      const select = document.getElementById("subject");
-      select.innerHTML = `<option value="">教科を選択</option>`;
-      const snapshot = await getDocs(collection(db, "subjects"));
-      snapshot.forEach(doc => {
-        const name = doc.data().name;
-        const option = document.createElement("option");
-        option.value = name;
-        option.textContent = name;
-        select.appendChild(option);
-      });
+    const answers = [];
+    for (let i = 1; i <= 5; i++) {
+      const val = document.getElementById(`answer${i}`);
+      if (val && val.value.trim() !== "") answers.push(val.value.trim());
     }
 
-    // 🔹 教科を追加
-    window.addNewSubject = async function() {
-      const newSubject = prompt("追加する教科名を入力してください：");
-      if (!newSubject) return;
-      await addDoc(collection(db, "subjects"), { name: newSubject });
-      alert("新しい教科を追加しました！");
-      loadSubjects();
-    };
+    if (!subject || !question || answers.length === 0) {
+      alert("全ての必須項目を入力してください！");
+      return;
+    }
 
-    // 🔸 答え欄生成
-    window.generateAnswerInputs = function() {
-      const choices = [
-        document.getElementById("choiceA").value.trim(),
-        document.getElementById("choiceB").value.trim(),
-        document.getElementById("choiceC").value.trim(),
-        document.getElementById("choiceD").value.trim(),
-        document.getElementById("choiceE").value.trim()
-      ];
-
-      const validChoices = choices.filter(c => c !== "");
-      const container = document.getElementById("answerOrderContainer");
-      container.innerHTML = "";
-
-      validChoices.forEach((_, i) => {
-        const input = document.createElement("input");
-        input.type = "text";
-        input.placeholder = `${i + 1}番目の記号（例：ア）`;
-        input.id = `answer${i + 1}`;
-        container.appendChild(input);
-        container.appendChild(document.createElement("br"));
+    try {
+      await addDoc(collection(db, "questions"), { // ← コレクション統一！
+        type: "並び替え", // ← 問題形式を明記
+        subject,
+        question,
+        choices,
+        answer: answers,
+        createdAt: new Date().toISOString()
       });
-    };
+      alert("問題を追加しました！");
+      location.reload();
+    } catch (e) {
+      alert("エラーが発生しました: " + e.message);
+    }
+  };
 
-    // 🔹 Firestore保存
-    window.saveOrderQuestion = async function() {
-      const subject = document.getElementById("subject").value;
-      const question = document.getElementById("question").value;
-      const choices = {
-        A: document.getElementById("choiceA").value.trim(),
-        B: document.getElementById("choiceB").value.trim(),
-        C: document.getElementById("choiceC").value.trim(),
-        D: document.getElementById("choiceD").value.trim(),
-        E: document.getElementById("choiceE").value.trim()
-      };
-
-      const answers = [];
-      for (let i = 1; i <= 5; i++) {
-        const val = document.getElementById(`answer${i}`);
-        if (val && val.value.trim() !== "") answers.push(val.value.trim());
-      }
-
-      if (!subject || !question || answers.length === 0) {
-        alert("全ての必須項目を入力してください！");
-        return;
-      }
-
-      try {
-        await addDoc(collection(db, "並び替え"), {
-          subject,
-          question,
-          choices,
-          answer: answers,
-          createdAt: new Date().toISOString()
-        });
-        alert("問題を追加しました！");
-        location.reload();
-      } catch (e) {
-        alert("エラーが発生しました: " + e.message);
-      }
-    };
-
-    // ログアウト
-    window.logout = function() {
-      signOut(auth).then(() => {
-        window.location.href = "index.html";
-      });
-    };
+  // ログアウト
+  window.logout = function() {
+    signOut(auth).then(() => {
+      window.location.href = "index.html";
+    });
+  };
   </script>
 </body>
 </html>
