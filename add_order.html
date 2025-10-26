@@ -3,124 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>並び替え問題追加 - StudyBase</title>
-
-  <!-- Firebase SDK -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
-    import { getFirestore, collection, addDoc, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
-      authDomain: "akeducationalplatform.firebaseapp.com",
-      projectId: "akeducationalplatform",
-      storageBucket: "akeducationalplatform.firebasestorage.app",
-      messagingSenderId: "778140595189",
-      appId: "1:778140595189:web:301e7490b813b44782a6bc"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    // 🔒 ログイン認証
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        window.location.href = "index.html";
-      } else {
-        loadSubjects();
-      }
-    });
-
-    // 📚 教科読み込み
-    async function loadSubjects() {
-      const subjectSelect = document.getElementById("subject");
-      subjectSelect.innerHTML = "";
-      const snapshot = await getDocs(collection(db, "subjects"));
-      if (snapshot.empty) {
-        const defaultSubjects = ["歴史", "地理", "公民", "生命", "地学", "物質", "エネルギー", "古文単語"];
-        for (const sub of defaultSubjects) {
-          await setDoc(doc(db, "subjects", sub), { name: sub });
-        }
-        defaultSubjects.forEach(sub => {
-          const opt = document.createElement("option");
-          opt.value = sub;
-          opt.textContent = sub;
-          subjectSelect.appendChild(opt);
-        });
-      } else {
-        snapshot.forEach(docSnap => {
-          const opt = document.createElement("option");
-          opt.value = docSnap.id;
-          opt.textContent = docSnap.id;
-          subjectSelect.appendChild(opt);
-        });
-      }
-    }
-
-    // 🆕 教科追加
-    window.addSubject = async () => {
-      const newSubject = prompt("追加する教科名を入力してください：");
-      if (!newSubject) return;
-      await setDoc(doc(db, "subjects", newSubject), { name: newSubject });
-      alert("教科を追加しました！");
-      loadSubjects();
-    };
-
-    // 💾 並び替え問題追加
-    window.addOrderQuestion = async () => {
-      const subject = document.getElementById("subject").value;
-      const question = document.getElementById("question").value.trim();
-      const options = [
-        document.getElementById("optA").value.trim(),
-        document.getElementById("optB").value.trim(),
-        document.getElementById("optC").value.trim(),
-        document.getElementById("optD").value.trim(),
-        document.getElementById("optE").value.trim()
-      ].filter(v => v !== "");
-
-      const order = [
-        document.getElementById("ans1").value,
-        document.getElementById("ans2").value,
-        document.getElementById("ans3").value,
-        document.getElementById("ans4").value,
-        document.getElementById("ans5").value
-      ].filter(v => v !== "");
-
-      if (!subject || !question || options.length < 2 || order.length < 2) {
-        alert("問題文・選択肢（2つ以上）・答えの順番を入力してください。");
-        return;
-      }
-
-      await addDoc(collection(db, "questions"), {
-        subject,
-        type: "並び替え",
-        question,
-        options,
-        answerOrder: order,
-        timestamp: new Date()
-      });
-
-      alert("並び替え問題を追加しました！");
-      document.getElementById("question").value = "";
-      document.querySelectorAll("input[type=text]").forEach(i => i.value = "");
-    };
-
-    // 🚪 ログアウト
-    window.logout = () => {
-      signOut(auth).then(() => window.location.href = "index.html");
-    };
-  </script>
-
+  <title>並び替え問題追加 | StudyBase</title>
+  <link rel="icon" href="logo.png" />
   <style>
     body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f1f5f9;
       margin: 0;
-      font-family: "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
-      background-color: #f3f5f7;
     }
 
-    /* 上のバー（共通） */
     .navbar {
       display: flex;
       align-items: center;
@@ -131,11 +22,35 @@
       box-shadow: 0 3px 10px rgba(0,0,0,0.5);
     }
 
-    .logo { display: flex; align-items: center; gap: 10px; font-size: 26px; font-weight: bold; }
-    .logo img { height: 50px; }
-    .menu { display: flex; align-items: center; gap: 30px; }
-    .menu a { color: white; text-decoration: none; font-weight: bold; font-size: 16px; transition: 0.2s; }
-    .menu a:hover { color: #93c5fd; }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 26px;
+      font-weight: bold;
+    }
+
+    .logo img {
+      height: 50px;
+    }
+
+    .menu {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+    }
+
+    .menu a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 16px;
+      transition: 0.2s;
+    }
+
+    .menu a:hover {
+      color: #93c5fd;
+    }
 
     .logout button {
       background: #b91c1c;
@@ -149,53 +64,66 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.25);
       transition: background 0.18s ease, box-shadow 0.18s ease, transform 0.12s ease;
     }
-    .logout button:hover { background: #991b1b; transform: translateY(-1px); }
 
-    /* メイン部分 */
+    .logout button:hover {
+      background: #991b1b;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.30);
+      transform: translateY(-1px);
+    }
+
     .main {
       max-width: 700px;
-      margin: 60px auto;
+      margin: 80px auto;
       background: white;
-      border-radius: 10px;
+      border-radius: 12px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      padding: 40px;
+      padding: 50px;
+      text-align: center;
     }
 
-    h1 { text-align: center; color: #001d6e; margin-bottom: 30px; }
-
-    label { display: block; margin-top: 15px; font-weight: bold; }
+    h1 {
+      color: #001d6e;
+      margin-bottom: 40px;
+    }
 
     select, input, textarea {
-      width: 100%; padding: 10px; margin-top: 5px;
-      border: 1px solid #ccc; border-radius: 6px; font-size: 16px;
+      width: 90%;
+      padding: 12px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
     }
 
-    textarea { height: 100px; resize: vertical; }
-
-    #addBtn {
-      display: block; margin: 25px auto 0;
-      padding: 10px 30px; background: linear-gradient(90deg, #eab308, #b45309);
-      color: white; font-weight: bold; border: none; border-radius: 30px;
-      font-size: 16px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+    button {
+      background: linear-gradient(90deg, #2563eb, #1e3a8a);
+      color: white;
+      font-weight: bold;
+      border: none;
+      border-radius: 10px;
+      padding: 14px 30px;
+      cursor: pointer;
+      transition: 0.25s;
+      margin-top: 20px;
     }
 
-    #addBtn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.25); }
-
-    #addSubjectBtn {
-      background: #059669; color: white; border: none;
-      padding: 6px 12px; border-radius: 6px; cursor: pointer; margin-top: 10px;
+    button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 15px rgba(0,0,0,0.25);
     }
-    #addSubjectBtn:hover { background: #047857; }
+
+    .answer-container {
+      margin-top: 20px;
+    }
   </style>
 </head>
-
 <body>
-  <!-- 共通バー -->
   <div class="navbar">
     <div class="logo">
       <img src="logo.png" alt="StudyBase ロゴ">
       StudyBase — Your Daily Step to Success.
     </div>
+
     <div class="menu">
       <a href="menu.html">ホーム</a>
       <a href="select.html">テスト</a>
@@ -207,34 +135,131 @@
     </div>
   </div>
 
-  <!-- メイン -->
   <div class="main">
-    <h1>🔄 並び替え問題を追加</h1>
+    <h1>並び替え問題を追加</h1>
+    <select id="subject">
+      <option value="">教科を選択</option>
+      <option value="history">歴史</option>
+      <option value="geography">地理</option>
+      <option value="civics">公民</option>
+      <option value="life">生命</option>
+      <option value="earth">地学</option>
+      <option value="matter">物質</option>
+      <option value="energy">エネルギー</option>
+      <option value="kobun">古文単語</option>
+    </select>
 
-    <label>教科：</label>
-    <select id="subject"></select>
-    <button id="addSubjectBtn" onclick="addSubject()">＋ 新しい教科を追加</button>
+    <textarea id="question" placeholder="問題文を入力（例：次のア〜ウの出来事を年代の古い順に並び替えなさい）"></textarea>
 
-    <label>問題文：</label>
-    <textarea id="question" placeholder="例：次の出来事を年代の古い順に並べなさい"></textarea>
-
-    <label>選択肢：</label>
-    <input id="optA" type="text" placeholder="アの内容">
-    <input id="optB" type="text" placeholder="イの内容">
-    <input id="optC" type="text" placeholder="ウの内容">
-    <input id="optD" type="text" placeholder="エの内容（任意）">
-    <input id="optE" type="text" placeholder="オの内容（任意）">
-
-    <label>正しい順番（記号で選択）：</label>
-    <div style="display:flex; gap:10px; flex-wrap:wrap;">
-      <select id="ans1"><option value="">1番目</option><option>ア</option><option>イ</option><option>ウ</option><option>エ</option><option>オ</option></select>
-      <select id="ans2"><option value="">2番目</option><option>ア</option><option>イ</option><option>ウ</option><option>エ</option><option>オ</option></select>
-      <select id="ans3"><option value="">3番目</option><option>ア</option><option>イ</option><option>ウ</option><option>エ</option><option>オ</option></select>
-      <select id="ans4"><option value="">4番目</option><option>ア</option><option>イ</option><option>ウ</option><option>エ</option><option>オ</option></select>
-      <select id="ans5"><option value="">5番目</option><option>ア</option><option>イ</option><option>ウ</option><option>エ</option><option>オ</option></select>
+    <div class="choices">
+      <input type="text" id="choiceA" placeholder="ア：" />
+      <input type="text" id="choiceB" placeholder="イ：" />
+      <input type="text" id="choiceC" placeholder="ウ：" />
+      <input type="text" id="choiceD" placeholder="エ：" />
+      <input type="text" id="choiceE" placeholder="オ：" />
     </div>
 
-    <button id="addBtn" onclick="addOrderQuestion()">追加する</button>
+    <button onclick="generateAnswerInputs()">答え欄を作成</button>
+
+    <div id="answerOrderContainer" class="answer-container"></div>
+
+    <button onclick="saveOrderQuestion()">問題を保存</button>
   </div>
+
+  <script type="module">
+    // Firebase設定
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
+      authDomain: "akeducationalplatform.firebaseapp.com",
+      projectId: "akeducationalplatform",
+      storageBucket: "akeducationalplatform.firebasestorage.app",
+      messagingSenderId: "778140595189",
+      appId: "1:778140595189:web:301e7490b813b44782a6bc"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    // ログイン確認
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        alert("ログインしてください！");
+        window.location.href = "index.html";
+      }
+    });
+
+    // ログアウト
+    window.logout = function() {
+      signOut(auth).then(() => {
+        window.location.href = "index.html";
+      });
+    };
+
+    // 答え欄生成
+    window.generateAnswerInputs = function() {
+      const choices = [
+        document.getElementById("choiceA").value.trim(),
+        document.getElementById("choiceB").value.trim(),
+        document.getElementById("choiceC").value.trim(),
+        document.getElementById("choiceD").value.trim(),
+        document.getElementById("choiceE").value.trim()
+      ];
+
+      const validChoices = choices.filter(c => c !== "");
+      const container = document.getElementById("answerOrderContainer");
+      container.innerHTML = "";
+
+      validChoices.forEach((c, i) => {
+        const input = document.createElement("input");
+        input.type = "text";
+        input.placeholder = `${i + 1}番目の記号（例：ア）`;
+        input.id = `answer${i + 1}`;
+        container.appendChild(input);
+        container.appendChild(document.createElement("br"));
+      });
+    };
+
+    // Firestoreに保存
+    window.saveOrderQuestion = async function() {
+      const subject = document.getElementById("subject").value;
+      const question = document.getElementById("question").value;
+      const choices = {
+        A: document.getElementById("choiceA").value.trim(),
+        B: document.getElementById("choiceB").value.trim(),
+        C: document.getElementById("choiceC").value.trim(),
+        D: document.getElementById("choiceD").value.trim(),
+        E: document.getElementById("choiceE").value.trim()
+      };
+
+      const answers = [];
+      for (let i = 1; i <= 5; i++) {
+        const val = document.getElementById(`answer${i}`);
+        if (val && val.value.trim() !== "") answers.push(val.value.trim());
+      }
+
+      if (!subject || !question || answers.length === 0) {
+        alert("全ての必須項目を入力してください！");
+        return;
+      }
+
+      try {
+        await addDoc(collection(db, `order_questions_${subject}`), {
+          question,
+          choices,
+          answer: answers,
+          createdAt: new Date().toISOString()
+        });
+        alert("問題を追加しました！");
+        location.reload();
+      } catch (e) {
+        alert("エラーが発生しました: " + e.message);
+      }
+    };
+  </script>
 </body>
 </html>
