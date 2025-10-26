@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>問題編集・削除 | StudyBase</title>
+
   <style>
     body {
       font-family: "Segoe UI", sans-serif;
@@ -11,6 +12,7 @@
       background: #f3f4f6;
     }
 
+    /* ナビバー */
     .navbar {
       display: flex;
       align-items: center;
@@ -70,6 +72,7 @@
       transform: translateY(-1px);
     }
 
+    /* メイン */
     .main {
       max-width: 900px;
       margin: 80px auto;
@@ -139,7 +142,7 @@
       margin-top: 10px;
     }
 
-    .edit-btn, .save-btn {
+    .edit-btn {
       background: #16a34a;
       color: white;
       border: none;
@@ -159,13 +162,22 @@
       font-weight: bold;
     }
 
-    textarea, input.edit-input {
+    .save-btn {
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    textarea {
       width: 100%;
-      margin: 5px 0;
-      padding: 6px;
+      padding: 8px;
       border-radius: 6px;
       border: 1px solid #ccc;
-      font-size: 14px;
+      resize: vertical;
     }
   </style>
 </head>
@@ -179,7 +191,7 @@
       <a href="menu.html">ホーム</a>
       <a href="select.html">テスト</a>
       <a href="history.html">過去の成績</a>
-      <a href="add_question.html">問題編集</a>
+      <a href="add_question.html">問題追加</a>
       <div class="logout">
         <button onclick="logout()">ログアウト</button>
       </div>
@@ -234,9 +246,10 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
+    // 🔐 ログインチェック
     onAuthStateChanged(auth, user => {
       if (!user) {
-        alert("ログインが必要です");
+        alert("ログインが必要です！");
         window.location.href = "login.html";
       } else {
         loadQuestions();
@@ -244,84 +257,73 @@
     });
 
     async function loadQuestions() {
-  const subject = document.getElementById("subjectFilter").value;
-  const type = document.getElementById("typeFilter").value;
-  const keyword = document.getElementById("keywordInput").value.trim();
+      const subject = document.getElementById("subjectFilter").value;
+      const type = document.getElementById("typeFilter").value;
+      const keyword = document.getElementById("keywordInput").value.trim();
 
-  const questionList = document.getElementById("questionList");
-  questionList.innerHTML = "<p>読み込み中...</p>";
+      const questionList = document.getElementById("questionList");
+      questionList.innerHTML = "<p>読み込み中...</p>";
 
-  const types = ["一問一答", "四択", "並び替え"];
-  let results = [];
+      const types = type ? [type] : ["一問一答", "四択", "並び替え"];
+      let results = [];
 
-  for (const t of types) {
-    // もし「形式」が指定されていて、今のコレクションが違うならスキップ
-    if (type && type !== t) continue;
-
-    const colRef = collection(db, t);
-    const snapshot = await getDocs(colRef);
-
-    snapshot.forEach(docSnap => {
-      const data = docSnap.data();
-      if (
-        (!subject || data.subject === subject) &&
-        (!keyword ||
-          (data.question && data.question.includes(keyword)) ||
-          (data.answer && data.answer.includes(keyword)))
-      ) {
-        results.push({ id: docSnap.id, ...data, format: t });
+      for (const t of types) {
+        const colRef = collection(db, t);
+        const snapshot = await getDocs(colRef);
+        snapshot.forEach(docSnap => {
+          const data = docSnap.data();
+          if (
+            (!subject || data.subject === subject) &&
+            (!keyword ||
+              (data.question && data.question.includes(keyword)) ||
+              (data.answer && data.answer.includes(keyword)))
+          ) {
+            results.push({ id: docSnap.id, ...data, format: t });
+          }
+        });
       }
-    });
-  }
 
-  questionList.innerHTML = "";
-  if (results.length === 0) {
-    questionList.innerHTML = "<p>該当する問題はありません。</p>";
-    return;
-  }
-
-  results.forEach(q => {
-    const div = document.createElement("div");
-    div.className = "question-card";
-    div.innerHTML = `
-      <h3>${q.question}</h3>
-      <p><strong>答え：</strong>${q.answer}</p>
-      <p><strong>教科：</strong>${q.subject}　/　<strong>形式：</strong>${q.format}</p>
-      <div class="actions">
-        <button class="edit-btn" onclick="editQuestion('${q.format}', '${q.id}')">✏️ 編集</button>
-        <button class="delete-btn" onclick="deleteQuestion('${q.format}', '${q.id}')">🗑️ 削除</button>
-      </div>
-    `;
-    questionList.appendChild(div);
-  });
-    }
-
-    window.saveQuestion = async (id) => {
-      const question = document.getElementById(`q-${id}`).value.trim();
-      const answer = document.getElementById(`a-${id}`).value.trim();
-
-      if (!question || !answer) {
-        alert("問題文と答えを入力してください！");
+      questionList.innerHTML = "";
+      if (results.length === 0) {
+        questionList.innerHTML = "<p>該当する問題はありません。</p>";
         return;
       }
 
-      await updateDoc(doc(db, "questions", id), {
-        question,
-        answer
+      results.forEach(q => {
+        const div = document.createElement("div");
+        div.className = "question-card";
+        div.innerHTML = `
+          <textarea id="q_${q.id}" rows="2">${q.question}</textarea>
+          <textarea id="a_${q.id}" rows="1">${q.answer}</textarea>
+          <p><strong>教科：</strong>${q.subject}　/　<strong>形式：</strong>${q.format}</p>
+          <div class="actions">
+            <button class="save-btn" onclick="saveQuestion('${q.format}', '${q.id}')">💾 保存</button>
+            <button class="delete-btn" onclick="deleteQuestion('${q.format}', '${q.id}')">🗑️ 削除</button>
+          </div>
+        `;
+        questionList.appendChild(div);
       });
+    }
 
-      alert("更新しました！");
-      loadQuestions();
+    // 🔄 編集内容保存
+    window.saveQuestion = async (type, id) => {
+      const qText = document.getElementById(`q_${id}`).value.trim();
+      const aText = document.getElementById(`a_${id}`).value.trim();
+      if (!qText || !aText) return alert("問題文と答えは必須です！");
+      await updateDoc(doc(db, type, id), { question: qText, answer: aText });
+      alert("保存しました！");
     };
 
-    window.deleteQuestion = async (id) => {
+    // 🗑️ 削除
+    window.deleteQuestion = async (type, id) => {
       if (confirm("本当に削除しますか？")) {
-        await deleteDoc(doc(db, "questions", id));
+        await deleteDoc(doc(db, type, id));
         alert("削除しました！");
         loadQuestions();
       }
     };
 
+    // 🚪 ログアウト
     window.logout = () => {
       signOut(auth).then(() => {
         window.location.href = "login.html";
