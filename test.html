@@ -211,7 +211,35 @@
       }
     });
 
+   async function loadQuestions() {
+  try {
     const subject = sessionStorage.getItem("subject");
+    if (!subject) {
+      document.getElementById("questionArea").innerHTML = "<p>⚠️教科が選択されていません。</p>";
+      return;
+    }
+
+    const q = query(collection(db, "questions"), where("subject", "==", subject));
+    const snapshot = await getDocs(q);
+
+    const allQuestions = [];
+    snapshot.forEach(doc => {
+      allQuestions.push({ id: doc.id, ...doc.data() });
+    });
+
+    if (allQuestions.length === 0) {
+      document.getElementById("questionArea").innerHTML = "<p>⚠️この教科にはまだ問題が登録されていません。</p>";
+      return;
+    }
+
+    questions = allQuestions.sort(() => Math.random() - 0.5).slice(0, questionCount);
+    showQuestion();
+  } catch (error) {
+    console.error("エラー:", error);
+    document.getElementById("questionArea").innerHTML = `<p>❌ エラーが発生しました：${error.message}</p>`;
+  }
+}
+
     const questionCount = Number(sessionStorage.getItem("questionCount"));
     document.getElementById("testTitle").innerText = `${subject}テスト（全${questionCount}問）`;
 
