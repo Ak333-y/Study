@@ -90,7 +90,7 @@
         document.getElementById("choice3").value.trim(),
         document.getElementById("choice4").value.trim()
       ];
-      const correct = document.getElementById("correct").value;
+      const answer = document.getElementById("answer").value;
 
       if (!subject || !question || choices.some(c => c === "") || !correct) {
         alert("すべての項目を入力してください。");
@@ -111,7 +111,7 @@
       for (let i = 1; i <= 4; i++) {
         document.getElementById(`choice${i}`).value = "";
       }
-      document.getElementById("correct").value = "";
+      document.getElementById("answer").value = "";
     };
 
     // 🚪 ログアウト
@@ -278,7 +278,7 @@
     <input id="choice4" placeholder="選択肢4を入力">
 
     <label>正解の番号（1〜4）：</label>
-    <input id="correct" type="number" min="1" max="4" placeholder="正解番号を入力">
+    <input id="answer" type="number" min="1" max="4" placeholder="正解番号を入力">
 
     <button id="addBtn" onclick="addChoiceQuestion()">追加する</button>
   </div>
