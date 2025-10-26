@@ -212,17 +212,21 @@
           <input id="a_${id}" type="number" value="${data.answer}" class="w-full p-2 border rounded" />
         `;
       } else if (data.type === "並び替え") {
+        const choices = Array.isArray(data.choices)
+          ? data.choices
+          : Object.values(data.choices);
+
         return `
           <div id="choices_${id}">
-            ${Object.entries(data.choices).map(([num, text]) => `
+            ${choices.map((text, i) => `
               <div class="flex gap-2 mt-2">
-                <input id="c${num}_${id}" type="text" value="${text}" class="w-full p-2 border rounded" />
-                <button class="bg-gray-400 text-white px-2 rounded remove-choice" data-id="${id}" data-index="${num}">×</button>
+                <input id="c${i}_${id}" type="text" value="${text}" class="w-full p-2 border rounded" />
+                <button class="bg-gray-400 text-white px-2 rounded remove-choice" data-id="${id}" data-index="${i}">×</button>
               </div>`).join("")}
           </div>
           <button class="bg-green-400 text-white px-2 py-1 mt-2 rounded add-choice" data-id="${id}">＋パーツ追加</button>
           <label class="block mt-2 font-semibold">正解順（カンマ区切り）：</label>
-          <input id="a_${id}" type="text" value="${data.answer.join(",")}" class="w-full p-2 border rounded" />
+          <input id="a_${id}" type="text" value="${Array.isArray(data.answer) ? data.answer.join(",") : data.answer}" class="w-full p-2 border rounded" />
         `;
       }
       return "";
@@ -241,8 +245,7 @@
         updateData.answer = parseInt(document.getElementById(`a_${id}`).value, 10);
       } else if (data.type === "並び替え") {
         const inputs = document.querySelectorAll(`#choices_${id} input`);
-        const newChoices = {};
-        inputs.forEach((input, index) => newChoices[index + 1] = input.value);
+        const newChoices = Array.from(inputs).map(i => i.value);
         updateData.choices = newChoices;
         updateData.answer = document.getElementById(`a_${id}`).value.split(",").map(x => x.trim());
       }
@@ -259,7 +262,6 @@
     document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("searchBtn").addEventListener("click", loadQuestions);
 
-      // 動的イベント（追加・削除）監視
       document.addEventListener("click", async (e) => {
         if (e.target.classList.contains("add-choice")) {
           const id = e.target.dataset.id;
