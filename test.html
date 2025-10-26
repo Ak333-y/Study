@@ -220,7 +220,28 @@
     let correctCount = 0;
 
     async function loadQuestions() {
-      const snapshot = await getDocs(collection(db, subject));
+      import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+async function loadQuestions() {
+  // questionsコレクションから、選んだ教科だけ取る！
+  const q = query(collection(db, "questions"), where("subject", "==", subject));
+  const snapshot = await getDocs(q);
+
+  const allQuestions = [];
+  snapshot.forEach(doc => {
+    allQuestions.push({ id: doc.id, ...doc.data() });
+  });
+
+  if (allQuestions.length === 0) {
+    document.getElementById("questionArea").innerHTML = "<p>⚠️この教科にはまだ問題が登録されていません！</p>";
+    return;
+  }
+
+  // ランダムにシャッフルして出題数ぶんだけ取る
+  questions = allQuestions.sort(() => Math.random() - 0.5).slice(0, questionCount);
+  showQuestion();
+}
+
       const allQuestions = [];
       snapshot.forEach(doc => {
         allQuestions.push({ id: doc.id, ...doc.data() });
