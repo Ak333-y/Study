@@ -208,61 +208,74 @@
     };
 
     window.generateAnswerInputs = function() {
-      const choices = {};
-["1", "2", "3", "4", "5"].forEach((key, i) => {
-  const val = document.getElementById(`choice${i + 1}`).value.trim();
-  if (val) choices[key] = val;
-});
-      const validChoices = choices.filter(c => c !== "");
-      const container = document.getElementById("answerOrderContainer");
-      container.innerHTML = "";
-      validChoices.forEach((_, i) => {
-        const input = document.createElement("input");
-        input.type = "number";
-        input.placeholder = `${i + 1}番目の番号（例：1）`;
-        input.id = `answer${i + 1}`;
-        container.appendChild(input);
-        container.appendChild(document.createElement("br"));
-      });
-    };
+  // 入力された選択肢を配列に
+  const choices = [];
+  for (let i = 1; i <= 5; i++) {
+    const val = document.getElementById(`choice${i}`).value.trim();
+    if (val) choices.push(val);
+  }
 
-    window.saveOrderQuestion = async function() {
-      const subject = document.getElementById("subject").value;
-      const question = document.getElementById("question").value;
-      const choices = {
-        1: document.getElementById("choice1").value.trim(),
-        2: document.getElementById("choice2").value.trim(),
-        3: document.getElementById("choice3").value.trim(),
-        4: document.getElementById("choice4").value.trim(),
-        5: document.getElementById("choice5").value.trim()
-      };
+  // 答え入力欄をリセット
+  const container = document.getElementById("answerOrderContainer");
+  container.innerHTML = "";
 
-      const answers = [];
-      for (let i = 1; i <= 5; i++) {
-        const val = document.getElementById(`answer${i}`);
-        if (val && val.value.trim() !== "") answers.push(val.value.trim());
-      }
+  // 入力された選択肢の数だけ答え欄を作成
+  choices.forEach((_, i) => {
+    const input = document.createElement("input");
+    input.type = "number";
+    input.placeholder = `${i + 1}番目の正しい番号（例：1）`;
+    input.id = `answer${i + 1}`;
+    input.min = 1;
+    input.max = choices.length;
+    container.appendChild(input);
+    container.appendChild(document.createElement("br"));
+  });
+};
 
-      if (!subject || !question || answers.length === 0) {
-        alert("全ての必須項目を入力してください！");
-        return;
-      }
+window.saveOrderQuestion = async function() {
+  const subject = document.getElementById("subject").value;
+  const question = document.getElementById("question").value.trim();
 
-      try {
-        await addDoc(collection(db, "questions"), {
-          subject,
-          type: "並び替え",
-          question,
-          choices,
-          answer: answers,
-          createdAt: new Date().toISOString()
-        });
-        alert("問題を追加しました！");
-        location.reload();
-      } catch (e) {
-        alert("エラーが発生しました: " + e.message);
-      }
-    };
+  // 選択肢を順番通りに格納（空欄は除外）
+  const choices = {};
+  let index = 1;
+  for (let i = 1; i <= 5; i++) {
+    const val = document.getElementById(`choice${i}`).value.trim();
+    if (val) {
+      choices[index.toString()] = val;
+      index++;
+    }
+  }
+
+  // 答え欄の値を取得
+  const answers = [];
+  for (let i = 1; i <= Object.keys(choices).length; i++) {
+    const input = document.getElementById(`answer${i}`);
+    if (input && input.value.trim() !== "") {
+      answers.push(input.value.trim());
+    }
+  }
+
+  if (!subject || !question || answers.length === 0) {
+    alert("全ての必須項目を入力してください！");
+    return;
+  }
+
+  try {
+    await addDoc(collection(db, "questions"), {
+      subject,
+      type: "並び替え",
+      question,
+      choices,
+      answer: answers,
+      createdAt: new Date().toISOString()
+    });
+    alert("問題を追加しました！");
+    location.reload();
+  } catch (e) {
+    alert("エラーが発生しました: " + e.message);
+  }
+};
 
     window.logout = function() {
       signOut(auth).then(() => {
