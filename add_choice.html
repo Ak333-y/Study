@@ -90,21 +90,21 @@
         document.getElementById("choice3").value.trim(),
         document.getElementById("choice4").value.trim()
       ];
-      const answer = document.getElementById("answer").value;
+      const answer = parseInt(document.getElementById("answer").value, 10);
 
-      if (!subject || !question || choices.some(c => c === "") || !answer) {
-        alert("すべての項目を入力してください。");
-        return;
-      }
+if (!subject || !question || choices.some(c => c.trim() === "") || !answer) {
+  alert("すべての項目を入力してください。");
+  return;
+}
 
-      await addDoc(collection(db, "questions"), {
-        subject,
-        type: "四択",
-        question,
-        choices,
-        answer,
-        timestamp: new Date()
-      });
+await addDoc(collection(db, "questions"), {
+  subject,
+  type: "四択",
+  question,
+  choices,
+  answer,  // 数値として保存される
+  timestamp: new Date()
+});
 
       alert("四択問題を追加しました！");
       document.getElementById("question").value = "";
