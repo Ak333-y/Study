@@ -11,7 +11,6 @@
       background: #f1f5f9;
       margin: 0;
     }
-
     .navbar {
       display: flex;
       align-items: center;
@@ -21,7 +20,6 @@
       padding: 10px 40px;
       box-shadow: 0 3px 10px rgba(0,0,0,0.5);
     }
-
     .logo {
       display: flex;
       align-items: center;
@@ -29,17 +27,14 @@
       font-size: 26px;
       font-weight: bold;
     }
-
     .logo img {
       height: 50px;
     }
-
     .menu {
       display: flex;
       align-items: center;
       gap: 30px;
     }
-
     .menu a {
       color: white;
       text-decoration: none;
@@ -47,11 +42,9 @@
       font-size: 16px;
       transition: 0.2s;
     }
-
     .menu a:hover {
       color: #93c5fd;
     }
-
     .logout button {
       background: #b91c1c;
       color: #fff;
@@ -64,13 +57,11 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.25);
       transition: background 0.18s ease, box-shadow 0.18s ease, transform 0.12s ease;
     }
-
     .logout button:hover {
       background: #991b1b;
       box-shadow: 0 4px 10px rgba(0,0,0,0.30);
       transform: translateY(-1px);
     }
-
     .main {
       max-width: 700px;
       margin: 80px auto;
@@ -80,12 +71,10 @@
       padding: 50px;
       text-align: center;
     }
-
     h1 {
       color: #001d6e;
       margin-bottom: 40px;
     }
-
     select, input, textarea {
       width: 90%;
       padding: 12px;
@@ -94,7 +83,6 @@
       border-radius: 8px;
       font-size: 16px;
     }
-
     button {
       background: linear-gradient(90deg, #2563eb, #1e3a8a);
       color: white;
@@ -106,16 +94,13 @@
       transition: 0.25s;
       margin-top: 20px;
     }
-
     button:hover {
       transform: translateY(-3px);
       box-shadow: 0 6px 15px rgba(0,0,0,0.25);
     }
-
     .answer-container {
       margin-top: 20px;
     }
-
     .add-subject-btn {
       background: #059669;
       border: none;
@@ -127,7 +112,6 @@
       margin-top: 8px;
       margin-bottom: 16px;
     }
-
     .add-subject-btn:hover {
       background: #047857;
     }
@@ -158,14 +142,14 @@
     <select id="subject"></select><br>
     <button class="add-subject-btn" onclick="addNewSubject()">＋ 新しい教科を追加</button>
 
-    <textarea id="question" placeholder="問題文を入力（例：次のア〜ウの出来事を年代の古い順に並び替えなさい）"></textarea>
+    <textarea id="question" placeholder="問題文を入力（例：次の1〜5の出来事を年代の古い順に並び替えなさい）"></textarea>
 
     <div class="choices">
-      <input type="text" id="choiceA" placeholder="ア：" />
-      <input type="text" id="choiceB" placeholder="イ：" />
-      <input type="text" id="choiceC" placeholder="ウ：" />
-      <input type="text" id="choiceD" placeholder="エ：" />
-      <input type="text" id="choiceE" placeholder="オ：" />
+      <input type="text" id="choice1" placeholder="1：" />
+      <input type="text" id="choice2" placeholder="2：" />
+      <input type="text" id="choice3" placeholder="3：" />
+      <input type="text" id="choice4" placeholder="4：" />
+      <input type="text" id="choice5" placeholder="5：" />
     </div>
 
     <button onclick="generateAnswerInputs()">答え欄を作成</button>
@@ -176,127 +160,117 @@
   </div>
 
   <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-  import { 
-    getFirestore, collection, addDoc, getDocs 
-  } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
-  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
-    authDomain: "akeducationalplatform.firebaseapp.com",
-    projectId: "akeducationalplatform",
-    storageBucket: "akeducationalplatform.firebasestorage.app",
-    messagingSenderId: "778140595189",
-    appId: "1:778140595189:web:301e7490b813b44782a6bc"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const auth = getAuth(app);
-
-  // 🔐 ログインチェック
-  onAuthStateChanged(auth, (user) => {
-    if (!user) {
-      alert("ログインしてください！");
-      window.location.href = "index.html";
-    } else {
-      loadSubjects();
-    }
-  });
-
-  // 🔸 教科一覧読み込み
-  async function loadSubjects() {
-    const select = document.getElementById("subject");
-    select.innerHTML = `<option value="">教科を選択</option>`;
-    const snapshot = await getDocs(collection(db, "subjects"));
-    snapshot.forEach(doc => {
-      const name = doc.data().name;
-      const option = document.createElement("option");
-      option.value = name;
-      option.textContent = name;
-      select.appendChild(option);
-    });
-  }
-
-  // 🔹 教科を追加
-  window.addNewSubject = async function() {
-    const newSubject = prompt("追加する教科名を入力してください：");
-    if (!newSubject) return;
-    await addDoc(collection(db, "subjects"), { name: newSubject });
-    alert("新しい教科を追加しました！");
-    loadSubjects();
-  };
-
-  // 🔸 答え欄生成
-  window.generateAnswerInputs = function() {
-    const choices = [
-      document.getElementById("choiceA").value.trim(),
-      document.getElementById("choiceB").value.trim(),
-      document.getElementById("choiceC").value.trim(),
-      document.getElementById("choiceD").value.trim(),
-      document.getElementById("choiceE").value.trim()
-    ];
-
-    const validChoices = choices.filter(c => c !== "");
-    const container = document.getElementById("answerOrderContainer");
-    container.innerHTML = "";
-
-    validChoices.forEach((_, i) => {
-      const input = document.createElement("input");
-      input.type = "text";
-      input.placeholder = `${i + 1}番目の記号（例：ア）`;
-      input.id = `answer${i + 1}`;
-      container.appendChild(input);
-      container.appendChild(document.createElement("br"));
-    });
-  };
-
-  // 🔹 Firestore保存
-  window.saveOrderQuestion = async function() {
-    const subject = document.getElementById("subject").value;
-    const question = document.getElementById("question").value;
-    const choices = {
-      A: document.getElementById("choiceA").value.trim(),
-      B: document.getElementById("choiceB").value.trim(),
-      C: document.getElementById("choiceC").value.trim(),
-      D: document.getElementById("choiceD").value.trim(),
-      E: document.getElementById("choiceE").value.trim()
+    const firebaseConfig = {
+      apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
+      authDomain: "akeducationalplatform.firebaseapp.com",
+      projectId: "akeducationalplatform",
+      storageBucket: "akeducationalplatform.firebasestorage.app",
+      messagingSenderId: "778140595189",
+      appId: "1:778140595189:web:301e7490b813b44782a6bc"
     };
 
-    const answers = [];
-    for (let i = 1; i <= 5; i++) {
-      const val = document.getElementById(`answer${i}`);
-      if (val && val.value.trim() !== "") answers.push(val.value.trim());
-    }
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
 
-    if (!subject || !question || answers.length === 0) {
-      alert("全ての必須項目を入力してください！");
-      return;
-    }
-
-    try {
-      await addDoc(collection(db, "questions"), { // ← コレクション統一！
-        type: "並び替え", // ← 問題形式を明記
-        subject,
-        question,
-        choices,
-        answer: answers,
-        createdAt: new Date().toISOString()
-      });
-      alert("問題を追加しました！");
-      location.reload();
-    } catch (e) {
-      alert("エラーが発生しました: " + e.message);
-    }
-  };
-
-  // ログアウト
-  window.logout = function() {
-    signOut(auth).then(() => {
-      window.location.href = "index.html";
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        alert("ログインしてください！");
+        window.location.href = "index.html";
+      } else {
+        loadSubjects();
+      }
     });
-  };
+
+    async function loadSubjects() {
+      const select = document.getElementById("subject");
+      select.innerHTML = `<option value="">教科を選択</option>`;
+      const snapshot = await getDocs(collection(db, "subjects"));
+      snapshot.forEach(doc => {
+        const name = doc.data().name;
+        const option = document.createElement("option");
+        option.value = name;
+        option.textContent = name;
+        select.appendChild(option);
+      });
+    }
+
+    window.addNewSubject = async function() {
+      const newSubject = prompt("追加する教科名を入力してください：");
+      if (!newSubject) return;
+      await addDoc(collection(db, "subjects"), { name: newSubject });
+      alert("新しい教科を追加しました！");
+      loadSubjects();
+    };
+
+    window.generateAnswerInputs = function() {
+      const choices = [
+        document.getElementById("choice1").value.trim(),
+        document.getElementById("choice2").value.trim(),
+        document.getElementById("choice3").value.trim(),
+        document.getElementById("choice4").value.trim(),
+        document.getElementById("choice5").value.trim()
+      ];
+      const validChoices = choices.filter(c => c !== "");
+      const container = document.getElementById("answerOrderContainer");
+      container.innerHTML = "";
+      validChoices.forEach((_, i) => {
+        const input = document.createElement("input");
+        input.type = "number";
+        input.placeholder = `${i + 1}番目の番号（例：1）`;
+        input.id = `answer${i + 1}`;
+        container.appendChild(input);
+        container.appendChild(document.createElement("br"));
+      });
+    };
+
+    window.saveOrderQuestion = async function() {
+      const subject = document.getElementById("subject").value;
+      const question = document.getElementById("question").value;
+      const choices = {
+        1: document.getElementById("choice1").value.trim(),
+        2: document.getElementById("choice2").value.trim(),
+        3: document.getElementById("choice3").value.trim(),
+        4: document.getElementById("choice4").value.trim(),
+        5: document.getElementById("choice5").value.trim()
+      };
+
+      const answers = [];
+      for (let i = 1; i <= 5; i++) {
+        const val = document.getElementById(`answer${i}`);
+        if (val && val.value.trim() !== "") answers.push(val.value.trim());
+      }
+
+      if (!subject || !question || answers.length === 0) {
+        alert("全ての必須項目を入力してください！");
+        return;
+      }
+
+      try {
+        await addDoc(collection(db, "questions"), {
+          subject,
+          type: "並び替え",
+          question,
+          choices,
+          answer: answers,
+          createdAt: new Date().toISOString()
+        });
+        alert("問題を追加しました！");
+        location.reload();
+      } catch (e) {
+        alert("エラーが発生しました: " + e.message);
+      }
+    };
+
+    window.logout = function() {
+      signOut(auth).then(() => {
+        window.location.href = "index.html";
+      });
+    };
   </script>
 </body>
 </html>
