@@ -6,179 +6,51 @@
   <title>問題編集・削除 | StudyBase</title>
 
   <style>
-    body {
-      font-family: "Segoe UI", sans-serif;
-      margin: 0;
-      background: #f3f4f6;
-    }
-
-    /* ナビバー */
+    body { font-family: "Segoe UI", sans-serif; margin: 0; background: #f3f4f6; }
     .navbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      display: flex; align-items: center; justify-content: space-between;
       background: linear-gradient(90deg, #000814, #001d6e);
-      color: white;
-      padding: 10px 40px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.5);
+      color: white; padding: 10px 40px; box-shadow: 0 3px 10px rgba(0,0,0,0.5);
     }
-
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 26px;
-      font-weight: bold;
-    }
-
-    .logo img {
-      height: 50px;
-    }
-
-    .menu {
-      display: flex;
-      align-items: center;
-      gap: 30px;
-    }
-
-    .menu a {
-      color: white;
-      text-decoration: none;
-      font-weight: bold;
-      font-size: 16px;
-      transition: 0.2s;
-    }
-
-    .menu a:hover {
-      color: #93c5fd;
-    }
-
+    .logo { display: flex; align-items: center; gap: 10px; font-size: 26px; font-weight: bold; }
+    .logo img { height: 50px; }
+    .menu { display: flex; align-items: center; gap: 30px; }
+    .menu a { color: white; text-decoration: none; font-weight: bold; font-size: 16px; transition: 0.2s; }
+    .menu a:hover { color: #93c5fd; }
     .logout button {
-      background: #b91c1c;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      padding: 6px 16px;
-      cursor: pointer;
-      font-weight: 700;
-      font-size: 14px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-      transition: background 0.18s ease, box-shadow 0.18s ease, transform 0.12s ease;
+      background: #b91c1c; color: #fff; border: none; border-radius: 8px;
+      padding: 6px 16px; cursor: pointer; font-weight: 700; font-size: 14px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25); transition: 0.2s;
     }
+    .logout button:hover { background: #991b1b; transform: translateY(-1px); }
 
-    .logout button:hover {
-      background: #991b1b;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.30);
-      transform: translateY(-1px);
-    }
-
-    /* メイン */
     .main {
-      max-width: 900px;
-      margin: 80px auto;
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      padding: 40px;
+      max-width: 900px; margin: 80px auto; background: white;
+      border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 40px;
     }
+    h1 { text-align: center; color: #001d6e; margin-bottom: 30px; }
 
-    h1 {
-      text-align: center;
-      color: #001d6e;
-      margin-bottom: 30px;
-    }
-
-    .filters {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: center;
-      margin-bottom: 25px;
-    }
-
+    .filters { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 25px; }
     select, input[type="text"] {
-      padding: 8px 10px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 14px;
-      width: 180px;
+      padding: 8px 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; width: 180px;
     }
-
     button.search-btn {
-      background: #2563eb;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      padding: 8px 20px;
-      cursor: pointer;
-      font-weight: bold;
-      transition: 0.2s;
+      background: #2563eb; color: white; border: none; border-radius: 6px;
+      padding: 8px 20px; cursor: pointer; font-weight: bold; transition: 0.2s;
     }
-
-    button.search-btn:hover {
-      background: #1e40af;
-    }
+    button.search-btn:hover { background: #1e40af; }
 
     .question-card {
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 20px;
-      margin-bottom: 15px;
+      border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin-bottom: 15px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     }
-
-    .question-card h3 {
-      margin: 0 0 10px;
-      color: #1e3a8a;
+    .question-card h3 { margin: 0 0 10px; color: #1e3a8a; }
+    .question-card input, .question-card textarea {
+      width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 6px; margin-top: 4px;
     }
-
-    .question-card p {
-      margin: 3px 0;
-    }
-
-    .actions {
-      display: flex;
-      gap: 10px;
-      margin-top: 10px;
-    }
-
-    .edit-btn {
-      background: #16a34a;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      padding: 6px 12px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    .delete-btn {
-      background: #dc2626;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      padding: 6px 12px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    .save-btn {
-      background: #2563eb;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      padding: 6px 12px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    textarea {
-      width: 100%;
-      padding: 8px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      resize: vertical;
-    }
+    .actions { display: flex; gap: 10px; margin-top: 10px; }
+    .save-btn { background: #16a34a; color: white; border: none; border-radius: 6px; padding: 6px 12px; cursor: pointer; font-weight: bold; }
+    .delete-btn { background: #dc2626; color: white; border: none; border-radius: 6px; padding: 6px 12px; cursor: pointer; font-weight: bold; }
   </style>
 </head>
 <body>
@@ -192,9 +64,7 @@
       <a href="select.html">テスト</a>
       <a href="history.html">過去の成績</a>
       <a href="add_question.html">問題追加</a>
-      <div class="logout">
-        <button onclick="logout()">ログアウト</button>
-      </div>
+      <div class="logout"><button onclick="logout()">ログアウト</button></div>
     </div>
   </div>
 
@@ -231,7 +101,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-    import { getFirestore, collection, getDocs, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
@@ -246,10 +116,9 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // 🔐 ログインチェック
     onAuthStateChanged(auth, user => {
       if (!user) {
-        alert("ログインが必要です！");
+        alert("ログインが必要です");
         window.location.href = "login.html";
       } else {
         loadQuestions();
@@ -260,28 +129,23 @@
       const subject = document.getElementById("subjectFilter").value;
       const type = document.getElementById("typeFilter").value;
       const keyword = document.getElementById("keywordInput").value.trim();
-
       const questionList = document.getElementById("questionList");
       questionList.innerHTML = "<p>読み込み中...</p>";
 
-      const types = type ? [type] : ["一問一答", "四択", "並び替え"];
-      let results = [];
+      const colRef = collection(db, "questions");
+      const snapshot = await getDocs(colRef);
 
-      for (const t of types) {
-        const colRef = collection(db, t);
-        const snapshot = await getDocs(colRef);
-        snapshot.forEach(docSnap => {
-          const data = docSnap.data();
-          if (
-            (!subject || data.subject === subject) &&
-            (!keyword ||
-              (data.question && data.question.includes(keyword)) ||
-              (data.answer && data.answer.includes(keyword)))
-          ) {
-            results.push({ id: docSnap.id, ...data, format: t });
-          }
-        });
-      }
+      let results = [];
+      snapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        if (
+          (!subject || data.subject === subject) &&
+          (!type || data.type === type) &&
+          (!keyword || (data.question?.includes(keyword) || data.answer?.includes(keyword)))
+        ) {
+          results.push({ id: docSnap.id, ...data });
+        }
+      });
 
       questionList.innerHTML = "";
       if (results.length === 0) {
@@ -293,42 +157,37 @@
         const div = document.createElement("div");
         div.className = "question-card";
         div.innerHTML = `
-          <textarea id="q_${q.id}" rows="2">${q.question}</textarea>
-          <textarea id="a_${q.id}" rows="1">${q.answer}</textarea>
-          <p><strong>教科：</strong>${q.subject}　/　<strong>形式：</strong>${q.format}</p>
+          <label>問題文：</label>
+          <textarea id="q_${q.id}_question">${q.question}</textarea>
+          <label>答え：</label>
+          <input type="text" id="q_${q.id}_answer" value="${q.answer}">
+          <p><strong>教科：</strong>${q.subject}　/　<strong>形式：</strong>${q.type}</p>
           <div class="actions">
-            <button class="save-btn" onclick="saveQuestion('${q.format}', '${q.id}')">💾 保存</button>
-            <button class="delete-btn" onclick="deleteQuestion('${q.format}', '${q.id}')">🗑️ 削除</button>
+            <button class="save-btn" onclick="saveQuestion('${q.id}')">💾 保存</button>
+            <button class="delete-btn" onclick="deleteQuestion('${q.id}')">🗑️ 削除</button>
           </div>
         `;
         questionList.appendChild(div);
       });
     }
 
-    // 🔄 編集内容保存
-    window.saveQuestion = async (type, id) => {
-      const qText = document.getElementById(`q_${id}`).value.trim();
-      const aText = document.getElementById(`a_${id}`).value.trim();
-      if (!qText || !aText) return alert("問題文と答えは必須です！");
-      await updateDoc(doc(db, type, id), { question: qText, answer: aText });
-      alert("保存しました！");
+    window.saveQuestion = async (id) => {
+      const qText = document.getElementById(`q_${id}_question`).value;
+      const aText = document.getElementById(`q_${id}_answer`).value;
+      const ref = doc(db, "questions", id);
+      await updateDoc(ref, { question: qText, answer: aText });
+      alert("更新しました！");
     };
 
-    // 🗑️ 削除
-    window.deleteQuestion = async (type, id) => {
+    window.deleteQuestion = async (id) => {
       if (confirm("本当に削除しますか？")) {
-        await deleteDoc(doc(db, type, id));
+        await deleteDoc(doc(db, "questions", id));
         alert("削除しました！");
         loadQuestions();
       }
     };
 
-    // 🚪 ログアウト
-    window.logout = () => {
-      signOut(auth).then(() => {
-        window.location.href = "login.html";
-      });
-    };
+    window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
   </script>
 </body>
 </html>
