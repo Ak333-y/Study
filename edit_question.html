@@ -1,107 +1,14 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>問題編集・削除 | StudyBase</title>
-
-  <style>
-    body { font-family: "Segoe UI", sans-serif; margin: 0; background: #f3f4f6; }
-    .navbar {
-      display: flex; align-items: center; justify-content: space-between;
-      background: linear-gradient(90deg, #000814, #001d6e);
-      color: white; padding: 10px 40px; box-shadow: 0 3px 10px rgba(0,0,0,0.5);
-    }
-    .logo { display: flex; align-items: center; gap: 10px; font-size: 26px; font-weight: bold; }
-    .logo img { height: 50px; }
-    .menu { display: flex; align-items: center; gap: 30px; }
-    .menu a { color: white; text-decoration: none; font-weight: bold; font-size: 16px; transition: 0.2s; }
-    .menu a:hover { color: #93c5fd; }
-    .logout button {
-      background: #b91c1c; color: #fff; border: none; border-radius: 8px;
-      padding: 6px 16px; cursor: pointer; font-weight: 700; font-size: 14px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.25); transition: 0.2s;
-    }
-    .logout button:hover { background: #991b1b; transform: translateY(-1px); }
-
-    .main {
-      max-width: 900px; margin: 80px auto; background: white;
-      border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 40px;
-    }
-    h1 { text-align: center; color: #001d6e; margin-bottom: 30px; }
-
-    .filters { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 25px; }
-    select, input[type="text"] {
-      padding: 8px 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; width: 180px;
-    }
-    button.search-btn {
-      background: #2563eb; color: white; border: none; border-radius: 6px;
-      padding: 8px 20px; cursor: pointer; font-weight: bold; transition: 0.2s;
-    }
-    button.search-btn:hover { background: #1e40af; }
-
-    .question-card {
-      border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin-bottom: 15px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    }
-    .question-card h3 { margin: 0 0 10px; color: #1e3a8a; }
-    .question-card input, .question-card textarea {
-      width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 6px; margin-top: 4px;
-    }
-    .actions { display: flex; gap: 10px; margin-top: 10px; }
-    .save-btn { background: #16a34a; color: white; border: none; border-radius: 6px; padding: 6px 12px; cursor: pointer; font-weight: bold; }
-    .delete-btn { background: #dc2626; color: white; border: none; border-radius: 6px; padding: 6px 12px; cursor: pointer; font-weight: bold; }
-  </style>
-</head>
-<body>
-  <div class="navbar">
-    <div class="logo">
-      <img src="logo.png" alt="StudyBase ロゴ">
-      StudyBase — Your Daily Step to Success.
-    </div>
-    <div class="menu">
-      <a href="menu.html">ホーム</a>
-      <a href="select.html">テスト</a>
-      <a href="history.html">過去の成績</a>
-      <a href="add_question.html">問題追加</a>
-      <div class="logout"><button onclick="logout()">ログアウト</button></div>
-    </div>
-  </div>
-
-  <div class="main">
-    <h1>問題の編集・削除</h1>
-
-    <div class="filters">
-      <select id="subjectFilter">
-        <option value="">全教科</option>
-        <option value="歴史">歴史</option>
-        <option value="地理">地理</option>
-        <option value="公民">公民</option>
-        <option value="生命">生命</option>
-        <option value="地学">地学</option>
-        <option value="物質">物質</option>
-        <option value="エネルギー">エネルギー</option>
-        <option value="古文単語">古文単語</option>
-      </select>
-
-      <select id="typeFilter">
-        <option value="">全形式</option>
-        <option value="一問一答">一問一答</option>
-        <option value="四択">四択</option>
-        <option value="並び替え">並び替え</option>
-      </select>
-
-      <input type="text" id="keywordInput" placeholder="キーワード検索">
-      <button class="search-btn" onclick="loadQuestions()">検索</button>
-    </div>
-
-    <div id="questionList"></div>
-  </div>
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>問題編集・削除</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-    import { getFirestore, collection, getDocs, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, getDocs, query, where, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
@@ -113,81 +20,117 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
     const db = getFirestore(app);
+    const auth = getAuth(app);
 
-    onAuthStateChanged(auth, user => {
-      if (!user) {
-        alert("ログインが必要です");
-        window.location.href = "login.html";
-      } else {
-        loadQuestions();
-      }
-    });
+    const subjectSelect = document.getElementById("subjectSelect");
+    const typeSelect = document.getElementById("typeSelect");
+    const keywordInput = document.getElementById("keywordInput");
+    const questionList = document.getElementById("questionList");
 
     async function loadQuestions() {
-      const subject = document.getElementById("subjectFilter").value;
-      const type = document.getElementById("typeFilter").value;
-      const keyword = document.getElementById("keywordInput").value.trim();
-      const questionList = document.getElementById("questionList");
-      questionList.innerHTML = "<p>読み込み中...</p>";
+      questionList.innerHTML = "読み込み中…";
+      const subject = subjectSelect.value;
+      const type = typeSelect.value;
+      const keyword = keywordInput.value.trim();
 
-      const colRef = collection(db, "questions");
-      const snapshot = await getDocs(colRef);
+      let q = collection(db, "questions");
+      let constraints = [];
 
-      let results = [];
-      snapshot.forEach(docSnap => {
+      if (subject !== "all") constraints.push(where("subject", "==", subject));
+      if (type !== "all") constraints.push(where("type", "==", type));
+
+      const qRef = constraints.length > 0 ? query(q, ...constraints) : q;
+      const snapshot = await getDocs(qRef);
+
+      let html = "";
+      snapshot.forEach((docSnap) => {
         const data = docSnap.data();
-        if (
-          (!subject || data.subject === subject) &&
-          (!type || data.type === type) &&
-          (!keyword || (data.question?.includes(keyword) || data.answer?.includes(keyword)))
-        ) {
-          results.push({ id: docSnap.id, ...data });
-        }
-      });
+        const id = docSnap.id;
 
-      questionList.innerHTML = "";
-      if (results.length === 0) {
-        questionList.innerHTML = "<p>該当する問題はありません。</p>";
-        return;
-      }
+        // キーワード検索（question or answer に含まれるか）
+        if (keyword && !(
+          (data.question && data.question.includes(keyword)) ||
+          (data.answer && data.answer.includes(keyword))
+        )) return;
 
-      results.forEach(q => {
-        const div = document.createElement("div");
-        div.className = "question-card";
-        div.innerHTML = `
-          <label>問題文：</label>
-          <textarea id="q_${q.id}_question">${q.question}</textarea>
-          <label>答え：</label>
-          <input type="text" id="q_${q.id}_answer" value="${q.answer}">
-          <p><strong>教科：</strong>${q.subject}　/　<strong>形式：</strong>${q.type}</p>
-          <div class="actions">
-            <button class="save-btn" onclick="saveQuestion('${q.id}')">💾 保存</button>
-            <button class="delete-btn" onclick="deleteQuestion('${q.id}')">🗑️ 削除</button>
+        html += `
+          <div class="p-4 border rounded-lg mb-2 bg-gray-50">
+            <p><b>教科:</b> ${data.subject}</p>
+            <p><b>形式:</b> ${data.type}</p>
+            <p><b>問題:</b> ${data.question}</p>
+            <p><b>答え:</b> ${data.answer}</p>
+            <div class="mt-2 flex gap-2">
+              <button class="bg-blue-500 text-white px-2 py-1 rounded edit-btn" data-id="${id}">編集</button>
+              <button class="bg-red-500 text-white px-2 py-1 rounded delete-btn" data-id="${id}">削除</button>
+            </div>
           </div>
         `;
-        questionList.appendChild(div);
+      });
+
+      questionList.innerHTML = html || "該当する問題がありません。";
+
+      // 編集・削除ボタン動作
+      document.querySelectorAll(".delete-btn").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          if (confirm("本当に削除しますか？")) {
+            await deleteDoc(doc(db, "questions", btn.dataset.id));
+            loadQuestions();
+          }
+        });
+      });
+
+      document.querySelectorAll(".edit-btn").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const id = btn.dataset.id;
+          const newQ = prompt("新しい問題文を入力：");
+          const newA = prompt("新しい答えを入力：");
+          if (newQ && newA) {
+            await updateDoc(doc(db, "questions", id), {
+              question: newQ,
+              answer: newA
+            });
+            loadQuestions();
+          }
+        });
       });
     }
 
-    window.saveQuestion = async (id) => {
-      const qText = document.getElementById(`q_${id}_question`).value;
-      const aText = document.getElementById(`q_${id}_answer`).value;
-      const ref = doc(db, "questions", id);
-      await updateDoc(ref, { question: qText, answer: aText });
-      alert("更新しました！");
-    };
+    onAuthStateChanged(auth, (user) => {
+      if (user) loadQuestions();
+      else window.location.href = "login.html";
+    });
 
-    window.deleteQuestion = async (id) => {
-      if (confirm("本当に削除しますか？")) {
-        await deleteDoc(doc(db, "questions", id));
-        alert("削除しました！");
-        loadQuestions();
-      }
-    };
-
-    window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
+    document.getElementById("searchBtn").addEventListener("click", loadQuestions);
   </script>
+</head>
+<body class="bg-gray-100 p-6">
+  <h1 class="text-2xl font-bold mb-4">問題編集・削除</h1>
+
+  <div class="flex flex-wrap gap-2 mb-4">
+    <select id="subjectSelect" class="p-2 border rounded">
+      <option value="all">すべての教科</option>
+      <option value="歴史">歴史</option>
+      <option value="地理">地理</option>
+      <option value="公民">公民</option>
+      <option value="生命">生命</option>
+      <option value="地学">地学</option>
+      <option value="物質">物質</option>
+      <option value="エネルギー">エネルギー</option>
+      <option value="古文単語">古文単語</option>
+    </select>
+
+    <select id="typeSelect" class="p-2 border rounded">
+      <option value="all">すべての形式</option>
+      <option value="一問一答">一問一答</option>
+      <option value="四択">四択</option>
+      <option value="並び替え">並び替え</option>
+    </select>
+
+    <input id="keywordInput" type="text" placeholder="キーワード" class="p-2 border rounded flex-1" />
+    <button id="searchBtn" class="bg-green-500 text-white px-4 py-2 rounded">検索</button>
+  </div>
+
+  <div id="questionList"></div>
 </body>
 </html>
