@@ -73,7 +73,7 @@
       <a href="menu.html">ホーム</a>
       <a href="select.html">テスト</a>
       <a href="history.html">過去の成績</a>
-      <a href="add_question.html">問題編集</a>
+      <a href="edit_question.html">問題編集</a>
       <div class="logout"><button onclick="logout()">ログアウト</button></div>
     </div>
   </div>
@@ -118,7 +118,7 @@
       getAuth, onAuthStateChanged, signOut
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-    // 🔹 Firebase設定
+    // Firebase設定
     const firebaseConfig = {
       apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
       authDomain: "akeducationalplatform.firebaseapp.com",
@@ -132,6 +132,7 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
 
+    // ログアウト
     window.logout = async function () {
       await signOut(auth);
       window.location.href = "login.html";
@@ -142,8 +143,10 @@
     const keywordInput = document.getElementById("keywordInput");
     const questionList = document.getElementById("questionList");
 
+    // 問題読み込み
     async function loadQuestions() {
       questionList.innerHTML = "読み込み中…";
+
       const subject = subjectSelect.value;
       const type = typeSelect.value;
       const keyword = keywordInput.value.trim();
@@ -153,14 +156,15 @@
       if (subject !== "all") conditions.push(where("subject", "==", subject));
       if (type !== "all") conditions.push(where("type", "==", type));
 
-      const qRef = conditions.length > 0 ? query(baseQuery, ...conditions) : baseQuery;
+      const qRef = conditions.length ? query(baseQuery, ...conditions) : baseQuery;
       const snapshot = await getDocs(qRef);
 
       let html = "";
       snapshot.forEach((docSnap) => {
         const data = docSnap.data();
         const id = docSnap.id;
-        if (keyword && !((data.question && data.question.includes(keyword)) || (data.answer && data.answer.includes(keyword)))) return;
+
+        if (keyword && !((data.question?.includes(keyword)) || (data.answer?.includes(keyword)))) return;
 
         html += `
           <div class="p-4 border rounded-lg mb-4 bg-gray-50 shadow">
@@ -182,56 +186,59 @@
 
       questionList.innerHTML = html || "該当する問題がありません。";
 
-      // 保存・削除イベント設定
-      document.querySelectorAll(".save-btn").forEach(btn => btn.addEventListener("click", () => saveQuestion(btn.dataset.id, snapshot)));
-      document.querySelectorAll(".delete-btn").forEach(btn => btn.addEventListener("click", async () => {
-        if (confirm("本当に削除しますか？")) {
-          await deleteDoc(doc(db, "questions", btn.dataset.id));
-          loadQuestions();
-        }
-      }));
+      document.querySelectorAll(".save-btn").forEach(btn =>
+        btn.addEventListener("click", () => saveQuestion(btn.dataset.id, snapshot))
+      );
+
+      document.querySelectorAll(".delete-btn").forEach(btn =>
+        btn.addEventListener("click", async () => {
+          if (confirm("本当に削除しますか？")) {
+            await deleteDoc(doc(db, "questions", btn.dataset.id));
+            loadQuestions();
+          }
+        })
+      );
     }
 
+    // 入力フォーム生成
     function renderAnswerInputs(data, id) {
       if (data.type === "一問一答") {
         return `
           <label class="block mt-2 font-semibold">答え：</label>
           <input id="a_${id}" type="text" value="${data.answer}" class="w-full p-2 border rounded" />
         `;
-      } else if (data.type === "四択") {
+      } 
+      else if (data.type === "四択") {
         return `
-          <div id="choices_${id}">
-            ${data.choices.map((c, i) => `
-              <div class="flex gap-2 mt-2">
-                <input id="c${i}_${id}" type="text" value="${c}" class="w-full p-2 border rounded" />
-                <button class="bg-gray-400 text-white px-2 rounded remove-choice" data-id="${id}" data-index="${i}">×</button>
-              </div>`).join("")}
-          </div>
-          <button class="bg-green-400 text-white px-2 py-1 mt-2 rounded add-choice" data-id="${id}">＋選択肢追加</button>
+          <label class="block mt-2 font-semibold">選択肢：</label>
+          ${data.choices.map((c, i) => `
+            <input id="c${i}_${id}" type="text" value="${c}" class="w-full p-2 border rounded mb-1" />
+          `).join("")}
           <label class="block mt-2 font-semibold">正解番号：</label>
-          <input id="a_${id}" type="number" value="${data.answer}" class="w-full p-2 border rounded" />
+          <input id="a_${id}" type="number" min="1" max="${data.choices.length}" value="${data.answer}" class="w-full p-2 border rounded" />
         `;
-      } else if (data.type === "並び替え") {
-        const choices = Array.isArray(data.choices)
-          ? data.choices
-          : Object.values(data.choices);
-
+      } 
+      else if (data.type === "並び替え") {
+        const choices = Array.isArray(data.choices) ? data.choices : Object.values(data.choices);
         return `
+          <label class="block mt-2 font-semibold">パーツ：</label>
           <div id="choices_${id}">
             ${choices.map((text, i) => `
               <div class="flex gap-2 mt-2">
                 <input id="c${i}_${id}" type="text" value="${text}" class="w-full p-2 border rounded" />
                 <button class="bg-gray-400 text-white px-2 rounded remove-choice" data-id="${id}" data-index="${i}">×</button>
-              </div>`).join("")}
+              </div>
+            `).join("")}
           </div>
           <button class="bg-green-400 text-white px-2 py-1 mt-2 rounded add-choice" data-id="${id}">＋パーツ追加</button>
           <label class="block mt-2 font-semibold">正解順（カンマ区切り）：</label>
-          <input id="a_${id}" type="text" value="${Array.isArray(data.answer) ? data.answer.join(",") : data.answer}" class="w-full p-2 border rounded" />
+          <input id="a_${id}" type="text" value="${Array.isArray(data.answer) ? data.answer.join(',') : data.answer}" class="w-full p-2 border rounded" />
         `;
       }
       return "";
     }
 
+    // 保存処理
     async function saveQuestion(id, snapshot) {
       const qVal = document.getElementById(`q_${id}`).value;
       const data = snapshot.docs.find(d => d.id === id)?.data();
@@ -239,11 +246,13 @@
 
       if (data.type === "一問一答") {
         updateData.answer = document.getElementById(`a_${id}`).value;
-      } else if (data.type === "四択") {
-        const choices = Array.from(document.querySelectorAll(`#choices_${id} input`)).map(el => el.value);
+      } 
+      else if (data.type === "四択") {
+        const choices = data.choices.map((_, i) => document.getElementById(`c${i}_${id}`).value);
         updateData.choices = choices;
         updateData.answer = parseInt(document.getElementById(`a_${id}`).value, 10);
-      } else if (data.type === "並び替え") {
+      } 
+      else if (data.type === "並び替え") {
         const inputs = document.querySelectorAll(`#choices_${id} input`);
         const newChoices = Array.from(inputs).map(i => i.value);
         updateData.choices = newChoices;
@@ -254,31 +263,32 @@
       alert("更新しました！");
     }
 
+    // 並び替えのパーツ追加・削除
+    document.addEventListener("click", (e) => {
+      if (e.target.classList.contains("add-choice")) {
+        const id = e.target.dataset.id;
+        const parent = document.getElementById(`choices_${id}`);
+        const index = parent.querySelectorAll("input").length;
+        const newEl = document.createElement("div");
+        newEl.className = "flex gap-2 mt-2";
+        newEl.innerHTML = `
+          <input id="c${index}_${id}" type="text" class="w-full p-2 border rounded" placeholder="新しいパーツ">
+          <button class="bg-gray-400 text-white px-2 rounded remove-choice" data-id="${id}" data-index="${index}">×</button>
+        `;
+        parent.appendChild(newEl);
+      }
+
+      if (e.target.classList.contains("remove-choice")) {
+        e.target.parentElement.remove();
+      }
+    });
+
     onAuthStateChanged(auth, (user) => {
       if (user) loadQuestions();
       else window.location.href = "login.html";
     });
 
-    document.addEventListener("DOMContentLoaded", () => {
-      document.getElementById("searchBtn").addEventListener("click", loadQuestions);
-
-      document.addEventListener("click", async (e) => {
-        if (e.target.classList.contains("add-choice")) {
-          const id = e.target.dataset.id;
-          const parent = document.getElementById(`choices_${id}`);
-          const index = parent.querySelectorAll("input").length;
-          const newEl = document.createElement("div");
-          newEl.className = "flex gap-2 mt-2";
-          newEl.innerHTML = `<input id="c${index}_${id}" type="text" class="w-full p-2 border rounded" placeholder="新しい選択肢">
-          <button class="bg-gray-400 text-white px-2 rounded remove-choice" data-id="${id}" data-index="${index}">×</button>`;
-          parent.appendChild(newEl);
-        }
-
-        if (e.target.classList.contains("remove-choice")) {
-          e.target.parentElement.remove();
-        }
-      });
-    });
+    document.getElementById("searchBtn").addEventListener("click", loadQuestions);
   </script>
 </body>
 </html>
