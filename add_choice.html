@@ -92,7 +92,7 @@
       ];
       const answer = document.getElementById("answer").value;
 
-      if (!subject || !question || choices.some(c => c === "") || !correct) {
+      if (!subject || !question || choices.some(c => c === "") || !answer) {
         alert("すべての項目を入力してください。");
         return;
       }
