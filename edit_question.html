@@ -5,11 +5,66 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>問題編集・削除</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+
+  <style>
+    .navbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(90deg, #000814, #001d6e);
+      color: white;
+      padding: 10px 40px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.5);
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 26px;
+      font-weight: bold;
+    }
+    .logo img { height: 50px; }
+    .menu {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+    }
+    .menu a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 16px;
+      transition: 0.2s;
+    }
+    .menu a:hover { color: #93c5fd; }
+    .logout button {
+      background: #b91c1c;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 6px 16px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 14px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+      transition: 0.18s;
+    }
+    .logout button:hover {
+      background: #991b1b;
+      transform: translateY(-1px);
+    }
+  </style>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, collection, getDocs, query, where, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { 
+      getFirestore, collection, getDocs, query, where, updateDoc, deleteDoc, doc 
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { 
+      getAuth, onAuthStateChanged, signOut 
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
+    // 🔹 Firebase設定
     const firebaseConfig = {
       apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
       authDomain: "akeducationalplatform.firebaseapp.com",
@@ -23,6 +78,12 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
 
+    // 🔹 ログアウト処理
+    window.logout = async function () {
+      await signOut(auth);
+      window.location.href = "login.html";
+    };
+
     const subjectSelect = document.getElementById("subjectSelect");
     const typeSelect = document.getElementById("typeSelect");
     const keywordInput = document.getElementById("keywordInput");
@@ -34,13 +95,13 @@
       const type = typeSelect.value;
       const keyword = keywordInput.value.trim();
 
-      let q = collection(db, "questions");
-      let constraints = [];
+      let baseQuery = collection(db, "questions");
+      let conditions = [];
 
-      if (subject !== "all") constraints.push(where("subject", "==", subject));
-      if (type !== "all") constraints.push(where("type", "==", type));
+      if (subject !== "all") conditions.push(where("subject", "==", subject));
+      if (type !== "all") conditions.push(where("type", "==", type));
 
-      const qRef = constraints.length > 0 ? query(q, ...constraints) : q;
+      const qRef = conditions.length > 0 ? query(baseQuery, ...conditions) : baseQuery;
       const snapshot = await getDocs(qRef);
 
       let html = "";
@@ -48,7 +109,7 @@
         const data = docSnap.data();
         const id = docSnap.id;
 
-        // キーワード検索（question or answer に含まれるか）
+        // 🔍 キーワード検索
         if (keyword && !(
           (data.question && data.question.includes(keyword)) ||
           (data.answer && data.answer.includes(keyword))
@@ -70,7 +131,7 @@
 
       questionList.innerHTML = html || "該当する問題がありません。";
 
-      // 編集・削除ボタン動作
+      // ✏️ 編集・削除処理
       document.querySelectorAll(".delete-btn").forEach(btn => {
         btn.addEventListener("click", async () => {
           if (confirm("本当に削除しますか？")) {
@@ -96,41 +157,65 @@
       });
     }
 
+    // 🔹 ログイン状態チェック
     onAuthStateChanged(auth, (user) => {
       if (user) loadQuestions();
       else window.location.href = "login.html";
     });
 
-    document.getElementById("searchBtn").addEventListener("click", loadQuestions);
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("searchBtn").addEventListener("click", loadQuestions);
+    });
   </script>
 </head>
-<body class="bg-gray-100 p-6">
-  <h1 class="text-2xl font-bold mb-4">問題編集・削除</h1>
 
-  <div class="flex flex-wrap gap-2 mb-4">
-    <select id="subjectSelect" class="p-2 border rounded">
-      <option value="all">すべての教科</option>
-      <option value="歴史">歴史</option>
-      <option value="地理">地理</option>
-      <option value="公民">公民</option>
-      <option value="生命">生命</option>
-      <option value="地学">地学</option>
-      <option value="物質">物質</option>
-      <option value="エネルギー">エネルギー</option>
-      <option value="古文単語">古文単語</option>
-    </select>
+<body class="bg-gray-100 min-h-screen">
 
-    <select id="typeSelect" class="p-2 border rounded">
-      <option value="all">すべての形式</option>
-      <option value="一問一答">一問一答</option>
-      <option value="四択">四択</option>
-      <option value="並び替え">並び替え</option>
-    </select>
-
-    <input id="keywordInput" type="text" placeholder="キーワード" class="p-2 border rounded flex-1" />
-    <button id="searchBtn" class="bg-green-500 text-white px-4 py-2 rounded">検索</button>
+  <!-- 🔹 ナビバー -->
+  <div class="navbar">
+    <div class="logo">
+      <img src="logo.png" alt="StudyBase ロゴ">
+      StudyBase — Your Daily Step to Success.
+    </div>
+    <div class="menu">
+      <a href="menu.html">ホーム</a>
+      <a href="select.html">テスト</a>
+      <a href="history.html">過去の成績</a>
+      <a href="add_question.html">問題編集</a>
+      <div class="logout"><button onclick="logout()">ログアウト</button></div>
+    </div>
   </div>
 
-  <div id="questionList"></div>
+  <!-- 🔹 メイン内容 -->
+  <div class="p-6">
+    <h1 class="text-2xl font-bold mb-4">問題編集・削除</h1>
+
+    <div class="flex flex-wrap gap-2 mb-4">
+      <select id="subjectSelect" class="p-2 border rounded">
+        <option value="all">すべての教科</option>
+        <option value="歴史">歴史</option>
+        <option value="地理">地理</option>
+        <option value="公民">公民</option>
+        <option value="生命">生命</option>
+        <option value="地学">地学</option>
+        <option value="物質">物質</option>
+        <option value="エネルギー">エネルギー</option>
+        <option value="古文単語">古文単語</option>
+      </select>
+
+      <select id="typeSelect" class="p-2 border rounded">
+        <option value="all">すべての形式</option>
+        <option value="一問一答">一問一答</option>
+        <option value="四択">四択</option>
+        <option value="並び替え">並び替え</option>
+      </select>
+
+      <input id="keywordInput" type="text" placeholder="キーワード" class="p-2 border rounded flex-1" />
+      <button id="searchBtn" class="bg-green-500 text-white px-4 py-2 rounded">検索</button>
+    </div>
+
+    <div id="questionList"></div>
+  </div>
+
 </body>
 </html>
