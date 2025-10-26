@@ -208,13 +208,11 @@
     };
 
     window.generateAnswerInputs = function() {
-      const choices = [
-        document.getElementById("choice1").value.trim(),
-        document.getElementById("choice2").value.trim(),
-        document.getElementById("choice3").value.trim(),
-        document.getElementById("choice4").value.trim(),
-        document.getElementById("choice5").value.trim()
-      ];
+      const choices = {};
+["1", "2", "3", "4", "5"].forEach((key, i) => {
+  const val = document.getElementById(`choice${i + 1}`).value.trim();
+  if (val) choices[key] = val;
+});
       const validChoices = choices.filter(c => c !== "");
       const container = document.getElementById("answerOrderContainer");
       container.innerHTML = "";
