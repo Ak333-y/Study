@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>並び替え問題追加 - StudyBase</title>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
+      authDomain: "akeducationalplatform.firebaseapp.com",
+      projectId: "akeducationalplatform",
+      storageBucket: "akeducationalplatform.firebasestorage.app",
+      messagingSenderId: "778140595189",
+      appId: "1:778140595189:web:301e7490b813b44782a6bc"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // 🔒ログインチェック
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        window.location.href = "index.html";
+      } else {
+        loadSubjects();
+      }
+    });
+
+    // 📘教科読み込み
+    async function loadSubjects() {
+      const subjectSelect = document.getElementById("subject");
+      subjectSelect.innerHTML = "";
+      const snapshot = await getDocs(collection(db, "subjects"));
+
+      if (snapshot.empty) {
+        const defaults = ["歴史", "地理", "公民", "生命", "地学", "物質", "エネルギー", "古文単語"];
+        for (const s of defaults) {
+          await setDoc(doc(db, "subjects", s), { name: s });
+        }
+        defaults.forEach(s => {
+          const opt = document.createElement("option");
+          opt.value = s;
+          opt.textContent = s;
+          subjectSelect.appendChild(opt);
+        });
+      } else {
+        snapshot.forEach(docSnap => {
+          const opt = document.createElement("option");
+          opt.value = docSnap.id;
+          opt.textContent = docSnap.id;
+          subjectSelect.appendChild(opt);
+        });
+      }
+    }
+
+    // ➕ 教科追加
+    window.addSubject = async () => {
+      const newSubject = prompt("追加する教科名を入力してください：");
+      if (!newSubject) return;
+      await setDoc(doc(db, "subjects", newSubject), { name: newSubject });
+      alert("教科を追加しました！");
+      loadSubjects();
+    };
+
+    // ✏️ 並び替え問題追加
+    window.addOrderQuestion = async () => {
+      const subject = document.getElementById("subject").value;
+      const question = document.getElementById("question").value.trim();
+      const choiceA = document.getElementById("choiceA").value.trim();
+      const choiceB = document.getElementById("choiceB").value.trim();
+      const choiceC = document.getElementById("choiceC").value.trim();
+      const choiceD = document.getElementById("choiceD").value.trim();
+      const answer = document.getElementById("answer").value.trim();
+
+      if (!subject || !question || !choiceA || !choiceB || !choiceC || !answer) {
+        alert("すべての必須項目を入力してください。");
+        return;
+      }
+
+      await addDoc(collection(db, "questions"), {
+        subject,
+        type: "並び替え",
+        question,
+        choices: {
+          ア: choiceA,
+          イ: choiceB,
+          ウ: choiceC,
+          ...(choiceD ? { エ: choiceD } : {}) // Dは任意
+        },
+        correctOrder: answer,
+        timestamp: new Date()
+      });
+
+      alert("並び替え問題を追加しました！");
+      document.getElementById("question").value = "";
+      document.getElementById("choiceA").value = "";
+      document.getElementById("choiceB").value = "";
+      document.getElementById("choiceC").value = "";
+      document.getElementById("choiceD").value = "";
+      document.getElementById("answer").value = "";
+    };
+
+    // 🚪ログアウト
+    window.logout = () => {
+      signOut(auth).then(() => window.location.href = "index.html");
+    };
+  </script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+      background-color: #f3f5f7;
+    }
+
+    /* 上バー共通 */
+    .navbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(90deg, #000814, #001d6e);
+      color: white;
+      padding: 10px 40px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.5);
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 26px;
+      font-weight: bold;
+    }
+    .logo img { height: 50px; }
+    .menu {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+    }
+    .menu a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 16px;
+      transition: 0.2s;
+    }
+    .menu a:hover { color: #93c5fd; }
+    .logout button {
+      background: #b91c1c;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 6px 16px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 14px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    }
+    .logout button:hover {
+      background: #991b1b;
+      transform: translateY(-1px);
+    }
+
+    /* メイン部分 */
+    .main {
+      max-width: 700px;
+      margin: 70px auto;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+      padding: 40px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #001d6e;
+      margin-bottom: 30px;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-top: 15px;
+    }
+
+    select, input, textarea {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      margin-top: 5px;
+      font-size: 15px;
+    }
+
+    #addBtn {
+      margin-top: 25px;
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      color: white;
+      font-weight: bold;
+      background: linear-gradient(90deg, #eab308, #b45309);
+      cursor: pointer;
+      transition: 0.25s;
+    }
+
+    #addBtn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 12px rgba(0,0,0,0.2);
+    }
+
+    #addSubjectBtn {
+      background: #059669;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    #addSubjectBtn:hover {
+      background: #047857;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="navbar">
+    <div class="logo">
+      <img src="logo.png" alt="StudyBase ロゴ">
+      StudyBase — Your Daily Step to Success.
+    </div>
+    <div class="menu">
+      <a href="menu.html">ホーム</a>
+      <a href="select.html">テスト</a>
+      <a href="history.html">過去の成績</a>
+      <a href="add_question.html">問題編集</a>
+      <div class="logout"><button onclick="logout()">ログアウト</button></div>
+    </div>
+  </div>
+
+  <div class="main">
+    <h1>🔢 並び替え問題を追加</h1>
+
+    <label>教科：</label>
+    <select id="subject"></select>
+    <button id="addSubjectBtn" onclick="addSubject()">＋ 新しい教科を追加</button>
+
+    <label>問題文：</label>
+    <textarea id="question" placeholder="例：次のア〜ウの出来事を、年代の古い順に並び替えなさい。"></textarea>
+
+    <label>選択肢：</label>
+    <input id="choiceA" placeholder="ア の内容">
+    <input id="choiceB" placeholder="イ の内容">
+    <input id="choiceC" placeholder="ウ の内容">
+    <input id="choiceD" placeholder="エ の内容（任意）">
+
+    <label>正しい順番（例：ア→イ→ウ）：</label>
+    <input id="answer" placeholder="ア→イ→ウ">
+
+    <button id="addBtn" onclick="addOrderQuestion()">追加する</button>
+  </div>
+</body>
+</html>
