@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>並び替え問題追加 - StudyBase</title>
 
+  <!-- Firebase SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
@@ -23,8 +24,8 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // 🔒ログインチェック
-    onAuthStateChanged(auth, (user) => {
+    // 🔒 ログイン認証
+    onAuthStateChanged(auth, async (user) => {
       if (!user) {
         window.location.href = "index.html";
       } else {
@@ -32,21 +33,20 @@
       }
     });
 
-    // 📘教科読み込み
+    // 📚 教科読み込み
     async function loadSubjects() {
       const subjectSelect = document.getElementById("subject");
       subjectSelect.innerHTML = "";
       const snapshot = await getDocs(collection(db, "subjects"));
-
       if (snapshot.empty) {
-        const defaults = ["歴史", "地理", "公民", "生命", "地学", "物質", "エネルギー", "古文単語"];
-        for (const s of defaults) {
-          await setDoc(doc(db, "subjects", s), { name: s });
+        const defaultSubjects = ["歴史", "地理", "公民", "生命", "地学", "物質", "エネルギー", "古文単語"];
+        for (const sub of defaultSubjects) {
+          await setDoc(doc(db, "subjects", sub), { name: sub });
         }
-        defaults.forEach(s => {
+        defaultSubjects.forEach(sub => {
           const opt = document.createElement("option");
-          opt.value = s;
-          opt.textContent = s;
+          opt.value = sub;
+          opt.textContent = sub;
           subjectSelect.appendChild(opt);
         });
       } else {
@@ -59,7 +59,7 @@
       }
     }
 
-    // ➕ 教科追加
+    // 🆕 教科追加
     window.addSubject = async () => {
       const newSubject = prompt("追加する教科名を入力してください：");
       if (!newSubject) return;
@@ -68,18 +68,28 @@
       loadSubjects();
     };
 
-    // ✏️ 並び替え問題追加
+    // 💾 並び替え問題追加
     window.addOrderQuestion = async () => {
       const subject = document.getElementById("subject").value;
       const question = document.getElementById("question").value.trim();
-      const choiceA = document.getElementById("choiceA").value.trim();
-      const choiceB = document.getElementById("choiceB").value.trim();
-      const choiceC = document.getElementById("choiceC").value.trim();
-      const choiceD = document.getElementById("choiceD").value.trim();
-      const answer = document.getElementById("answer").value.trim();
+      const options = [
+        document.getElementById("optA").value.trim(),
+        document.getElementById("optB").value.trim(),
+        document.getElementById("optC").value.trim(),
+        document.getElementById("optD").value.trim(),
+        document.getElementById("optE").value.trim()
+      ].filter(v => v !== "");
 
-      if (!subject || !question || !choiceA || !choiceB || !choiceC || !answer) {
-        alert("すべての必須項目を入力してください。");
+      const order = [
+        document.getElementById("ans1").value,
+        document.getElementById("ans2").value,
+        document.getElementById("ans3").value,
+        document.getElementById("ans4").value,
+        document.getElementById("ans5").value
+      ].filter(v => v !== "");
+
+      if (!subject || !question || options.length < 2 || order.length < 2) {
+        alert("問題文・選択肢（2つ以上）・答えの順番を入力してください。");
         return;
       }
 
@@ -87,26 +97,17 @@
         subject,
         type: "並び替え",
         question,
-        choices: {
-          ア: choiceA,
-          イ: choiceB,
-          ウ: choiceC,
-          ...(choiceD ? { エ: choiceD } : {}) // Dは任意
-        },
-        correctOrder: answer,
+        options,
+        answerOrder: order,
         timestamp: new Date()
       });
 
       alert("並び替え問題を追加しました！");
       document.getElementById("question").value = "";
-      document.getElementById("choiceA").value = "";
-      document.getElementById("choiceB").value = "";
-      document.getElementById("choiceC").value = "";
-      document.getElementById("choiceD").value = "";
-      document.getElementById("answer").value = "";
+      document.querySelectorAll("input[type=text]").forEach(i => i.value = "");
     };
 
-    // 🚪ログアウト
+    // 🚪 ログアウト
     window.logout = () => {
       signOut(auth).then(() => window.location.href = "index.html");
     };
@@ -119,7 +120,7 @@
       background-color: #f3f5f7;
     }
 
-    /* 上バー共通 */
+    /* 上のバー（共通） */
     .navbar {
       display: flex;
       align-items: center;
@@ -129,27 +130,13 @@
       padding: 10px 40px;
       box-shadow: 0 3px 10px rgba(0,0,0,0.5);
     }
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 26px;
-      font-weight: bold;
-    }
+
+    .logo { display: flex; align-items: center; gap: 10px; font-size: 26px; font-weight: bold; }
     .logo img { height: 50px; }
-    .menu {
-      display: flex;
-      align-items: center;
-      gap: 30px;
-    }
-    .menu a {
-      color: white;
-      text-decoration: none;
-      font-weight: bold;
-      font-size: 16px;
-      transition: 0.2s;
-    }
+    .menu { display: flex; align-items: center; gap: 30px; }
+    .menu a { color: white; text-decoration: none; font-weight: bold; font-size: 16px; transition: 0.2s; }
     .menu a:hover { color: #93c5fd; }
+
     .logout button {
       background: #b91c1c;
       color: #fff;
@@ -160,78 +147,50 @@
       font-weight: 700;
       font-size: 14px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+      transition: background 0.18s ease, box-shadow 0.18s ease, transform 0.12s ease;
     }
-    .logout button:hover {
-      background: #991b1b;
-      transform: translateY(-1px);
-    }
+    .logout button:hover { background: #991b1b; transform: translateY(-1px); }
 
     /* メイン部分 */
     .main {
       max-width: 700px;
-      margin: 70px auto;
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+      margin: 60px auto;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
       padding: 40px;
     }
 
-    h1 {
-      text-align: center;
-      color: #001d6e;
-      margin-bottom: 30px;
-    }
+    h1 { text-align: center; color: #001d6e; margin-bottom: 30px; }
 
-    label {
-      display: block;
-      font-weight: bold;
-      margin-top: 15px;
-    }
+    label { display: block; margin-top: 15px; font-weight: bold; }
 
     select, input, textarea {
-      width: 100%;
-      padding: 10px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      margin-top: 5px;
-      font-size: 15px;
+      width: 100%; padding: 10px; margin-top: 5px;
+      border: 1px solid #ccc; border-radius: 6px; font-size: 16px;
     }
+
+    textarea { height: 100px; resize: vertical; }
 
     #addBtn {
-      margin-top: 25px;
-      width: 100%;
-      padding: 12px;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      color: white;
-      font-weight: bold;
-      background: linear-gradient(90deg, #eab308, #b45309);
-      cursor: pointer;
-      transition: 0.25s;
+      display: block; margin: 25px auto 0;
+      padding: 10px 30px; background: linear-gradient(90deg, #eab308, #b45309);
+      color: white; font-weight: bold; border: none; border-radius: 30px;
+      font-size: 16px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
     }
 
-    #addBtn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 12px rgba(0,0,0,0.2);
-    }
+    #addBtn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.25); }
 
     #addSubjectBtn {
-      background: #059669;
-      color: white;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 6px;
-      cursor: pointer;
-      margin-top: 10px;
+      background: #059669; color: white; border: none;
+      padding: 6px 12px; border-radius: 6px; cursor: pointer; margin-top: 10px;
     }
-    #addSubjectBtn:hover {
-      background: #047857;
-    }
+    #addSubjectBtn:hover { background: #047857; }
   </style>
 </head>
 
 <body>
+  <!-- 共通バー -->
   <div class="navbar">
     <div class="logo">
       <img src="logo.png" alt="StudyBase ロゴ">
@@ -242,28 +201,38 @@
       <a href="select.html">テスト</a>
       <a href="history.html">過去の成績</a>
       <a href="add_question.html">問題編集</a>
-      <div class="logout"><button onclick="logout()">ログアウト</button></div>
+      <div class="logout">
+        <button onclick="logout()">ログアウト</button>
+      </div>
     </div>
   </div>
 
+  <!-- メイン -->
   <div class="main">
-    <h1>🔢 並び替え問題を追加</h1>
+    <h1>🔄 並び替え問題を追加</h1>
 
     <label>教科：</label>
     <select id="subject"></select>
     <button id="addSubjectBtn" onclick="addSubject()">＋ 新しい教科を追加</button>
 
     <label>問題文：</label>
-    <textarea id="question" placeholder="例：次のア〜ウの出来事を、年代の古い順に並び替えなさい。"></textarea>
+    <textarea id="question" placeholder="例：次の出来事を年代の古い順に並べなさい"></textarea>
 
     <label>選択肢：</label>
-    <input id="choiceA" placeholder="ア の内容">
-    <input id="choiceB" placeholder="イ の内容">
-    <input id="choiceC" placeholder="ウ の内容">
-    <input id="choiceD" placeholder="エ の内容（任意）">
+    <input id="optA" type="text" placeholder="アの内容">
+    <input id="optB" type="text" placeholder="イの内容">
+    <input id="optC" type="text" placeholder="ウの内容">
+    <input id="optD" type="text" placeholder="エの内容（任意）">
+    <input id="optE" type="text" placeholder="オの内容（任意）">
 
-    <label>正しい順番（例：ア→イ→ウ）：</label>
-    <input id="answer" placeholder="ア→イ→ウ">
+    <label>正しい順番（記号で選択）：</label>
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <select id="ans1"><option value="">1番目</option><option>ア</option><option>イ</option><option>ウ</option><option>エ</option><option>オ</option></select>
+      <select id="ans2"><option value="">2番目</option><option>ア</option><option>イ</option><option>ウ</option><option>エ</option><option>オ</option></select>
+      <select id="ans3"><option value="">3番目</option><option>ア</option><option>イ</option><option>ウ</option><option>エ</option><option>オ</option></select>
+      <select id="ans4"><option value="">4番目</option><option>ア</option><option>イ</option><option>ウ</option><option>エ</option><option>オ</option></select>
+      <select id="ans5"><option value="">5番目</option><option>ア</option><option>イ</option><option>ウ</option><option>エ</option><option>オ</option></select>
+    </div>
 
     <button id="addBtn" onclick="addOrderQuestion()">追加する</button>
   </div>
