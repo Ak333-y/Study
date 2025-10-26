@@ -1,0 +1,160 @@
+<!-- 🔹ナビバー -->
+<style>
+  body {
+    margin: 0;
+    font-family: "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+    background-color: #f3f5f7;
+  }
+
+  .navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(90deg, #000814, #001d6e);
+    color: white;
+    padding: 10px 20px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.5);
+    position: relative;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 22px;
+    font-weight: bold;
+  }
+
+  .logo img {
+    height: 40px;
+  }
+
+  .menu {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .menu a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 15px;
+    transition: 0.2s;
+  }
+
+  .menu a:hover {
+    color: #93c5fd;
+  }
+
+  .logout button {
+    background: #b91c1c;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 13px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    transition: 0.18s;
+  }
+
+  .logout button:hover {
+    background: #991b1b;
+    transform: translateY(-1px);
+  }
+
+  /* 🔹スマホ用（折りたたみ） */
+  .hamburger {
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
+    gap: 4px;
+  }
+
+  .hamburger div {
+    width: 25px;
+    height: 3px;
+    background: white;
+  }
+
+  @media (max-width: 768px) {
+    .menu {
+      display: none;
+      flex-direction: column;
+      background: #001d6e;
+      position: absolute;
+      top: 60px;
+      right: 0;
+      width: 100%;
+      padding: 10px 0;
+      text-align: center;
+    }
+
+    .menu.show {
+      display: flex;
+    }
+
+    .hamburger {
+      display: flex;
+    }
+
+    .logo img {
+      height: 35px;
+    }
+  }
+</style>
+
+<div class="navbar">
+  <div class="logo">
+    <img src="logo.png" alt="StudyBase ロゴ" />
+    StudyBase — Your Daily Step to Success.
+  </div>
+
+  <div class="hamburger" id="hamburger">
+    <div></div><div></div><div></div>
+  </div>
+
+  <div class="menu" id="menu">
+    <a href="menu.html">ホーム</a>
+    <a href="select.html">テスト</a>
+    <a href="history.html">過去の成績</a>
+    <a href="add_question.html">問題追加</a>
+    <a href="edit_question.html">問題編集</a>
+    <div class="logout"><button onclick="logout()">ログアウト</button></div>
+  </div>
+</div>
+
+<!-- 🔹ログアウト処理 -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
+    authDomain: "akeducationalplatform.firebaseapp.com",
+    projectId: "akeducationalplatform",
+    storageBucket: "akeducationalplatform.firebasestorage.app",
+    messagingSenderId: "778140595189",
+    appId: "1:778140595189:web:301e7490b813b44782a6bc"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  window.logout = async function() {
+    try {
+      await signOut(auth);
+      window.location.href = "index.html"; // 🔹index.htmlへリダイレクト
+    } catch (e) {
+      console.error("ログアウト失敗:", e);
+    }
+  };
+
+  const hamburger = document.getElementById('hamburger');
+  const menu = document.getElementById('menu');
+  hamburger.addEventListener('click', () => {
+    menu.classList.toggle('show');
+  });
+</script>
