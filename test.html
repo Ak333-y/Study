@@ -410,8 +410,8 @@ function submitAnswer() {
   const isCorrect = userAnswer === q.answer;
   if (isCorrect) correctCount++;
 
-  flashAnimation(isCorrect);
-
+  flashAnimation(isCorrect, q.answer);
+  
   answeredQuestions.push(q.id);
   sessionStorage.setItem("answeredQuestions", JSON.stringify(answeredQuestions));
 
