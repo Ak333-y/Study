@@ -174,22 +174,36 @@
   font-size: 120px;
   font-weight: bold;
   opacity: 0;
-  animation: flashInOut 0.8s ease;
+  animation: flashFade 0.8s ease-out;
   z-index: 9999;
 }
+
 .flash.correct {
-  color: #22c55e;
-}
-.flash.wrong {
-  color: #ef4444;
-}
-@keyframes flashInOut {
-  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.7); }
-  30% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
-  70% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-  100% { opacity: 0; transform: translate(-50%, -50%) scale(0.7); }
+  color: #22c55e; /* 🟢正解は緑色 */
 }
 
+.flash.wrong {
+  color: #ef4444; /* 🔴不正解は赤色 */
+}
+
+@keyframes flashFade {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+  80% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.2);
+  }
+}
   </style>
 </head>
 <body>
