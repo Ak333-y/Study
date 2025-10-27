@@ -170,97 +170,63 @@
   position: fixed;
   top: 45%;
   left: 50%;
-  transform: translate(-50%, -50%) scale(0.5);
-  width: 150px;
-  height: 150px;
+  transform: translate(-50%, -50%) scale(1);
+  width: 130px;
+  height: 130px;
   border-radius: 50%;
-  font-size: 90px;
+  font-size: 80px;
   font-weight: bold;
   display: flex;
   align-items: center;
   justify-content: center;
   opacity: 0;
   z-index: 1000;
-  animation: popFlash 0.9s ease-out forwards;
+  animation: fadePop 0.8s ease-out forwards;
 }
 
+/* ✅正解（緑） */
 .flash.correct {
-  color: #22c55e; /* 緑 */
+  color: #22c55e;
   border: 4px solid #22c55e;
-  box-shadow: 0 0 30px #22c55e, 0 0 80px rgba(34, 197, 94, 0.4);
+  box-shadow: 0 0 20px rgba(34, 197, 94, 0.5);
 }
 
+/* ❌不正解（赤） */
 .flash.wrong {
-  color: #ef4444; /* 赤 */
+  color: #ef4444;
   border: 4px solid #ef4444;
-  box-shadow: 0 0 30px #ef4444, 0 0 80px rgba(239, 68, 68, 0.4);
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
 }
 
-@keyframes popFlash {
+@keyframes fadePop {
   0% {
     opacity: 0;
-    transform: translate(-50%, -50%) scale(0.2) rotate(0deg);
+    transform: translate(-50%, -50%) scale(0.5);
   }
   30% {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1.1) rotate(10deg);
-  }
-  60% {
-    transform: translate(-50%, -50%) scale(1.0) rotate(-8deg);
-  }
-  80% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1.05) rotate(5deg);
+    transform: translate(-50%, -50%) scale(1.05);
   }
   100% {
     opacity: 0;
-    transform: translate(-50%, -50%) scale(1.2) rotate(0deg);
+    transform: translate(-50%, -50%) scale(1.1);
   }
 }
 
-/* 💫 弾けるスパーク */
-.flash::after {
-  content: "";
-  position: absolute;
-  width: 200px;
-  height: 200px;
-  border-radius: 50%;
-  border: 2px solid currentColor;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) scale(0);
-  opacity: 0.8;
-  animation: spark 0.8s ease-out forwards;
-}
-
-@keyframes spark {
-  0% {
-    transform: translate(-50%, -50%) scale(0.3);
-    opacity: 1;
-  }
-  70% {
-    transform: translate(-50%, -50%) scale(1.4);
-    opacity: 0.7;
-  }
-  100% {
-    transform: translate(-50%, -50%) scale(1.8);
-    opacity: 0;
-  }
-}
-
-/* 🔹 不正解時の答え表示 */
+/* ❌不正解時の正答表示 */
 .answer-flash {
   position: fixed;
   top: 62%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 24px;
+  font-size: 22px;
   color: #fff;
-  background: rgba(0, 0, 0, 0.75);
-  padding: 10px 20px;
-  border-radius: 12px;
-  animation: fadeAnswer 1.8s ease;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 10px 18px;
+  border-radius: 10px;
   z-index: 1001;
+  opacity: 0;
+  animation: fadeAnswer 1.8s ease forwards;
 }
 
 @keyframes fadeAnswer {
