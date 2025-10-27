@@ -188,127 +188,171 @@
     <button class="submit-btn" id="submit-btn" onclick="submitAnswer()">回答する</button>
   </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-    import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+  import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
-      authDomain: "akeducationalplatform.firebaseapp.com",
-      projectId: "akeducationalplatform",
-      storageBucket: "akeducationalplatform.firebasestorage.app",
-      messagingSenderId: "778140595189",
-      appId: "1:778140595189:web:301e7490b813b44782a6bc"
-    };
+  // 🔹 Firebase設定
+  const firebaseConfig = {
+    apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
+    authDomain: "akeducationalplatform.firebaseapp.com",
+    projectId: "akeducationalplatform",
+    storageBucket: "akeducationalplatform.firebasestorage.app",
+    messagingSenderId: "778140595189",
+    appId: "1:778140595189:web:301e7490b813b44782a6bc"
+  };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
 
-    const subject = sessionStorage.getItem("subject");
-    const questionCount = parseInt(sessionStorage.getItem("questionCount"));
-    let questions = [];
-    let currentIndex = 0;
+  const subject = sessionStorage.getItem("subject");
+  const questionCount = parseInt(sessionStorage.getItem("questionCount"));
+  let questions = [];
+  let currentIndex = 0;
 
-    async function loadQuestions() {
-      const q = query(collection(db, "questions"), where("subject", "==", subject));
-      const snapshot = await getDocs(q);
-      snapshot.forEach((doc) => questions.push(doc.data()));
-      questions = questions.sort(() => Math.random() - 0.5).slice(0, questionCount);
-      showQuestion();
+  // 🔸 出題済み記録をセッション内に保存
+  const answeredQuestions = JSON.parse(sessionStorage.getItem("answeredQuestions") || "[]");
+
+  // 🔹 ログインチェック
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      alert("ログインしてください！");
+      window.location.href = "index.html";
+    } else {
+      console.log("ログイン中:", user.email);
+      await loadQuestions();
+    }
+  });
+
+  // 🔸 問題をFirestoreから取得
+  async function loadQuestions() {
+    const q = query(collection(db, "questions"), where("subject", "==", subject));
+    const snapshot = await getDocs(q);
+
+    snapshot.forEach((doc) => {
+      const data = doc.data();
+      // 出題済みじゃない問題だけ残す
+      if (!answeredQuestions.includes(data.id)) {
+        questions.push({ ...data, id: doc.id });
+      }
+    });
+
+    // 問題をシャッフルして指定数だけ取得
+    questions = questions.sort(() => Math.random() - 0.5).slice(0, questionCount);
+
+    if (questions.length === 0) {
+      alert("この教科の新しい問題はありません。");
+      window.location.href = "select.html";
+      return;
     }
 
-    function showQuestion() {
-      if (currentIndex >= questions.length) {
-        alert("テスト終了！お疲れさま🎉");
-        window.location.href = "select.html";
-        return;
-      }
+    showQuestion();
+  }
 
-      const q = questions[currentIndex];
-      const container = document.getElementById("question-container");
-      container.innerHTML = `
-        <div class="question-box">Q${currentIndex + 1}. ${q.question}</div>
-      `;
-
-      if (q.type === "一問一答") {
-        container.innerHTML += `<input type="text" id="answer" class="answer-input" placeholder="答えを入力" />`;
-      } else if (q.type === "四択") {
-        let html = `<div class="choices">`;
-        q.choices.forEach((choice, i) => {
-          html += `<label><input type="radio" name="choice" value="${choice}"> ${choice}</label>`;
-        });
-        html += `</div>`;
-        container.innerHTML += html;
-      } else if (q.type === "並び替え") {
-        let html = `<div class="sortable" id="sortable">`;
-        q.choices.forEach((part) => {
-          html += `<div draggable="true">${part}</div>`;
-        });
-        html += `</div>`;
-        container.innerHTML += html;
-        enableDrag();
-      }
+  // 🔸 問題を表示
+  function showQuestion() {
+    if (currentIndex >= questions.length) {
+      alert("テスト終了！お疲れさま🎉");
+      sessionStorage.removeItem("answeredQuestions"); // 次回テストに備えてリセット
+      window.location.href = "select.html";
+      return;
     }
 
-    function enableDrag() {
-      const items = document.querySelectorAll(".sortable div");
-      let dragItem = null;
-      items.forEach((item) => {
-        item.addEventListener("dragstart", () => {
-          dragItem = item;
-          item.style.opacity = "0.4";
-        });
-        item.addEventListener("dragend", () => {
-          dragItem.style.opacity = "1";
-          dragItem = null;
-        });
-        item.addEventListener("dragover", (e) => e.preventDefault());
-        item.addEventListener("drop", (e) => {
-          e.preventDefault();
-          if (dragItem !== item) {
-            const parent = item.parentNode;
-            const itemsArray = Array.from(parent.children);
-            const dragIndex = itemsArray.indexOf(dragItem);
-            const dropIndex = itemsArray.indexOf(item);
-            if (dragIndex < dropIndex) parent.insertBefore(dragItem, item.nextSibling);
-            else parent.insertBefore(dragItem, item);
-          }
-        });
+    const q = questions[currentIndex];
+    const container = document.getElementById("question-container");
+    container.innerHTML = `
+      <div class="question-box">Q${currentIndex + 1}. ${q.question}</div>
+    `;
+
+    if (q.type === "一問一答") {
+      container.innerHTML += `<input type="text" id="answer" class="answer-input" placeholder="答えを入力" />`;
+    } else if (q.type === "四択") {
+      let html = `<div class="choices">`;
+      q.choices.forEach((choice) => {
+        html += `<label><input type="radio" name="choice" value="${choice}"> ${choice}</label>`;
       });
+      html += `</div>`;
+      container.innerHTML += html;
+    } else if (q.type === "並び替え") {
+      let html = `<div class="sortable" id="sortable">`;
+      q.choices.forEach((part) => {
+        html += `<div draggable="true">${part}</div>`;
+      });
+      html += `</div>`;
+      container.innerHTML += html;
+      enableDrag();
+    }
+  }
+
+  // 🔸 並び替え機能
+  function enableDrag() {
+    const items = document.querySelectorAll(".sortable div");
+    let dragItem = null;
+    items.forEach((item) => {
+      item.addEventListener("dragstart", () => {
+        dragItem = item;
+        item.style.opacity = "0.4";
+      });
+      item.addEventListener("dragend", () => {
+        item.style.opacity = "1";
+        dragItem = null;
+      });
+      item.addEventListener("dragover", (e) => e.preventDefault());
+      item.addEventListener("drop", (e) => {
+        e.preventDefault();
+        if (dragItem !== item) {
+          const parent = item.parentNode;
+          const itemsArray = Array.from(parent.children);
+          const dragIndex = itemsArray.indexOf(dragItem);
+          const dropIndex = itemsArray.indexOf(item);
+          if (dragIndex < dropIndex) parent.insertBefore(dragItem, item.nextSibling);
+          else parent.insertBefore(dragItem, item);
+        }
+      });
+    });
+  }
+
+  // 🔸 回答処理
+  function submitAnswer() {
+    const q = questions[currentIndex];
+    let userAnswer = "";
+
+    if (q.type === "一問一答") {
+      userAnswer = document.getElementById("answer").value.trim();
+    } else if (q.type === "四択") {
+      const checked = document.querySelector('input[name="choice"]:checked');
+      if (!checked) return alert("選択してください！");
+      userAnswer = checked.value;
+    } else if (q.type === "並び替え") {
+      const order = Array.from(document.querySelectorAll(".sortable div")).map((d) => d.textContent);
+      userAnswer = order.join("");
     }
 
-    function submitAnswer() {
-      const q = questions[currentIndex];
-      let userAnswer = "";
-
-      if (q.type === "一問一答") {
-        userAnswer = document.getElementById("answer").value.trim();
-      } else if (q.type === "四択") {
-        const checked = document.querySelector('input[name="choice"]:checked');
-        if (!checked) return alert("選択してください！");
-        userAnswer = checked.value;
-      } else if (q.type === "並び替え") {
-        const order = Array.from(document.querySelectorAll(".sortable div")).map((d) => d.textContent);
-        userAnswer = order.join("");
-      }
-
-      if (userAnswer === q.answer) {
-        alert("正解！✨");
-      } else {
-        alert(`不正解… 正答：${q.answer}`);
-      }
-
-      currentIndex++;
-      showQuestion();
+    if (userAnswer === q.answer) {
+      alert("正解！✨");
+    } else {
+      alert(`不正解… 正答：${q.answer}`);
     }
 
-    function stopTest() {
-      if (confirm("テストを中断しますか？")) {
-        window.location.href = "select.html";
-      }
-    }
+    // 出題済みに記録
+    answeredQuestions.push(q.id);
+    sessionStorage.setItem("answeredQuestions", JSON.stringify(answeredQuestions));
 
-    loadQuestions();
-  </script>
+    currentIndex++;
+    showQuestion();
+  }
+
+  // 🔸 テスト中断
+  function stopTest() {
+    if (confirm("テストを中断しますか？")) {
+      window.location.href = "select.html";
+    }
+  }
+
+  document.getElementById("submit-btn").addEventListener("click", submitAnswer);
+  document.getElementById("stop-btn").addEventListener("click", stopTest);
+</script>
 </body>
 </html>
