@@ -19,28 +19,26 @@
       justify-content: space-between;
       background: linear-gradient(90deg, #000814, #001d6e);
       color: white;
-      padding: 10px 30px;
+      padding: 10px 40px;
       box-shadow: 0 3px 10px rgba(0,0,0,0.5);
-      position: relative;
-      z-index: 10;
     }
 
     .logo {
       display: flex;
       align-items: center;
       gap: 10px;
-      font-size: 24px;
+      font-size: 26px;
       font-weight: bold;
     }
 
     .logo img {
-      height: 45px;
+      height: 50px;
     }
 
     .menu {
       display: flex;
       align-items: center;
-      gap: 25px;
+      gap: 30px;
     }
 
     .menu a {
@@ -60,18 +58,19 @@
       color: #fff;
       border: none;
       border-radius: 8px;
-      padding: 6px 14px;
+      padding: 6px 16px;
       cursor: pointer;
       font-weight: 700;
       font-size: 14px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-      transition: background 0.18s ease, transform 0.12s ease;
+      transition: background 0.18s ease, box-shadow 0.18s ease, transform 0.12s ease;
     }
 
     .logout button:hover {
       background: #991b1b;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.30);
       transform: translateY(-1px);
-    }
+      }
 
     /* --- ハンバーガーメニュー --- */
     .hamburger {
@@ -166,7 +165,7 @@
   <div class="navbar">
     <div class="logo">
       <img src="logo.png" alt="StudyBase ロゴ" />
-      StudyBase
+      StudyBase — Your Daily Step to Success.
     </div>
 
     <div class="hamburger" onclick="toggleMenu()">
