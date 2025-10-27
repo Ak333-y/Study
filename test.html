@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>テスト - StudyBase</title>
-
+  <title>テスト画面 | StudyBase</title>
   <style>
     body {
       margin: 0;
@@ -12,7 +11,7 @@
       background-color: #f3f5f7;
     }
 
-    /* 上バー */
+    /* ====== 上バー ====== */
     .navbar {
       display: flex;
       align-items: center;
@@ -20,32 +19,50 @@
       background: linear-gradient(90deg, #000814, #001d6e);
       color: white;
       padding: 10px 40px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.5);
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
+
     .logo {
       display: flex;
       align-items: center;
       gap: 10px;
-      font-size: 22px;
+      font-size: 26px;
       font-weight: bold;
     }
-    .logo img { height: 40px; }
+
+    .logo img {
+      height: 50px;
+    }
+
     .menu {
       display: flex;
       align-items: center;
-      gap: 25px;
-      flex-wrap: wrap;
+      gap: 30px;
     }
+
     .menu a {
       color: white;
       text-decoration: none;
       font-weight: bold;
-      font-size: 15px;
+      font-size: 16px;
       transition: 0.2s;
-      pointer-events: none; /* テスト中は無効化 */
-      opacity: 0.4;
+      pointer-events: none; /* テスト中は押せない */
+      opacity: 0.6;
     }
-    .menu a:hover { color: #93c5fd; }
+
+    .menu a.disabled {
+      pointer-events: none;
+      opacity: 0.6;
+    }
+
+    .menu a:hover {
+      color: #93c5fd;
+    }
+
+    /* ====== 中断ボタン ====== */
     .logout button {
       background: #b91c1c;
       color: #fff;
@@ -55,80 +72,99 @@
       cursor: pointer;
       font-weight: 700;
       font-size: 14px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+      transition: 0.18s;
     }
 
     .logout button:hover {
       background: #991b1b;
+      transform: translateY(-1px);
     }
 
-    /* メイン部分 */
-    .main {
+    /* ====== メイン ====== */
+    .container {
       max-width: 800px;
       margin: 40px auto;
-      background: white;
-      border-radius: 16px;
+      background: #fff;
       padding: 30px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      text-align: center;
+      border-radius: 12px;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
     }
 
-    .question {
+    .question-box {
       font-size: 20px;
-      font-weight: 600;
+      font-weight: bold;
       margin-bottom: 20px;
     }
 
-    .choices button {
+    .choices label {
       display: block;
-      width: 100%;
-      margin: 10px 0;
       padding: 10px;
-      font-size: 16px;
-      border-radius: 10px;
-      border: 2px solid #001d6e;
-      background: white;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      margin-bottom: 10px;
       cursor: pointer;
       transition: 0.2s;
     }
 
-    .choices button:hover {
-      background: #e5ecff;
+    .choices label:hover {
+      background: #f3f5f7;
     }
 
-    .input-answer {
-      font-size: 18px;
-      padding: 6px 10px;
-      width: 60%;
-      border-radius: 6px;
+    .answer-input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
       border: 1px solid #ccc;
+      font-size: 16px;
     }
 
-    .btn {
-      margin-top: 20px;
+    .submit-btn {
       background: #001d6e;
-      color: white;
-      padding: 8px 20px;
+      color: #fff;
       border: none;
       border-radius: 8px;
+      padding: 10px 20px;
       cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      margin-top: 20px;
+      transition: 0.2s;
     }
 
-    .sortable-list {
+    .submit-btn:hover {
+      background: #0031a0;
+    }
+
+    /* 並び替え */
+    .sortable {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
-      justify-content: center;
-      margin-bottom: 15px;
     }
 
-    .sortable-item {
-      background: #e5ecff;
-      border: 1px solid #001d6e;
-      padding: 8px 12px;
+    .sortable div {
+      background: #e0e7ff;
+      padding: 10px 15px;
       border-radius: 8px;
       cursor: grab;
       user-select: none;
+    }
+
+    @media (max-width: 700px) {
+      .navbar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 15px;
+      }
+      .menu {
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .logo {
+        font-size: 20px;
+      }
     }
   </style>
 </head>
@@ -139,21 +175,22 @@
       StudyBase — Your Daily Step to Success.
     </div>
     <div class="menu">
-      <a href="menu.html">ホーム</a>
-      <a href="select.html">テスト</a>
-      <a href="history.html">過去の成績</a>
-      <a href="add_question.html">問題編集</a>
-      <div class="logout"><button id="endTest">テスト中断</button></div>
+      <a href="menu.html" class="disabled">ホーム</a>
+      <a href="select.html" class="disabled">テスト</a>
+      <a href="history.html" class="disabled">過去の成績</a>
+      <a href="add_question.html" class="disabled">問題編集</a>
+      <div class="logout"><button onclick="stopTest()">テスト中断</button></div>
     </div>
   </div>
 
-  <div class="main">
-    <div id="questionBox"></div>
+  <div class="container">
+    <div id="question-container"></div>
+    <button class="submit-btn" id="submit-btn" onclick="submitAnswer()">回答する</button>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+    import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
@@ -167,116 +204,109 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const subject = sessionStorage.getItem("selectedSubject");
-    const questionBox = document.getElementById("questionBox");
-
+    const subject = sessionStorage.getItem("subject");
+    const questionCount = parseInt(sessionStorage.getItem("questionCount"));
     let questions = [];
     let currentIndex = 0;
-    let correctCount = 0;
 
     async function loadQuestions() {
-      const querySnapshot = await getDocs(collection(db, "questions"));
-      questions = querySnapshot.docs
-        .map(doc => doc.data())
-        .filter(q => q.subject === subject);
-
-      if (questions.length === 0) {
-        questionBox.innerHTML = "<p>この教科には問題がありません。</p>";
-        return;
-      }
+      const q = query(collection(db, "questions"), where("subject", "==", subject));
+      const snapshot = await getDocs(q);
+      snapshot.forEach((doc) => questions.push(doc.data()));
+      questions = questions.sort(() => Math.random() - 0.5).slice(0, questionCount);
       showQuestion();
     }
 
     function showQuestion() {
-      const q = questions[currentIndex];
-      questionBox.innerHTML = `<div class="question">${q.question}</div>`;
-
-      if (q.type === "四択") {
-        const choicesHTML = q.choices.map(choice => `
-          <button onclick="checkAnswer('${choice}', '${q.answer}')">${choice}</button>
-        `).join("");
-        questionBox.innerHTML += `<div class="choices">${choicesHTML}</div>`;
-      } 
-      else if (q.type === "一問一答") {
-        questionBox.innerHTML += `
-          <input id="userAnswer" class="input-answer" placeholder="答えを入力" />
-          <br>
-          <button class="btn" onclick="showAnswer('${q.answer}')">答えを見る</button>
-        `;
-      } 
-      else if (q.type === "並び替え") {
-        const parts = q.sentence.split(" ");
-        const listHTML = parts.map(p => `<div class="sortable-item">${p}</div>`).join("");
-        questionBox.innerHTML += `
-          <div class="sortable-list" id="sortableList">${listHTML}</div>
-          <button class="btn" onclick="checkOrder('${q.answer}')">採点</button>
-        `;
-        makeSortable();
-      }
-    }
-
-    window.checkAnswer = function(selected, correct) {
-      if (selected === correct) correctCount++;
-      nextQuestion();
-    }
-
-    window.showAnswer = function(answer) {
-      const input = document.getElementById("userAnswer").value.trim();
-      const result = input === answer ? "正解！" : `不正解…　正解：${answer}`;
-      if (input === answer) correctCount++;
-      questionBox.innerHTML += `<p>${result}</p><button class="btn" onclick="nextQuestion()">次へ</button>`;
-    }
-
-    window.checkOrder = function(answer) {
-      const items = [...document.querySelectorAll(".sortable-item")].map(i => i.textContent.trim());
-      const userAnswer = items.join(" ");
-      const result = userAnswer === answer ? "正解！" : `不正解…　正解：${answer}`;
-      if (userAnswer === answer) correctCount++;
-      questionBox.innerHTML += `<p>${result}</p><button class="btn" onclick="nextQuestion()">次へ</button>`;
-    }
-
-    function nextQuestion() {
-      currentIndex++;
       if (currentIndex >= questions.length) {
-        const rate = Math.round((correctCount / questions.length) * 100);
-        questionBox.innerHTML = `
-          <h2>テスト終了！</h2>
-          <p>正答数：${correctCount}/${questions.length}</p>
-          <p>正答率：${rate}%</p>
-          <button class="btn" onclick="location.href='menu.html'">メニューに戻る</button>
-        `;
-      } else {
-        showQuestion();
+        alert("テスト終了！お疲れさま🎉");
+        window.location.href = "select.html";
+        return;
+      }
+
+      const q = questions[currentIndex];
+      const container = document.getElementById("question-container");
+      container.innerHTML = `
+        <div class="question-box">Q${currentIndex + 1}. ${q.question}</div>
+      `;
+
+      if (q.type === "一問一答") {
+        container.innerHTML += `<input type="text" id="answer" class="answer-input" placeholder="答えを入力" />`;
+      } else if (q.type === "四択") {
+        let html = `<div class="choices">`;
+        q.choices.forEach((choice, i) => {
+          html += `<label><input type="radio" name="choice" value="${choice}"> ${choice}</label>`;
+        });
+        html += `</div>`;
+        container.innerHTML += html;
+      } else if (q.type === "並び替え") {
+        let html = `<div class="sortable" id="sortable">`;
+        q.choices.forEach((part) => {
+          html += `<div draggable="true">${part}</div>`;
+        });
+        html += `</div>`;
+        container.innerHTML += html;
+        enableDrag();
       }
     }
 
-    function makeSortable() {
-      const list = document.getElementById("sortableList");
-      let dragged;
-      list.addEventListener("dragstart", e => {
-        dragged = e.target;
-        e.target.style.opacity = 0.5;
+    function enableDrag() {
+      const items = document.querySelectorAll(".sortable div");
+      let dragItem = null;
+      items.forEach((item) => {
+        item.addEventListener("dragstart", () => {
+          dragItem = item;
+          item.style.opacity = "0.4";
+        });
+        item.addEventListener("dragend", () => {
+          dragItem.style.opacity = "1";
+          dragItem = null;
+        });
+        item.addEventListener("dragover", (e) => e.preventDefault());
+        item.addEventListener("drop", (e) => {
+          e.preventDefault();
+          if (dragItem !== item) {
+            const parent = item.parentNode;
+            const itemsArray = Array.from(parent.children);
+            const dragIndex = itemsArray.indexOf(dragItem);
+            const dropIndex = itemsArray.indexOf(item);
+            if (dragIndex < dropIndex) parent.insertBefore(dragItem, item.nextSibling);
+            else parent.insertBefore(dragItem, item);
+          }
+        });
       });
-      list.addEventListener("dragend", e => {
-        e.target.style.opacity = "";
-      });
-      list.addEventListener("dragover", e => {
-        e.preventDefault();
-      });
-      list.addEventListener("drop", e => {
-        e.preventDefault();
-        if (e.target.classList.contains("sortable-item")) {
-          const temp = dragged.textContent;
-          dragged.textContent = e.target.textContent;
-          e.target.textContent = temp;
-        }
-      });
-      document.querySelectorAll(".sortable-item").forEach(i => i.setAttribute("draggable", "true"));
     }
 
-    document.getElementById("endTest").onclick = () => {
-      if (confirm("テストを中断しますか？")) location.href = "menu.html";
-    };
+    function submitAnswer() {
+      const q = questions[currentIndex];
+      let userAnswer = "";
+
+      if (q.type === "一問一答") {
+        userAnswer = document.getElementById("answer").value.trim();
+      } else if (q.type === "四択") {
+        const checked = document.querySelector('input[name="choice"]:checked');
+        if (!checked) return alert("選択してください！");
+        userAnswer = checked.value;
+      } else if (q.type === "並び替え") {
+        const order = Array.from(document.querySelectorAll(".sortable div")).map((d) => d.textContent);
+        userAnswer = order.join("");
+      }
+
+      if (userAnswer === q.answer) {
+        alert("正解！✨");
+      } else {
+        alert(`不正解… 正答：${q.answer}`);
+      }
+
+      currentIndex++;
+      showQuestion();
+    }
+
+    function stopTest() {
+      if (confirm("テストを中断しますか？")) {
+        window.location.href = "select.html";
+      }
+    }
 
     loadQuestions();
   </script>
