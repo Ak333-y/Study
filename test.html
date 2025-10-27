@@ -446,13 +446,15 @@ function flashAnimation(isCorrect, correctAnswer = "") {
 function showAnswer() {
   const q = questions[currentIndex];
   
-  // 答えを表示
+  // ✅ 答えを表示（消えないバージョン）
   const answerBox = document.createElement("div");
   answerBox.className = "answer-flash";
   answerBox.textContent = `正答：${q.answer}`;
+  answerBox.style.animation = "none"; // ← アニメーションを無効化
+  answerBox.style.opacity = "1"; // ← 常に見える状態に
   document.body.appendChild(answerBox);
 
-  // 「正解」「不正解」ボタンを出す
+  // ✅ 「正解」「不正解」ボタンを出す
   const judgeContainer = document.createElement("div");
   judgeContainer.style.position = "fixed";
   judgeContainer.style.top = "70%";
@@ -482,17 +484,17 @@ function showAnswer() {
   wrongBtn.style.cursor = "pointer";
   wrongBtn.style.fontWeight = "bold";
 
-  // ✅ 正解ボタン押したとき
+  // ✅ 正解ボタン
   correctBtn.onclick = () => {
     correctCount++;
-    flashAnimation(true);  // ←✔出る
+    flashAnimation(true);  // ✔ 出る
     cleanup();
     goNext();
   };
 
-  // ❌ 不正解ボタン押したとき
+  // ❌ 不正解ボタン
   wrongBtn.onclick = () => {
-    flashAnimation(false, q.answer);  // ←✖と正答出る
+    flashAnimation(false, q.answer);  // ✖＋正答 出る
     cleanup();
     goNext();
   };
@@ -501,19 +503,19 @@ function showAnswer() {
   judgeContainer.appendChild(wrongBtn);
   document.body.appendChild(judgeContainer);
 
-  // 「回答する」「答えを表示」ボタンを一時無効化
+  // ボタン一時無効化
   document.getElementById("submit-btn").disabled = true;
   document.getElementById("show-answer-btn").disabled = true;
 
-  // ✨後処理関数
+  // ✨ 後処理関数
   function cleanup() {
-    answerBox.remove();
+    answerBox.remove();  // ←ボタン押したらここで消える！
     judgeContainer.remove();
     document.getElementById("submit-btn").disabled = false;
     document.getElementById("show-answer-btn").disabled = false;
   }
 
-  // ✨次の問題へ
+  // ✨ 次の問題へ
   function goNext() {
     currentIndex++;
     setTimeout(() => {
@@ -525,7 +527,6 @@ function showAnswer() {
     }, 800);
   }
 }
-
 // ✅ 結果画面
 function showResult() {
   const container = document.querySelector(".container");
