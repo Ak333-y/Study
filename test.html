@@ -463,7 +463,7 @@ function showAnswer() {
   judgeContainer.style.zIndex = "1002";
 
   const correctBtn = document.createElement("button");
-  correctBtn.textContent = "正解";
+  correctBtn.textContent = "正解！";
   correctBtn.style.background = "#22c55e";
   correctBtn.style.color = "#fff";
   correctBtn.style.padding = "10px 20px";
@@ -482,12 +482,17 @@ function showAnswer() {
   wrongBtn.style.cursor = "pointer";
   wrongBtn.style.fontWeight = "bold";
 
+  // ✅ 正解ボタン押したとき
   correctBtn.onclick = () => {
     correctCount++;
+    flashAnimation(true);  // ←✔出る
     cleanup();
     goNext();
   };
+
+  // ❌ 不正解ボタン押したとき
   wrongBtn.onclick = () => {
+    flashAnimation(false, q.answer);  // ←✖と正答出る
     cleanup();
     goNext();
   };
@@ -496,7 +501,7 @@ function showAnswer() {
   judgeContainer.appendChild(wrongBtn);
   document.body.appendChild(judgeContainer);
 
-  // 「回答する」や「答えを表示」ボタンを一時無効化
+  // 「回答する」「答えを表示」ボタンを一時無効化
   document.getElementById("submit-btn").disabled = true;
   document.getElementById("show-answer-btn").disabled = true;
 
@@ -511,11 +516,13 @@ function showAnswer() {
   // ✨次の問題へ
   function goNext() {
     currentIndex++;
-    if (currentIndex >= questions.length) {
-      showResult();
-    } else {
-      showQuestion();
-    }
+    setTimeout(() => {
+      if (currentIndex >= questions.length) {
+        showResult();
+      } else {
+        showQuestion();
+      }
+    }, 800);
   }
 }
 
