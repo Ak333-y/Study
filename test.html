@@ -12,13 +12,13 @@
     import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_AUTH_DOMAIN",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_STORAGE_BUCKET",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
-    };
+      apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
+  authDomain: "akeducationalplatform.firebaseapp.com",
+  projectId: "akeducationalplatform",
+  storageBucket: "akeducationalplatform.firebasestorage.app",
+  messagingSenderId: "778140595189",
+  appId: "1:778140595189:web:301e7490b813b44782a6bc"
+};
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
@@ -196,44 +196,37 @@
 
     /* グラデーションの上バー（スマホ対応） */
     .navbar {
+    .navbar {
       display: flex;
       align-items: center;
       justify-content: space-between;
       background: linear-gradient(90deg, #000814, #001d6e);
       color: white;
-      padding: 10px 20px;
+      padding: 10px 40px;
       box-shadow: 0 3px 10px rgba(0,0,0,0.5);
-      flex-wrap: wrap;
     }
-
     .logo {
       display: flex;
       align-items: center;
-      font-size: 20px;
-      font-weight: bold;
       gap: 10px;
+      font-size: 26px;
+      font-weight: bold;
     }
-
-    .logo img {
-      height: 40px;
-    }
-
+    .logo img { height: 50px; }
     .menu {
       display: flex;
       align-items: center;
-      gap: 15px;
+      gap: 30px;
     }
-
     .menu a {
       color: white;
       text-decoration: none;
       font-weight: bold;
+      font-size: 16px;
       transition: 0.2s;
     }
+    .menu a:hover { color: #93c5fd; }
 
-    .menu a:hover {
-      color: #93c5fd;
-    }
 
     .logout button, #stopTest {
       background: #b91c1c;
