@@ -166,6 +166,30 @@
         font-size: 20px;
       }
     }
+    .flash {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 120px;
+  font-weight: bold;
+  opacity: 0;
+  animation: flashInOut 0.8s ease;
+  z-index: 9999;
+}
+.flash.correct {
+  color: #16a34a;
+}
+.flash.wrong {
+  color: #dc2626;
+}
+@keyframes flashInOut {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.7); }
+  30% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+  70% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(0.7); }
+}
+
   </style>
 </head>
 <body>
@@ -189,134 +213,141 @@
   </div>
 
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-  import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
-  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+ import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
-  // 🔹 Firebase設定
-  const firebaseConfig = {
-    apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
-    authDomain: "akeducationalplatform.firebaseapp.com",
-    projectId: "akeducationalplatform",
-    storageBucket: "akeducationalplatform.firebasestorage.app",
-    messagingSenderId: "778140595189",
-    appId: "1:778140595189:web:301e7490b813b44782a6bc"
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
+  authDomain: "akeducationalplatform.firebaseapp.com",
+  projectId: "akeducationalplatform",
+  storageBucket: "akeducationalplatform.firebasestorage.app",
+  messagingSenderId: "778140595189",
+  appId: "1:778140595189:web:301e7490b813b44782a6bc"
+};
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const auth = getAuth(app);
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
 
-  const subject = sessionStorage.getItem("subject");
-  const questionCount = parseInt(sessionStorage.getItem("questionCount"));
-  let questions = [];
-  let currentIndex = 0;
-  let correctCount = 0;
+const subject = sessionStorage.getItem("subject");
+const questionCount = parseInt(sessionStorage.getItem("questionCount"));
+let questions = [];
+let currentIndex = 0;
+let correctCount = 0;
 
-  // 🔸 出題済み記録をセッション内に保存
-  const answeredQuestions = JSON.parse(sessionStorage.getItem("answeredQuestions") || "[]");
+const answeredQuestions = JSON.parse(sessionStorage.getItem("answeredQuestions") || "[]");
 
-  // 🔹 ログインチェック
-  onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-      alert("ログインしてください！");
-      window.location.href = "index.html";
-    } else {
-      console.log("ログイン中:", user.email);
-      await loadQuestions();
+// ✅ ログインチェック
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    alert("ログインしてください！");
+    window.location.href = "index.html";
+  } else {
+    await loadQuestions();
+  }
+});
+
+// ✅ 問題取得
+async function loadQuestions() {
+  const q = query(collection(db, "questions"), where("subject", "==", subject));
+  const snapshot = await getDocs(q);
+
+  snapshot.forEach((doc) => {
+    const data = doc.data();
+    if (!answeredQuestions.includes(data.id)) {
+      questions.push({ ...data, id: doc.id });
     }
   });
 
-  // 🔸 問題をFirestoreから取得
-  async function loadQuestions() {
-    const q = query(collection(db, "questions"), where("subject", "==", subject));
-    const snapshot = await getDocs(q);
+  questions = questions.sort(() => Math.random() - 0.5).slice(0, questionCount);
 
-    snapshot.forEach((doc) => {
-      const data = doc.data();
-      // 出題済みじゃない問題だけ残す
-      if (!answeredQuestions.includes(data.id)) {
-        questions.push({ ...data, id: doc.id });
+  if (questions.length === 0) {
+    alert("この教科の新しい問題はありません。");
+    window.location.href = "select.html";
+    return;
+  }
+
+  showQuestion();
+}
+
+// ✅ 問題表示
+function showQuestion() {
+  if (currentIndex >= questions.length) {
+    showResult();
+    return;
+  }
+
+  const q = questions[currentIndex];
+  const container = document.getElementById("question-container");
+  container.innerHTML = `<div class="question-box">Q${currentIndex + 1}. ${q.question}</div>`;
+
+  if (q.type === "一問一答") {
+    container.innerHTML += `<input type="text" id="answer" class="answer-input" placeholder="答えを入力" />`;
+  } else if (q.type === "四択") {
+    let html = `<div class="choices">`;
+    q.choices.forEach((choice) => {
+      html += `<label><input type="radio" name="choice" value="${choice}"> ${choice}</label>`;
+    });
+    html += `</div>`;
+    container.innerHTML += html;
+  } else if (q.type === "並び替え") {
+    let html = `<div class="sortable" id="sortable">`;
+    q.choices.forEach((part) => {
+      html += `<div class="draggable" draggable="true">${part}</div>`;
+    });
+    html += `</div>`;
+    container.innerHTML += html;
+    enableDrag();
+  }
+}
+
+// ✅ 並び替え機能（改良版）
+function enableDrag() {
+  const container = document.getElementById("sortable");
+  let dragItem = null;
+
+  container.addEventListener("dragstart", (e) => {
+    if (e.target.classList.contains("draggable")) {
+      dragItem = e.target;
+      e.target.style.opacity = "0.4";
+    }
+  });
+
+  container.addEventListener("dragend", (e) => {
+    e.target.style.opacity = "1";
+  });
+
+  container.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    const afterElement = getDragAfterElement(container, e.clientX, e.clientY);
+    if (afterElement == null) {
+      container.appendChild(dragItem);
+    } else {
+      container.insertBefore(dragItem, afterElement);
+    }
+  });
+}
+
+// 並び替えの位置を計算する関数
+function getDragAfterElement(container, x, y) {
+  const draggableElements = [...container.querySelectorAll(".draggable:not(.dragging)")];
+  return draggableElements.reduce(
+    (closest, child) => {
+      const box = child.getBoundingClientRect();
+      const offset = y - box.top - box.height / 2;
+      if (offset < 0 && offset > closest.offset) {
+        return { offset: offset, element: child };
+      } else {
+        return closest;
       }
-    });
+    },
+    { offset: Number.NEGATIVE_INFINITY }
+  ).element;
+}
 
-    // 問題をシャッフルして指定数だけ取得
-    questions = questions.sort(() => Math.random() - 0.5).slice(0, questionCount);
-
-    if (questions.length === 0) {
-      alert("この教科の新しい問題はありません。");
-      window.location.href = "select.html";
-      return;
-    }
-
-    showQuestion();
-  }
-
-  // 🔸 問題を表示
-  function showQuestion() {
-    if (currentIndex >= questions.length) {
-      alert("テスト終了！お疲れさま🎉");
-      sessionStorage.removeItem("answeredQuestions"); // 次回テストに備えてリセット
-      window.location.href = "select.html";
-      return;
-    }
-
-    const q = questions[currentIndex];
-    const container = document.getElementById("question-container");
-    container.innerHTML = `
-      <div class="question-box">Q${currentIndex + 1}. ${q.question}</div>
-    `;
-
-    if (q.type === "一問一答") {
-      container.innerHTML += `<input type="text" id="answer" class="answer-input" placeholder="答えを入力" />`;
-    } else if (q.type === "四択") {
-      let html = `<div class="choices">`;
-      q.choices.forEach((choice) => {
-        html += `<label><input type="radio" name="choice" value="${choice}"> ${choice}</label>`;
-      });
-      html += `</div>`;
-      container.innerHTML += html;
-    } else if (q.type === "並び替え") {
-      let html = `<div class="sortable" id="sortable">`;
-      q.choices.forEach((part) => {
-        html += `<div draggable="true">${part}</div>`;
-      });
-      html += `</div>`;
-      container.innerHTML += html;
-      enableDrag();
-    }
-  }
-
-  // 🔸 並び替え機能
-  function enableDrag() {
-    const items = document.querySelectorAll(".sortable div");
-    let dragItem = null;
-    items.forEach((item) => {
-      item.addEventListener("dragstart", () => {
-        dragItem = item;
-        item.style.opacity = "0.4";
-      });
-      item.addEventListener("dragend", () => {
-        item.style.opacity = "1";
-        dragItem = null;
-      });
-      item.addEventListener("dragover", (e) => e.preventDefault());
-      item.addEventListener("drop", (e) => {
-        e.preventDefault();
-        if (dragItem !== item) {
-          const parent = item.parentNode;
-          const itemsArray = Array.from(parent.children);
-          const dragIndex = itemsArray.indexOf(dragItem);
-          const dropIndex = itemsArray.indexOf(item);
-          if (dragIndex < dropIndex) parent.insertBefore(dragItem, item.nextSibling);
-          else parent.insertBefore(dragItem, item);
-        }
-      });
-    });
-  }
-
-  // 🔸 回答処理
-  function submitAnswer() {
+// ✅ 回答処理（アニメーション付き）
+function submitAnswer() {
   const q = questions[currentIndex];
   let userAnswer = "";
 
@@ -331,44 +362,54 @@
     userAnswer = order.join("");
   }
 
-  if (userAnswer === q.answer) {
-    alert("正解！✨");
-    correctCount++;
-  } else {
-    alert(`不正解… 正答：${q.answer}`);
-  }
+  const isCorrect = userAnswer === q.answer;
+  if (isCorrect) correctCount++;
+
+  flashAnimation(isCorrect);
 
   answeredQuestions.push(q.id);
   sessionStorage.setItem("answeredQuestions", JSON.stringify(answeredQuestions));
 
   currentIndex++;
+  setTimeout(() => {
+    if (currentIndex >= questions.length) {
+      showResult();
+    } else {
+      showQuestion();
+    }
+  }, 800);
+}
 
-  if (currentIndex >= questions.length) {
-    showResult();
-  } else {
-    showQuestion();
-  }
-  }
-  
+// ✅ フラッシュアニメーション
+function flashAnimation(isCorrect) {
+  const flash = document.createElement("div");
+  flash.className = "flash " + (isCorrect ? "correct" : "wrong");
+  flash.innerHTML = isCorrect ? "⭕" : "❌";
+  document.body.appendChild(flash);
+  setTimeout(() => flash.remove(), 800);
+}
+
+// ✅ 結果画面
 function showResult() {
   const container = document.querySelector(".container");
+  const rate = ((correctCount / questions.length) * 100).toFixed(1);
   container.innerHTML = `
-    <h2>テスト結果</h2>
+    <h2>テスト結果🎉</h2>
     <p>${questions.length}問中 ${correctCount}問正解！</p>
-    <p>正答率：${((correctCount / questions.length) * 100).toFixed(1)}%</p>
+    <p>正答率：${rate}%</p>
     <button class="submit-btn" onclick="window.location.href='select.html'">ホームに戻る</button>
   `;
 }
-  
-  // 🔸 テスト中断
-  function stopTest() {
-    if (confirm("テストを中断しますか？")) {
-      window.location.href = "select.html";
-    }
-  }
 
-  document.getElementById("submit-btn").addEventListener("click", submitAnswer);
-  window.stopTest = stopTest;
+// ✅ テスト中断
+function stopTest() {
+  if (confirm("テストを中断しますか？")) {
+    window.location.href = "select.html";
+  }
+}
+
+document.getElementById("submit-btn").addEventListener("click", submitAnswer);
+window.stopTest = stopTest;
 </script>
 </body>
 </html>
