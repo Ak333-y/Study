@@ -168,39 +168,29 @@
     }
     .flash {
   position: fixed;
-  top: 50%;
+  top: 40%;
   left: 50%;
   transform: translate(-50%, -50%);
   font-size: 120px;
   font-weight: bold;
   opacity: 0;
-  animation: flashFade 0.8s ease-out;
-  z-index: 9999;
+  animation: flash 0.8s ease;
+  border-radius: 50%;
+  padding: 20px 40px;
 }
-
-.flash.correct { color: #22c55e !important; }
-
+.flash.correct {
+  color: #22c55e; /* 緑 */
+  background: rgba(34,197,94,0.2); /* 半透明の緑の光 */
+}
 .flash.wrong {
-  color: #ef4444; /* 🔴不正解は赤色 */
+  color: #ef4444; /* 赤 */
+  background: rgba(239,68,68,0.2); /* 半透明の赤の光 */
 }
-
-@keyframes flashFade {
-  0% {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(0.8);
-  }
-  20% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1.1);
-  }
-  80% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(1.2);
-  }
+@keyframes flash {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+  30% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+  70% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
 }
   </style>
 </head>
@@ -396,10 +386,10 @@ function submitAnswer() {
 function flashAnimation(isCorrect) {
   const flash = document.createElement("div");
   flash.className = "flash " + (isCorrect ? "correct" : "wrong");
-  flash.innerHTML = isCorrect ? "⭕" : "❌";
+  flash.textContent = isCorrect ? "✔" : "✖"; // ← スタイリッシュ記号
   document.body.appendChild(flash);
   setTimeout(() => flash.remove(), 800);
-}
+  }
 
 // ✅ 結果画面
 function showResult() {
