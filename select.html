@@ -13,159 +13,76 @@
     }
 
     /* --- ナビバー --- */
-    .navbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: linear-gradient(90deg, #000814, #001d6e);
-      color: white;
-      padding: 10px 40px;
-      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
-      gap: 20px;
-      flex-wrap: wrap;
-    }
+  .navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(90deg, #000814, #001d6e);
+    color: white;
+    padding: 10px 40px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.5);
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 26px;
+    font-weight: bold;
+  }
+  .logo img {
+    height: 45px;
+  }
+  .menu {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+  }
+  .menu a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 16px;
+    transition: 0.2s;
+  }
+  .menu a:hover {
+    color: #93c5fd;
+  }
+  .logout {
+    margin-left: 20px;
+  }
+  .logout button {
+    background: #b91c1c;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 16px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 14px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    transition: 0.18s;
+  }
+  .logout button:hover {
+    background: #991b1b;
+    transform: translateY(-1px);
+  }
+</style>
 
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 26px;
-      font-weight: bold;
-    }
-    .logo img {
-      height: 45px;
-    }
-
-    /* 左のリンク群 */
-    .menu {
-      display: flex;
-      align-items: center;
-      gap: 30px;
-    }
-    .menu a {
-      color: white;
-      text-decoration: none;
-      font-weight: bold;
-      font-size: 16px;
-      transition: 0.2s;
-    }
-    .menu a:hover {
-      color: #93c5fd;
-    }
-
-    /* 右側アクション（ログアウトなど）を独立させる */
-    .actions {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .logout button {
-      background: #b91c1c;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      padding: 6px 16px;
-      cursor: pointer;
-      font-weight: 700;
-      font-size: 14px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-      transition: 0.18s;
-    }
-    .logout button:hover {
-      background: #991b1b;
-    }
-
-    /* --- メイン --- */
-    .main {
-      max-width: 600px;
-      margin: 80px auto;
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      padding: 40px 30px;
-      text-align: center;
-    }
-
-    h1 {
-      color: #001d6e;
-      margin-bottom: 20px;
-    }
-
-    select {
-      width: 90%;
-      padding: 12px;
-      margin: 15px 0;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      font-size: 16px;
-    }
-
-    button.primary {
-      background: linear-gradient(90deg, #2563eb, #1e3a8a);
-      color: white;
-      border: none;
-      border-radius: 10px;
-      padding: 14px 30px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: 0.25s;
-      margin-top: 20px;
-    }
-    button.primary:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 6px 15px rgba(0,0,0,0.25);
-    }
-
-    @media (max-width: 768px) {
-      .navbar {
-        padding: 12px 18px;
-      }
-      .menu {
-        flex-wrap: wrap;
-        gap: 12px;
-      }
-      .logo {
-        font-size: 22px;
-      }
-      /* スマホではリンク群を上、アクションを下に並べたい場合は縦方向に */
-      .navbar-row {
-        width: 100%;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-      .menu, .actions {
-        justify-content: center;
-      }
-    }
-  </style>
-</head>
-<body>
-  <!-- ナビバー（構造を横2カラムに分離） -->
-  <div class="navbar">
-    <div class="navbar-row">
-      <div class="logo">
-        <img src="logo.png" alt="StudyBase ロゴ" />
-        StudyBase — Your Daily Step to Success.
-      </div>
-      <!-- PCではこの .menu がロゴの右側、中身は左寄せ的に見える -->
-      <div class="menu" aria-label="主要ナビゲーション">
-        <a href="menu.html">ホーム</a>
-        <a href="select.html">テスト</a>
-        <a href="history.html">過去の成績</a>
-        <a href="add_question.html">問題編集</a>
-      </div>
-    </div>
-
-    <!-- 右端のアクション（ログアウト）を分離 -->
-    <div class="actions">
-      <div class="logout">
-        <button onclick="logout()">ログアウト</button>
-      </div>
+<div class="navbar">
+  <div class="logo">
+    <img src="logo.png" alt="StudyBase ロゴ">
+    StudyBase — Your Daily Step to Success.
+  </div>
+  <div class="menu">
+    <a href="menu.html">ホーム</a>
+    <a href="select.html">テスト</a>
+    <a href="history.html">過去の成績</a>
+    <a href="add_question.html">問題編集</a>
+    <div class="logout">
+      <button onclick="logout()">ログアウト</button>
     </div>
   </div>
-
+</div>
   <div class="main">
     <h1>テストを開始する</h1>
 
