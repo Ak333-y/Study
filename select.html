@@ -12,24 +12,24 @@
       background-color: #f3f5f7;
     }
 
-    /* 🔹ナビバー */
+    /* --- ナビバー --- */
     .navbar {
       display: flex;
       align-items: center;
       justify-content: space-between;
       background: linear-gradient(90deg, #000814, #001d6e);
       color: white;
-      padding: 10px 25px;
-      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
+      padding: 10px 30px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.5);
       position: relative;
-      z-index: 1000;
+      z-index: 10;
     }
 
     .logo {
       display: flex;
       align-items: center;
       gap: 10px;
-      font-size: 22px;
+      font-size: 24px;
       font-weight: bold;
     }
 
@@ -37,7 +37,6 @@
       height: 45px;
     }
 
-    /* 🔹メニュー */
     .menu {
       display: flex;
       align-items: center;
@@ -48,7 +47,7 @@
       color: white;
       text-decoration: none;
       font-weight: bold;
-      font-size: 15px;
+      font-size: 16px;
       transition: 0.2s;
     }
 
@@ -56,70 +55,76 @@
       color: #93c5fd;
     }
 
-    /* 🔹ログアウトボタン */
     .logout button {
       background: #b91c1c;
-      color: white;
+      color: #fff;
       border: none;
       border-radius: 8px;
       padding: 6px 14px;
       cursor: pointer;
       font-weight: 700;
       font-size: 14px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
-      transition: 0.18s;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+      transition: background 0.18s ease, transform 0.12s ease;
     }
 
     .logout button:hover {
       background: #991b1b;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      transform: translateY(-1px);
     }
 
-    /* 🔹ハンバーガーメニュー */
+    /* --- ハンバーガーメニュー --- */
     .hamburger {
       display: none;
       flex-direction: column;
       cursor: pointer;
+      gap: 4px;
     }
 
     .hamburger div {
       width: 25px;
       height: 3px;
-      background: white;
-      margin: 4px;
+      background-color: white;
       border-radius: 2px;
+    }
+
+    .menu.active {
+      display: flex;
+      flex-direction: column;
+      position: absolute;
+      top: 60px;
+      right: 0;
+      background: #001d6e;
+      width: 100%;
+      padding: 15px 0;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     }
 
     @media (max-width: 768px) {
       .menu {
         display: none;
-        flex-direction: column;
-        width: 100%;
-        background: #001d6e;
-        position: absolute;
-        top: 60px;
-        left: 0;
-        text-align: center;
-        padding: 10px 0;
       }
-
-      .menu.active {
-        display: flex;
-      }
-
       .hamburger {
         display: flex;
       }
+      .menu a {
+        padding: 10px 0;
+        text-align: center;
+        width: 100%;
+      }
+      .logout {
+        text-align: center;
+        margin-top: 10px;
+      }
     }
 
-    /* 🔹メイン部分 */
+    /* --- メイン部分 --- */
     .main {
       max-width: 600px;
       margin: 80px auto;
       background: white;
       border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
       padding: 40px 30px;
       text-align: center;
     }
@@ -138,7 +143,7 @@
       font-size: 16px;
     }
 
-    button {
+    button.start {
       background: linear-gradient(90deg, #2563eb, #1e3a8a);
       color: white;
       border: none;
@@ -150,22 +155,24 @@
       margin-top: 20px;
     }
 
-    button:hover {
+    button.start:hover {
       transform: translateY(-3px);
-      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.25);
+      box-shadow: 0 6px 15px rgba(0,0,0,0.25);
     }
   </style>
 </head>
 <body>
-  <!-- 🔹ナビバー -->
+  <!-- ナビバー -->
   <div class="navbar">
     <div class="logo">
-      <img src="logo.png" alt="StudyBase ロゴ">
-      StudyBase — Your Daily Step to Success.
+      <img src="logo.png" alt="StudyBase ロゴ" />
+      StudyBase
     </div>
 
-    <div class="hamburger" id="hamburger">
-      <div></div><div></div><div></div>
+    <div class="hamburger" onclick="toggleMenu()">
+      <div></div>
+      <div></div>
+      <div></div>
     </div>
 
     <div class="menu" id="menu">
@@ -179,7 +186,7 @@
     </div>
   </div>
 
-  <!-- 🔹メイン -->
+  <!-- メイン -->
   <div class="main">
     <h1>テストを開始する</h1>
 
@@ -196,10 +203,9 @@
       <option value="50">50問</option>
     </select><br>
 
-    <button onclick="startTest()">テスト開始！</button>
+    <button class="start" onclick="startTest()">テスト開始！</button>
   </div>
 
-  <!-- 🔹スクリプト -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
     import { getFirestore, getDocs, collection } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
@@ -251,10 +257,8 @@
         return;
       }
 
-      // ✅ sessionStorageに保存（閉じたら自動で消える）
       sessionStorage.setItem("subject", subject);
       sessionStorage.setItem("questionCount", count);
-
       window.location.href = "test.html";
     };
 
@@ -265,10 +269,10 @@
       });
     };
 
-    // ハンバーガーメニュー制御
-    document.getElementById("hamburger").addEventListener("click", () => {
+    // ハンバーガーメニュー
+    window.toggleMenu = function() {
       document.getElementById("menu").classList.toggle("active");
-    });
+    };
   </script>
 </body>
 </html>
