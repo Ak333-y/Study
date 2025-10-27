@@ -9,80 +9,177 @@
     body {
       margin: 0;
       font-family: "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
-      background: #f3f5f7;
+      background-color: #f3f5f7;
     }
 
-    /* --- ナビバー --- */
-  .navbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: linear-gradient(90deg, #000814, #001d6e);
-    color: white;
-    padding: 10px 40px;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.5);
-  }
-  .logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 26px;
-    font-weight: bold;
-  }
-  .logo img {
-    height: 45px;
-  }
-  .menu {
-    display: flex;
-    align-items: center;
-    gap: 30px;
-  }
-  .menu a {
-    color: white;
-    text-decoration: none;
-    font-weight: bold;
-    font-size: 16px;
-    transition: 0.2s;
-  }
-  .menu a:hover {
-    color: #93c5fd;
-  }
-  .logout {
-    margin-left: 20px;
-  }
-  .logout button {
-    background: #b91c1c;
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    padding: 6px 16px;
-    cursor: pointer;
-    font-weight: 700;
-    font-size: 14px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-    transition: 0.18s;
-  }
-  .logout button:hover {
-    background: #991b1b;
-    transform: translateY(-1px);
-  }
-</style>
+    /* 🔹ナビバー */
+    .navbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(90deg, #000814, #001d6e);
+      color: white;
+      padding: 10px 25px;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
+      position: relative;
+      z-index: 1000;
+    }
 
-<div class="navbar">
-  <div class="logo">
-    <img src="logo.png" alt="StudyBase ロゴ">
-    StudyBase — Your Daily Step to Success.
-  </div>
-  <div class="menu">
-    <a href="menu.html">ホーム</a>
-    <a href="select.html">テスト</a>
-    <a href="history.html">過去の成績</a>
-    <a href="add_question.html">問題編集</a>
-    <div class="logout">
-      <button onclick="logout()">ログアウト</button>
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    .logo img {
+      height: 45px;
+    }
+
+    /* 🔹メニュー */
+    .menu {
+      display: flex;
+      align-items: center;
+      gap: 25px;
+    }
+
+    .menu a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 15px;
+      transition: 0.2s;
+    }
+
+    .menu a:hover {
+      color: #93c5fd;
+    }
+
+    /* 🔹ログアウトボタン */
+    .logout button {
+      background: #b91c1c;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 6px 14px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 14px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+      transition: 0.18s;
+    }
+
+    .logout button:hover {
+      background: #991b1b;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    /* 🔹ハンバーガーメニュー */
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      cursor: pointer;
+    }
+
+    .hamburger div {
+      width: 25px;
+      height: 3px;
+      background: white;
+      margin: 4px;
+      border-radius: 2px;
+    }
+
+    @media (max-width: 768px) {
+      .menu {
+        display: none;
+        flex-direction: column;
+        width: 100%;
+        background: #001d6e;
+        position: absolute;
+        top: 60px;
+        left: 0;
+        text-align: center;
+        padding: 10px 0;
+      }
+
+      .menu.active {
+        display: flex;
+      }
+
+      .hamburger {
+        display: flex;
+      }
+    }
+
+    /* 🔹メイン部分 */
+    .main {
+      max-width: 600px;
+      margin: 80px auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      padding: 40px 30px;
+      text-align: center;
+    }
+
+    h1 {
+      color: #001d6e;
+      margin-bottom: 20px;
+    }
+
+    select {
+      width: 90%;
+      padding: 12px;
+      margin: 15px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+
+    button {
+      background: linear-gradient(90deg, #2563eb, #1e3a8a);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 14px 30px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.25s;
+      margin-top: 20px;
+    }
+
+    button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.25);
+    }
+  </style>
+</head>
+<body>
+  <!-- 🔹ナビバー -->
+  <div class="navbar">
+    <div class="logo">
+      <img src="logo.png" alt="StudyBase ロゴ">
+      StudyBase — Your Daily Step to Success.
+    </div>
+
+    <div class="hamburger" id="hamburger">
+      <div></div><div></div><div></div>
+    </div>
+
+    <div class="menu" id="menu">
+      <a href="menu.html">ホーム</a>
+      <a href="select.html">テスト</a>
+      <a href="history.html">過去の成績</a>
+      <a href="add_question.html">問題編集</a>
+      <div class="logout">
+        <button onclick="logout()">ログアウト</button>
+      </div>
     </div>
   </div>
-</div>
+
+  <!-- 🔹メイン -->
   <div class="main">
     <h1>テストを開始する</h1>
 
@@ -99,9 +196,10 @@
       <option value="50">50問</option>
     </select><br>
 
-    <button class="primary" onclick="startTest()">テスト開始！</button>
+    <button onclick="startTest()">テスト開始！</button>
   </div>
 
+  <!-- 🔹スクリプト -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
     import { getFirestore, getDocs, collection } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
@@ -153,7 +251,7 @@
         return;
       }
 
-      // Firestoreに書き込まずsessionStorageに保存
+      // ✅ sessionStorageに保存（閉じたら自動で消える）
       sessionStorage.setItem("subject", subject);
       sessionStorage.setItem("questionCount", count);
 
@@ -166,6 +264,11 @@
         window.location.href = "index.html";
       });
     };
+
+    // ハンバーガーメニュー制御
+    document.getElementById("hamburger").addEventListener("click", () => {
+      document.getElementById("menu").classList.toggle("active");
+    });
   </script>
 </body>
 </html>
