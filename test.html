@@ -252,6 +252,7 @@
   <div class="container">
     <div id="question-container"></div>
     <button class="submit-btn" id="submit-btn" onclick="submitAnswer()">回答する</button>
+<button class="submit-btn" id="show-answer-btn" style="background:#888;" onclick="showAnswer()">答えを表示</button>
   </div>
 
 <script type="module">
@@ -441,6 +442,82 @@ function flashAnimation(isCorrect, correctAnswer = "") {
 
   setTimeout(() => flash.remove(), 800);
   }
+  // ✅ 答えを表示して手動判定する機能
+function showAnswer() {
+  const q = questions[currentIndex];
+  
+  // 答えを表示
+  const answerBox = document.createElement("div");
+  answerBox.className = "answer-flash";
+  answerBox.textContent = `正答：${q.answer}`;
+  document.body.appendChild(answerBox);
+
+  // 「正解」「不正解」ボタンを出す
+  const judgeContainer = document.createElement("div");
+  judgeContainer.style.position = "fixed";
+  judgeContainer.style.top = "70%";
+  judgeContainer.style.left = "50%";
+  judgeContainer.style.transform = "translate(-50%, -50%)";
+  judgeContainer.style.display = "flex";
+  judgeContainer.style.gap = "20px";
+  judgeContainer.style.zIndex = "1002";
+
+  const correctBtn = document.createElement("button");
+  correctBtn.textContent = "正解";
+  correctBtn.style.background = "#22c55e";
+  correctBtn.style.color = "#fff";
+  correctBtn.style.padding = "10px 20px";
+  correctBtn.style.border = "none";
+  correctBtn.style.borderRadius = "8px";
+  correctBtn.style.cursor = "pointer";
+  correctBtn.style.fontWeight = "bold";
+
+  const wrongBtn = document.createElement("button");
+  wrongBtn.textContent = "不正解";
+  wrongBtn.style.background = "#ef4444";
+  wrongBtn.style.color = "#fff";
+  wrongBtn.style.padding = "10px 20px";
+  wrongBtn.style.border = "none";
+  wrongBtn.style.borderRadius = "8px";
+  wrongBtn.style.cursor = "pointer";
+  wrongBtn.style.fontWeight = "bold";
+
+  correctBtn.onclick = () => {
+    correctCount++;
+    cleanup();
+    goNext();
+  };
+  wrongBtn.onclick = () => {
+    cleanup();
+    goNext();
+  };
+
+  judgeContainer.appendChild(correctBtn);
+  judgeContainer.appendChild(wrongBtn);
+  document.body.appendChild(judgeContainer);
+
+  // 「回答する」や「答えを表示」ボタンを一時無効化
+  document.getElementById("submit-btn").disabled = true;
+  document.getElementById("show-answer-btn").disabled = true;
+
+  // ✨後処理関数
+  function cleanup() {
+    answerBox.remove();
+    judgeContainer.remove();
+    document.getElementById("submit-btn").disabled = false;
+    document.getElementById("show-answer-btn").disabled = false;
+  }
+
+  // ✨次の問題へ
+  function goNext() {
+    currentIndex++;
+    if (currentIndex >= questions.length) {
+      showResult();
+    } else {
+      showQuestion();
+    }
+  }
+}
 
 // ✅ 結果画面
 function showResult() {
