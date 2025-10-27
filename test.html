@@ -470,7 +470,7 @@ function flashAnimation(isCorrect, correctAnswer = "") {
   if (!isCorrect) {
     const answerBox = document.createElement("div");
     answerBox.className = "answer-flash";
-    answerBox.textContent = `正答：${correctAnswer}`;
+    answerBox.textContent = `正答：${answer}`;
     document.body.appendChild(answerBox);
 
     setTimeout(() => answerBox.remove(), 1500); // 1.5秒で消す
