@@ -383,13 +383,24 @@ function submitAnswer() {
 }
 
 // ✅ フラッシュアニメーション
-function flashAnimation(isCorrect) {
+function flashAnimation(isCorrect, correctAnswer = "") {
   const flash = document.createElement("div");
   flash.className = "flash " + (isCorrect ? "correct" : "wrong");
-  flash.textContent = isCorrect ? "✔" : "✖"; // ← スタイリッシュ記号
+  flash.textContent = isCorrect ? "✔" : "✖";
   document.body.appendChild(flash);
-  setTimeout(() => flash.remove(), 800);
+
+  // 不正解のときだけ答えを表示
+  if (!isCorrect) {
+    const answerBox = document.createElement("div");
+    answerBox.className = "answer-flash";
+    answerBox.textContent = `正答：${correctAnswer}`;
+    document.body.appendChild(answerBox);
+
+    setTimeout(() => answerBox.remove(), 1500); // 1.5秒で消す
   }
+
+  setTimeout(() => flash.remove(), 800);
+}
 
 // ✅ 結果画面
 function showResult() {
