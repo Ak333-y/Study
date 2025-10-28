@@ -279,7 +279,7 @@ const questionCount = parseInt(sessionStorage.getItem("questionCount"));
 let questions = [];
 let currentIndex = 0;
 let correctCount = 0;
-sessionStorage.removeItem("answeredQuestions");
+
 
 const answeredQuestions = JSON.parse(sessionStorage.getItem("answeredQuestions") || "[]");
 
@@ -321,6 +321,13 @@ async function loadQuestions() {
     if (!answeredQuestions.includes(doc.id)) { // ← data.id じゃなく doc.id！
       questions.push({ ...data, id: doc.id });
     }
+  });
+   // ✨✨✨ここに入れる！！！✨✨✨
+  const seen = new Set();
+  questions = questions.filter(q => {
+    if (seen.has(q.question)) return false;
+    seen.add(q.question);
+    return true;
   });
 
   questions = questions.sort(() => Math.random() - 0.5).slice(0, questionCount);
