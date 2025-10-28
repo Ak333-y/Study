@@ -70,6 +70,52 @@
         });
       }
     }
+    import { 
+  getFirestore, collection, getDocs, addDoc, doc, setDoc, query, where 
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+// 🔸 教科を選んだら単元を読み込む
+document.getElementById("subject").addEventListener("change", loadUnits);
+
+async function loadUnits() {
+  const subject = document.getElementById("subject").value;
+  const unitSelect = document.getElementById("unit");
+  unitSelect.innerHTML = "";
+
+  const q = query(collection(db, "units"), where("subject", "==", subject));
+  const snapshot = await getDocs(q);
+
+  if (snapshot.empty) {
+    const opt = document.createElement("option");
+    opt.textContent = "（単元がありません）";
+    opt.disabled = true;
+    unitSelect.appendChild(opt);
+  } else {
+    snapshot.forEach(docSnap => {
+      const opt = document.createElement("option");
+      opt.value = docSnap.data().name;
+      opt.textContent = docSnap.data().name;
+      unitSelect.appendChild(opt);
+    });
+  }
+}
+
+// ➕ 単元追加
+window.addUnit = async () => {
+  const subject = document.getElementById("subject").value;
+  if (!subject) return alert("先に教科を選んでください！");
+
+  const newUnit = prompt("追加する単元名を入力してください：");
+  if (!newUnit) return;
+
+  await setDoc(doc(db, "units", `${subject}_${newUnit}`), {
+    subject,
+    name: newUnit
+  });
+
+  alert("単元を追加しました！");
+  loadUnits();
+};
 
     // ➕ 教科追加
     window.addSubject = async () => {
@@ -255,8 +301,8 @@
     <select id="subject"></select>
     <button id="addSubjectBtn" onclick="addSubject()">＋ 新しい教科を追加</button>
     <label>単元：</label>
-<input type="text" id="unit" placeholder="例：古代、電流、オセアニア州など">
-
+<select id="unit"></select>
+<button id="addUnitBtn" onclick="addUnit()">＋ 新しい単元を追加</button>
     <label>問題文：</label>
     <textarea id="question" placeholder="問題を入力"></textarea>
 
