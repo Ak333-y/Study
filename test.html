@@ -340,25 +340,7 @@ async function loadQuestions() {
 
   showQuestion();
 }
-  const snapshot = await getDocs(q);
 
-  snapshot.forEach((doc) => {
-    const data = doc.data();
-    if (!answeredQuestions.includes(data.id)) {
-      questions.push({ ...data, id: doc.id });
-    }
-  });
-
-  questions = questions.sort(() => Math.random() - 0.5).slice(0, questionCount);
-
-  if (questions.length === 0) {
-    alert("この教科の新しい問題はありません。");
-    window.location.href = "select.html";
-    return;
-  }
-
-  showQuestion();
-}
 
 // ✅ 問題表示
 function showQuestion() {
