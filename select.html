@@ -193,6 +193,10 @@
     <select id="subject">
       <option value="">読み込み中...</option>
     </select><br>
+    <label for="unit">単元を選択：</label><br>
+<select id="unit">
+  <option value="">（先に教科を選んでください）</option>
+</select><br>
 
     <label for="count">出題数を選択：</label><br>
     <select id="count">
@@ -243,6 +247,40 @@
         option.value = name;
         option.textContent = name;
         select.appendChild(option);
+        // 単元を読み込む関数
+async function loadUnits(subject) {
+  const unitSelect = document.getElementById("unit");
+  unitSelect.innerHTML = "";
+
+  if (!subject) {
+    const opt = document.createElement("option");
+    opt.textContent = "（教科を選んでください）";
+    opt.disabled = true;
+    unitSelect.appendChild(opt);
+    return;
+  }
+
+  const q = query(collection(db, "units"), where("subject", "==", subject));
+  const snapshot = await getDocs(q);
+
+  if (snapshot.empty) {
+    const opt = document.createElement("option");
+    opt.textContent = "（単元がありません）";
+    opt.disabled = true;
+    unitSelect.appendChild(opt);
+  } else {
+    snapshot.forEach(docSnap => {
+      const opt = document.createElement("option");
+      opt.value = docSnap.data().name;
+      opt.textContent = docSnap.data().name;
+      unitSelect.appendChild(opt);
+      // 教科選択で単元を読み込む
+document.getElementById("subject").addEventListener("change", (e) => {
+  loadUnits(e.target.value);
+});
+    });
+  }
+}
       });
     }
 
@@ -250,6 +288,9 @@
     window.startTest = function() {
       const subject = document.getElementById("subject").value;
       const count = document.getElementById("count").value;
+      const unit = document.getElementById("unit").value;
+if (!unit) return alert("単元を選択してください！");
+sessionStorage.setItem("unit", unit);
 
       if (!subject || !count) {
         alert("教科と出題数を選択してください！");
