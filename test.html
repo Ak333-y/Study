@@ -293,7 +293,53 @@ onAuthStateChanged(auth, async (user) => {
 
 // ✅ 問題取得
 async function loadQuestions() {
-  const q = query(collection(db, "questions"), where("subject", "==", subject));
+  const subject = sessionStorage.getItem("subject");
+const unit = sessionStorage.getItem("unit"); // ← 単元も取る！
+const questionCount = parseInt(sessionStorage.getItem("questionCount"));
+let questions = [];
+let currentIndex = 0;
+let correctCount = 0;
+
+const answeredQuestions = JSON.parse(sessionStorage.getItem("answeredQuestions") || "[]");
+
+// ✅ 問題取得
+async function loadQuestions() {
+  let q;
+
+  if (unit && unit !== "全範囲") {
+    // 🔹 教科＋単元で絞り込み
+    q = query(
+      collection(db, "questions"),
+      where("subject", "==", subject),
+      where("unit", "==", unit)
+    );
+  } else {
+    // 🔹 教科だけ
+    q = query(
+      collection(db, "questions"),
+      where("subject", "==", subject)
+    );
+  }
+
+  const snapshot = await getDocs(q);
+
+  snapshot.forEach((doc) => {
+    const data = doc.data();
+    if (!answeredQuestions.includes(data.id)) {
+      questions.push({ ...data, id: doc.id });
+    }
+  });
+
+  questions = questions.sort(() => Math.random() - 0.5).slice(0, questionCount);
+
+  if (questions.length === 0) {
+    alert("この教科・単元の新しい問題はありません。");
+    window.location.href = "select.html";
+    return;
+  }
+
+  showQuestion();
+}
   const snapshot = await getDocs(q);
 
   snapshot.forEach((doc) => {
