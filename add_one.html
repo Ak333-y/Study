@@ -51,23 +51,19 @@
 
       const snapshot = await getDocs(collection(db, "subjects"));
       if (snapshot.empty) {
-        const defaultSubjects = ["歴史", "地理", "公民", "生命", "地学", "物質", "エネルギー", "古文単語"];
-        for (const s of defaultSubjects) {
-          await setDoc(doc(db, "subjects", s), { name: s });
-        }
-        defaultSubjects.forEach(s => {
-          const opt = document.createElement("option");
-          opt.value = s;
-          opt.textContent = s;
-          subjectSelect.appendChild(opt);
-        });
-      } else {
-        snapshot.forEach(docSnap => {
-          const opt = document.createElement("option");
-          opt.value = docSnap.id;
-          opt.textContent = docSnap.id;
-          subjectSelect.appendChild(opt);
-        });
+  // 初期教科の自動登録を無効化
+  const opt = document.createElement("option");
+  opt.textContent = "（教科がありません）";
+  opt.disabled = true;
+  subjectSelect.appendChild(opt);
+} else {
+  snapshot.forEach(docSnap => {
+    const opt = document.createElement("option");
+    opt.value = docSnap.id;
+    opt.textContent = docSnap.id;
+    subjectSelect.appendChild(opt);
+  });
+      }
       }
     }
     import { 
