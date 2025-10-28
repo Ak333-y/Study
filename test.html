@@ -274,6 +274,7 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 
 const subject = sessionStorage.getItem("subject");
+const unit = sessionStorage.getItem("unit");  // ←これを追加！
 const questionCount = parseInt(sessionStorage.getItem("questionCount"));
 let questions = [];
 let currentIndex = 0;
