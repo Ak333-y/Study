@@ -83,6 +83,7 @@
     // ✏️ 一問一答問題追加
     window.addOneQuestion = async () => {
       const subject = document.getElementById("subject").value;
+      const unit = document.getElementById("unit").value.trim();
       const question = document.getElementById("question").value.trim();
       const answer = document.getElementById("answer").value.trim();
 
@@ -92,16 +93,18 @@
       }
 
       await addDoc(collection(db, "questions"), {
-        subject,
-        type: "一問一答",
-        question,
-        answer,
-        timestamp: new Date()
-      });
+  subject,
+  unit,  // ←単元を追加！
+  type: "一問一答",
+  question,
+  answer,
+  timestamp: new Date()
+});
 
       alert("一問一答問題を追加しました！");
       document.getElementById("question").value = "";
       document.getElementById("answer").value = "";
+      document.getElementById("unit").value = "";
     };
 
     // 🚪 ログアウト
@@ -251,6 +254,8 @@
     <label>教科：</label>
     <select id="subject"></select>
     <button id="addSubjectBtn" onclick="addSubject()">＋ 新しい教科を追加</button>
+    <label>単元：</label>
+<input type="text" id="unit" placeholder="例：古代、電流、オセアニア州など">
 
     <label>問題文：</label>
     <textarea id="question" placeholder="問題を入力"></textarea>
