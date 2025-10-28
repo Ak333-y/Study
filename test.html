@@ -279,6 +279,7 @@ const questionCount = parseInt(sessionStorage.getItem("questionCount"));
 let questions = [];
 let currentIndex = 0;
 let correctCount = 0;
+sessionStorage.removeItem("answeredQuestions");
 
 const answeredQuestions = JSON.parse(sessionStorage.getItem("answeredQuestions") || "[]");
 
