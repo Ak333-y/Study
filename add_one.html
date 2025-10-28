@@ -48,22 +48,7 @@ import {
     // 教科が選ばれたときに単元を読み込むようにする
     const subjectSelect = document.getElementById("subject");
     subjectSelect.addEventListener("change", loadUnits);
-    // 🔹 単元の選択を記録して、次回開いたときもそのままにする
-const unitSelect = document.getElementById("unit");
 
-// ページ読み込み時に前回の単元を反映
-const savedUnit = localStorage.getItem("selectedUnit");
-if (savedUnit) {
-  // 少し遅らせて反映（Firestoreから単元読み込むのに時間がかかるため）
-  setTimeout(() => {
-    unitSelect.value = savedUnit;
-  }, 1000);
-}
-
-// 単元を選んだら保存
-unitSelect.addEventListener("change", () => {
-  localStorage.setItem("selectedUnit", unitSelect.value);
-});
   }
 });
     // 📘 教科読み込み or 初期登録
@@ -95,6 +80,7 @@ unitSelect.addEventListener("change", () => {
     
 // 🔸 教科を選んだら単元を読み込む;
 
+// 🔸 教科を選んだら単元を読み込む
 async function loadUnits() {
   const subject = document.getElementById("subject").value;
   const unitSelect = document.getElementById("unit");
@@ -115,7 +101,18 @@ async function loadUnits() {
       opt.textContent = docSnap.data().name;
       unitSelect.appendChild(opt);
     });
+
+    // 🔹 ここで前回選んだ単元を反映！
+    const savedUnit = localStorage.getItem("selectedUnit");
+    if (savedUnit) {
+      unitSelect.value = savedUnit;
+    }
   }
+
+  // 🔹 単元変更したら保存
+  unitSelect.addEventListener("change", () => {
+    localStorage.setItem("selectedUnit", unitSelect.value);
+  });
 }
 
 // ➕ 単元追加
