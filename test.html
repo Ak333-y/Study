@@ -295,18 +295,22 @@ onAuthStateChanged(auth, async (user) => {
 
 // ✅ 問題取得
 // ✅ 問題取得
+// ✅ 問題取得
 async function loadQuestions() {
+
+  // ✨✨ テストを始めるたびに前回の記録リセット ✨✨
+  sessionStorage.removeItem("answeredQuestions");
+  answeredQuestions.length = 0; // ← 念のため配列も空に！
+
   let q;
 
   if (unit && unit !== "全範囲") {
-    // 🔹 教科＋単元で絞り込み
     q = query(
       collection(db, "questions"),
       where("subject", "==", subject),
       where("unit", "==", unit)
     );
   } else {
-    // 🔹 教科だけ
     q = query(
       collection(db, "questions"),
       where("subject", "==", subject)
@@ -318,11 +322,11 @@ async function loadQuestions() {
   questions = [];
   snapshot.forEach((doc) => {
     const data = doc.data();
-    if (!answeredQuestions.includes(doc.id)) { // ← data.id じゃなく doc.id！
+    if (!answeredQuestions.includes(doc.id)) {
       questions.push({ ...data, id: doc.id });
     }
   });
-   // ✨✨✨ここに入れる！！！✨✨✨
+
   const seen = new Set();
   questions = questions.filter(q => {
     if (seen.has(q.question)) return false;
