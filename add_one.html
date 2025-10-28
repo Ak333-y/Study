@@ -39,13 +39,16 @@ import {
 
     // 🔒 ログインチェック
     onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        window.location.href = "index.html";
-      } else {
-        loadSubjects();
-      }
+  if (!user) {
+    window.location.href = "index.html";
+  } else {
+    // 教科を読み込んでからイベント登録！
+    loadSubjects().then(() => {
+      const subjectSelect = document.getElementById("subject");
+      subjectSelect.addEventListener("change", loadUnits);
     });
-
+  }
+});
     // 📘 教科読み込み or 初期登録
     async function loadSubjects() {
       const subjectSelect = document.getElementById("subject");
@@ -73,8 +76,7 @@ import {
       }
     }
     
-// 🔸 教科を選んだら単元を読み込む
-document.getElementById("subject").addEventListener("change", loadUnits);
+// 🔸 教科を選んだら単元を読み込む;
 
 async function loadUnits() {
   const subject = document.getElementById("subject").value;
