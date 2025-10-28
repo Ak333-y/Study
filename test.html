@@ -292,16 +292,6 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 // ✅ 問題取得
-async function loadQuestions() {
-  const subject = sessionStorage.getItem("subject");
-const unit = sessionStorage.getItem("unit"); // ← 単元も取る！
-const questionCount = parseInt(sessionStorage.getItem("questionCount"));
-let questions = [];
-let currentIndex = 0;
-let correctCount = 0;
-
-const answeredQuestions = JSON.parse(sessionStorage.getItem("answeredQuestions") || "[]");
-
 // ✅ 問題取得
 async function loadQuestions() {
   let q;
@@ -323,9 +313,10 @@ async function loadQuestions() {
 
   const snapshot = await getDocs(q);
 
+  questions = [];
   snapshot.forEach((doc) => {
     const data = doc.data();
-    if (!answeredQuestions.includes(data.id)) {
+    if (!answeredQuestions.includes(doc.id)) { // ← data.id じゃなく doc.id！
       questions.push({ ...data, id: doc.id });
     }
   });
