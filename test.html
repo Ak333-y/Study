@@ -259,6 +259,7 @@
  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+  import { addDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
@@ -560,9 +561,31 @@ function showAnswer() {
   }
 }
 // ✅ 結果画面
-function showResult() {
+// ✅ 結果画面
+async function showResult() {
   const container = document.querySelector(".container");
   const rate = ((correctCount / questions.length) * 100).toFixed(1);
+
+  // ✅ 成績を Firestore に保存
+  try {
+    const user = auth.currentUser;
+    if (user) {
+      await addDoc(collection(db, "history"), {
+        uid: user.uid,
+        subject,
+        unit,
+        correct: correctCount,
+        total: questions.length,
+        rate: Number(rate),
+        date: new Date().toLocaleString("ja-JP"),
+      });
+      console.log("✅ 成績を保存しました！");
+    }
+  } catch (e) {
+    console.error("❌ 成績の保存中にエラー:", e);
+  }
+
+  // ✅ 画面表示
   container.innerHTML = `
     <h2>テスト結果🎉</h2>
     <p>${questions.length}問中 ${correctCount}問正解！</p>
