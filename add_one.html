@@ -162,9 +162,25 @@ window.addUnit = async () => {
   timestamp: new Date()
 });
 
-      alert("一問一答問題を追加しました！");
+
       document.getElementById("question").value = "";
       document.getElementById("answer").value = "";
+      // 一時メッセージ表示
+const msg = document.createElement("div");
+msg.textContent = "✅ 追加しました！";
+msg.style.position = "fixed";
+msg.style.bottom = "30px";
+msg.style.right = "30px";
+msg.style.background = "#16a34a";
+msg.style.color = "white";
+msg.style.padding = "10px 20px";
+msg.style.borderRadius = "8px";
+msg.style.fontWeight = "bold";
+msg.style.boxShadow = "0 3px 8px rgba(0,0,0,0.3)";
+msg.style.zIndex = "1000";
+document.body.appendChild(msg);
+setTimeout(() => msg.remove(), 2000);
+
     
     };
 
