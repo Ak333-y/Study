@@ -46,6 +46,30 @@
 
     // 📘 教科読み込み or 初期登録
     async function loadSubjects() {
+      // 📗 単元読み込み
+async function loadUnits() {
+  const subject = document.getElementById("subject").value;
+  const unitSelect = document.getElementById("unit");
+  unitSelect.innerHTML = "";
+
+  if (!subject) return;
+
+  const q = query(collection(db, "units"), where("subject", "==", subject));
+  const snapshot = await getDocs(q);
+
+  if (snapshot.empty) {
+    const opt = document.createElement("option");
+    opt.textContent = "単元なし";
+    unitSelect.appendChild(opt);
+  } else {
+    snapshot.forEach(docSnap => {
+      const opt = document.createElement("option");
+      opt.value = docSnap.id;
+      opt.textContent = docSnap.data().name || docSnap.id;
+      unitSelect.appendChild(opt);
+    });
+  }
+}
       const subjectSelect = document.getElementById("subject");
       subjectSelect.innerHTML = "";
 
@@ -79,6 +103,8 @@
       alert("教科を追加しました！");
       loadSubjects();
     };
+    subjectSelect.addEventListener("change", loadUnits);
+await loadUnits();
 
     // 🧠 四択問題追加
     window.addChoiceQuestion = async () => {
@@ -97,12 +123,15 @@ if (!subject || !question || choices.some(c => c.trim() === "") || !answer) {
   return;
 }
 
+const unit = document.getElementById("unit").value;
+
 await addDoc(collection(db, "questions"), {
   subject,
+  unit,
   type: "四択",
   question,
   choices,
-  answer,  // 数値として保存される
+  answer,
   timestamp: new Date()
 });
 
