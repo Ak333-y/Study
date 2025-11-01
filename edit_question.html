@@ -161,39 +161,22 @@ async function loadQuestions() {
   const snapshot = await getDocs(qRef);
 
   const questionCountEl = document.getElementById("questionCount");
-
-  // 🟡 登録数表示（全体 or 教科 or 単元別）
-  if (subject === "all") {
-    const allSnapshot = await getDocs(collection(db, "questions"));
-    const counts = {};
-    allSnapshot.forEach(docSnap => {
-      const subj = docSnap.data().subject || "未分類";
-      counts[subj] = (counts[subj] || 0) + 1;
-    });
-
-    const summaryText = Object.entries(counts)
-      .map(([s, c]) => `${s}: ${c}問`)
-      .join("　");
-
-    questionCountEl.textContent = `登録数: ${allSnapshot.size}問　(${summaryText})`;
-  } else if (unit === "all") {
-    // 教科選択中、単元はすべて
-    questionCountEl.textContent = `登録数: ${snapshot.size}問`;
-  } else {
-    // 単元まで絞り込み中
-    questionCountEl.textContent = `登録数: ${snapshot.size}問（${subject} - ${unit}）`;
-  }
-
+questionCountEl.textContent = `登録数: ${snapshot.size}問`;
   // 🟢 単元リスト自動更新（教科を変えた時に反映）
-  const unitSelect = document.getElementById("unitSelect");
-  if (subject !== "all") {
-    const allSnapshot = await getDocs(query(collection(db, "questions"), where("subject", "==", subject)));
-    const units = [...new Set(allSnapshot.docs.map(doc => doc.data().unit).filter(Boolean))];
-    unitSelect.innerHTML = `<option value="all">すべての単元</option>` +
-      units.map(u => `<option value="${u}">${u}</option>`).join("");
-  } else {
-    unitSelect.innerHTML = `<option value="all">すべての単元</option>`;
-  }
+  // 🔹 教科選択に応じて units コレクションから単元リストを更新
+const unitSelect = document.getElementById("unitSelect");
+if (subject !== "all") {
+  const unitsRef = collection(db, "units");
+  const qUnits = query(unitsRef, where("subject", "==", subject));
+  const unitSnapshot = await getDocs(qUnits);
+
+  const units = unitSnapshot.docs.map(doc => doc.data().name || doc.id);
+
+  unitSelect.innerHTML = `<option value="all">すべての単元</option>` +
+    units.map(u => `<option value="${u}">${u}</option>`).join("");
+} else {
+  unitSelect.innerHTML = `<option value="all">すべての単元</option>`;
+}
 
   // 🔽 問題表示処理（ここは変更なし）
   let html = "";
@@ -326,7 +309,7 @@ async function loadQuestions() {
       if (user) loadQuestions();
       else window.location.href = "login.html";
     });
-
+subjectSelect.addEventListener("change", loadQuestions);
     document.getElementById("searchBtn").addEventListener("click", loadQuestions);
   </script>
 </body>
