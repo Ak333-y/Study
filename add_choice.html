@@ -7,148 +7,150 @@
 
   <!-- Firebase SDK -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-    import { 
-      getAuth, 
-      onAuthStateChanged, 
-      signOut 
-    } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
-    import { 
-      getFirestore, 
-      collection, 
-      addDoc, 
-      getDocs, 
-      doc, 
-      setDoc 
-    } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+  import { 
+    getAuth, 
+    onAuthStateChanged, 
+    signOut 
+  } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+  import { 
+    getFirestore, 
+    collection, 
+    addDoc, 
+    getDocs, 
+    doc, 
+    setDoc, 
+    query, 
+    where 
+  } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
-      authDomain: "akeducationalplatform.firebaseapp.com",
-      projectId: "akeducationalplatform",
-      storageBucket: "akeducationalplatform.firebasestorage.app",
-      messagingSenderId: "778140595189",
-      appId: "1:778140595189:web:301e7490b813b44782a6bc"
-    };
+  const firebaseConfig = {
+    apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
+    authDomain: "akeducationalplatform.firebaseapp.com",
+    projectId: "akeducationalplatform",
+    storageBucket: "akeducationalplatform.firebasestorage.app",
+    messagingSenderId: "778140595189",
+    appId: "1:778140595189:web:301e7490b813b44782a6bc"
+  };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
 
-    // 🔒 ログインチェック
-    onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        window.location.href = "index.html";
-      } else {
-        loadSubjects();
-      }
-    });
+  // 🔒 ログインチェック
+  onAuthStateChanged(auth, (user) => {
+    if (!user) {
+      window.location.href = "index.html";
+    } else {
+      loadSubjects();
+    }
+  });
 
-    // 📘 教科読み込み or 初期登録
-    async function loadSubjects() {
-      // 📗 単元読み込み
-async function loadUnits() {
-  const subject = document.getElementById("subject").value;
-  const unitSelect = document.getElementById("unit");
-  unitSelect.innerHTML = "";
+  // 📗 単元読み込み
+  async function loadUnits() {
+    const subject = document.getElementById("subject").value;
+    const unitSelect = document.getElementById("unit");
+    unitSelect.innerHTML = "";
 
-  if (!subject) return;
+    if (!subject) return;
 
-  const q = query(collection(db, "units"), where("subject", "==", subject));
-  const snapshot = await getDocs(q);
+    const q = query(collection(db, "units"), where("subject", "==", subject));
+    const snapshot = await getDocs(q);
 
-  if (snapshot.empty) {
-    const opt = document.createElement("option");
-    opt.textContent = "単元なし";
-    unitSelect.appendChild(opt);
-  } else {
-    snapshot.forEach(docSnap => {
+    if (snapshot.empty) {
       const opt = document.createElement("option");
-      opt.value = docSnap.id;
-      opt.textContent = docSnap.data().name || docSnap.id;
+      opt.textContent = "単元なし";
       unitSelect.appendChild(opt);
-    });
+    } else {
+      snapshot.forEach(docSnap => {
+        const opt = document.createElement("option");
+        opt.value = docSnap.id;
+        opt.textContent = docSnap.data().name || docSnap.id;
+        unitSelect.appendChild(opt);
+      });
+    }
   }
-}
-      const subjectSelect = document.getElementById("subject");
-      subjectSelect.innerHTML = "";
 
-      const snapshot = await getDocs(collection(db, "subjects"));
-      if (snapshot.empty) {
-        const defaultSubjects = ["歴史", "地理", "公民", "生命", "地学", "物質", "エネルギー", "古文単語"];
-        for (const s of defaultSubjects) {
-          await setDoc(doc(db, "subjects", s), { name: s });
-        }
-        defaultSubjects.forEach(s => {
-          const opt = document.createElement("option");
-          opt.value = s;
-          opt.textContent = s;
-          subjectSelect.appendChild(opt);
-        });
-      } else {
-        snapshot.forEach(docSnap => {
-          const opt = document.createElement("option");
-          opt.value = docSnap.id;
-          opt.textContent = docSnap.id;
-          subjectSelect.appendChild(opt);
-        });
+  // 📘 教科読み込み or 初期登録
+  async function loadSubjects() {
+    const subjectSelect = document.getElementById("subject");
+    subjectSelect.innerHTML = "";
+
+    const snapshot = await getDocs(collection(db, "subjects"));
+    if (snapshot.empty) {
+      const defaultSubjects = ["歴史", "地理", "公民", "生命", "地学", "物質", "エネルギー", "古文単語"];
+      for (const s of defaultSubjects) {
+        await setDoc(doc(db, "subjects", s), { name: s });
       }
+      defaultSubjects.forEach(s => {
+        const opt = document.createElement("option");
+        opt.value = s;
+        opt.textContent = s;
+        subjectSelect.appendChild(opt);
+      });
+    } else {
+      snapshot.forEach(docSnap => {
+        const opt = document.createElement("option");
+        opt.value = docSnap.id;
+        opt.textContent = docSnap.id;
+        subjectSelect.appendChild(opt);
+      });
     }
 
-    // ➕ 教科追加
-    window.addSubject = async () => {
-      const newSubject = prompt("追加する教科名を入力してください：");
-      if (!newSubject) return;
-      await setDoc(doc(db, "subjects", newSubject), { name: newSubject });
-      alert("教科を追加しました！");
-      loadSubjects();
-    };
     subjectSelect.addEventListener("change", loadUnits);
-await loadUnits();
+    await loadUnits();
+  }
 
-    // 🧠 四択問題追加
-    window.addChoiceQuestion = async () => {
-      const subject = document.getElementById("subject").value;
-      const question = document.getElementById("question").value.trim();
-      const choices = [
-        document.getElementById("choice1").value.trim(),
-        document.getElementById("choice2").value.trim(),
-        document.getElementById("choice3").value.trim(),
-        document.getElementById("choice4").value.trim()
-      ];
-      const answer = parseInt(document.getElementById("answer").value, 10);
+  // ➕ 教科追加
+  window.addSubject = async () => {
+    const newSubject = prompt("追加する教科名を入力してください：");
+    if (!newSubject) return;
+    await setDoc(doc(db, "subjects", newSubject), { name: newSubject });
+    alert("教科を追加しました！");
+    loadSubjects();
+  };
 
-if (!subject || !question || choices.some(c => c.trim() === "") || !answer) {
-  alert("すべての項目を入力してください。");
-  return;
-}
+  // 🧠 四択問題追加
+  window.addChoiceQuestion = async () => {
+    const subject = document.getElementById("subject").value;
+    const unit = document.getElementById("unit").value;
+    const question = document.getElementById("question").value.trim();
+    const choices = [
+      document.getElementById("choice1").value.trim(),
+      document.getElementById("choice2").value.trim(),
+      document.getElementById("choice3").value.trim(),
+      document.getElementById("choice4").value.trim()
+    ];
+    const answer = parseInt(document.getElementById("answer").value, 10);
 
-const unit = document.getElementById("unit").value;
+    if (!subject || !question || choices.some(c => c === "") || !answer) {
+      alert("すべての項目を入力してください。");
+      return;
+    }
 
-await addDoc(collection(db, "questions"), {
-  subject,
-  unit,
-  type: "四択",
-  question,
-  choices,
-  answer,
-  timestamp: new Date()
-});
+    await addDoc(collection(db, "questions"), {
+      subject,
+      unit,
+      type: "四択",
+      question,
+      choices,
+      answer,
+      timestamp: new Date()
+    });
 
-      alert("四択問題を追加しました！");
-      document.getElementById("question").value = "";
-      for (let i = 1; i <= 4; i++) {
-        document.getElementById(`choice${i}`).value = "";
-      }
-      document.getElementById("answer").value = "";
-    };
+    alert("四択問題を追加しました！");
+    document.getElementById("question").value = "";
+    for (let i = 1; i <= 4; i++) {
+      document.getElementById(`choice${i}`).value = "";
+    }
+    document.getElementById("answer").value = "";
+  };
 
-    // 🚪 ログアウト
-    window.logout = () => {
-      signOut(auth).then(() => window.location.href = "index.html");
-    };
-  </script>
-
+  // 🚪 ログアウト
+  window.logout = () => {
+    signOut(auth).then(() => window.location.href = "index.html");
+  };
+</script>
   <style>
     body {
       margin: 0;
