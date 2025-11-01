@@ -59,7 +59,7 @@
 
     if (snapshot.empty) {
       const opt = document.createElement("option");
-      opt.textContent = "単元なし";
+      opt.textContent = "(教科を選んでください）";
       unitSelect.appendChild(opt);
     } else {
       snapshot.forEach(docSnap => {
