@@ -105,6 +105,7 @@
       <input id="keywordInput" type="text" placeholder="キーワード" class="p-2 border rounded flex-1" />
       <button id="searchBtn" class="bg-green-500 text-white px-4 py-2 rounded">検索</button>
     </div>
+    <p id="questionCount" class="text-gray-700 font-semibold mb-4">登録数: 0問</p>
 
     <div id="questionList"></div>
   </div>
@@ -145,59 +146,82 @@
 
     // 問題読み込み
     async function loadQuestions() {
-      questionList.innerHTML = "読み込み中…";
+  questionList.innerHTML = "読み込み中…";
 
-      const subject = subjectSelect.value;
-      const type = typeSelect.value;
-      const keyword = keywordInput.value.trim();
+  const subject = subjectSelect.value;
+  const type = typeSelect.value;
+  const keyword = keywordInput.value.trim();
 
-      let baseQuery = collection(db, "questions");
-      let conditions = [];
-      if (subject !== "all") conditions.push(where("subject", "==", subject));
-      if (type !== "all") conditions.push(where("type", "==", type));
+  let baseQuery = collection(db, "questions");
+  let conditions = [];
+  if (subject !== "all") conditions.push(where("subject", "==", subject));
+  if (type !== "all") conditions.push(where("type", "==", type));
 
-      const qRef = conditions.length ? query(baseQuery, ...conditions) : baseQuery;
-      const snapshot = await getDocs(qRef);
+  const qRef = conditions.length ? query(baseQuery, ...conditions) : baseQuery;
+  const snapshot = await getDocs(qRef);
 
-      let html = "";
-      snapshot.forEach((docSnap) => {
-        const data = docSnap.data();
-        const id = docSnap.id;
+  // 🟡 件数表示処理をここで追加
+  const questionCountEl = document.getElementById("questionCount");
 
-        if (keyword && !((data.question?.includes(keyword)) || (data.answer?.includes(keyword)))) return;
+  if (subject === "all") {
+    // 全教科の場合は教科別の件数をまとめて出す
+    const allSnapshot = await getDocs(collection(db, "questions"));
+    const counts = {};
+    allSnapshot.forEach(docSnap => {
+      const subj = docSnap.data().subject || "未分類";
+      counts[subj] = (counts[subj] || 0) + 1;
+    });
 
-        html += `
-          <div class="p-4 border rounded-lg mb-4 bg-gray-50 shadow">
-            <p><b>教科:</b> ${data.subject}</p>
-            <p><b>形式:</b> ${data.type}</p>
+    const summaryText = Object.entries(counts)
+      .map(([s, c]) => `${s}: ${c}問`)
+      .join("　");
 
-            <label class="block mt-2 font-semibold">問題文：</label>
-            <textarea id="q_${id}" class="w-full p-2 border rounded">${data.question}</textarea>
+    questionCountEl.textContent = `登録数: ${allSnapshot.size}問　(${summaryText})`;
+  } else {
+    // 特定教科を絞り込み中の場合
+    questionCountEl.textContent = `登録数: ${snapshot.size}問`;
+  }
 
-            ${renderAnswerInputs(data, id)}
+  // 🔽 以下、今までの表示処理はそのまま 🔽
+  let html = "";
+  snapshot.forEach((docSnap) => {
+    const data = docSnap.data();
+    const id = docSnap.id;
 
-            <div class="mt-3 flex gap-2">
-              <button class="bg-blue-500 text-white px-3 py-1 rounded save-btn" data-id="${id}">保存</button>
-              <button class="bg-red-500 text-white px-3 py-1 rounded delete-btn" data-id="${id}">削除</button>
-            </div>
-          </div>
-        `;
-      });
+    if (keyword && !((data.question?.includes(keyword)) || (data.answer?.includes(keyword)))) return;
 
-      questionList.innerHTML = html || "該当する問題がありません。";
+    html += `
+      <div class="p-4 border rounded-lg mb-4 bg-gray-50 shadow">
+        <p><b>教科:</b> ${data.subject}</p>
+        <p><b>形式:</b> ${data.type}</p>
 
-      document.querySelectorAll(".save-btn").forEach(btn =>
-        btn.addEventListener("click", () => saveQuestion(btn.dataset.id, snapshot))
-      );
+        <label class="block mt-2 font-semibold">問題文：</label>
+        <textarea id="q_${id}" class="w-full p-2 border rounded">${data.question}</textarea>
 
-      document.querySelectorAll(".delete-btn").forEach(btn =>
-        btn.addEventListener("click", async () => {
-          if (confirm("本当に削除しますか？")) {
-            await deleteDoc(doc(db, "questions", btn.dataset.id));
-            loadQuestions();
-          }
-        })
-      );
+        ${renderAnswerInputs(data, id)}
+
+        <div class="mt-3 flex gap-2">
+          <button class="bg-blue-500 text-white px-3 py-1 rounded save-btn" data-id="${id}">保存</button>
+          <button class="bg-red-500 text-white px-3 py-1 rounded delete-btn" data-id="${id}">削除</button>
+        </div>
+      </div>
+    `;
+  });
+
+  questionList.innerHTML = html || "該当する問題がありません。";
+
+  document.querySelectorAll(".save-btn").forEach(btn =>
+    btn.addEventListener("click", () => saveQuestion(btn.dataset.id, snapshot))
+  );
+
+  document.querySelectorAll(".delete-btn").forEach(btn =>
+    btn.addEventListener("click", async () => {
+      if (confirm("本当に削除しますか？")) {
+        await deleteDoc(doc(db, "questions", btn.dataset.id));
+        loadQuestions();
+      }
+    })
+  );
     }
 
     // 入力フォーム生成
