@@ -101,6 +101,9 @@
         <option value="四択">四択</option>
         <option value="並び替え">並び替え</option>
       </select>
+      <select id="unitSelect" class="border p-2 rounded">
+  <option value="all">すべての単元</option>
+      </select>
 
       <input id="keywordInput" type="text" placeholder="キーワード" class="p-2 border rounded flex-1" />
       <button id="searchBtn" class="bg-green-500 text-white px-4 py-2 rounded">検索</button>
@@ -143,28 +146,28 @@
     const typeSelect = document.getElementById("typeSelect");
     const keywordInput = document.getElementById("keywordInput");
     const questionList = document.getElementById("questionList");
-
-    // 問題読み込み
-    async function loadQuestions() {
+// 問題読み込み
+async function loadQuestions() {
   questionList.innerHTML = "読み込み中…";
 
   const subject = subjectSelect.value;
   const type = typeSelect.value;
+  const unit = document.getElementById("unitSelect").value;
   const keyword = keywordInput.value.trim();
 
   let baseQuery = collection(db, "questions");
   let conditions = [];
   if (subject !== "all") conditions.push(where("subject", "==", subject));
   if (type !== "all") conditions.push(where("type", "==", type));
+  if (unit !== "all") conditions.push(where("unit", "==", unit)); // 単元フィルター追加！
 
   const qRef = conditions.length ? query(baseQuery, ...conditions) : baseQuery;
   const snapshot = await getDocs(qRef);
 
-  // 🟡 件数表示処理をここで追加
   const questionCountEl = document.getElementById("questionCount");
 
+  // 🟡 登録数表示（全体 or 教科 or 単元別）
   if (subject === "all") {
-    // 全教科の場合は教科別の件数をまとめて出す
     const allSnapshot = await getDocs(collection(db, "questions"));
     const counts = {};
     allSnapshot.forEach(docSnap => {
@@ -177,12 +180,26 @@
       .join("　");
 
     questionCountEl.textContent = `登録数: ${allSnapshot.size}問　(${summaryText})`;
-  } else {
-    // 特定教科を絞り込み中の場合
+  } else if (unit === "all") {
+    // 教科選択中、単元はすべて
     questionCountEl.textContent = `登録数: ${snapshot.size}問`;
+  } else {
+    // 単元まで絞り込み中
+    questionCountEl.textContent = `登録数: ${snapshot.size}問（${subject} - ${unit}）`;
   }
 
-  // 🔽 以下、今までの表示処理はそのまま 🔽
+  // 🟢 単元リスト自動更新（教科を変えた時に反映）
+  const unitSelect = document.getElementById("unitSelect");
+  if (subject !== "all") {
+    const allSnapshot = await getDocs(query(collection(db, "questions"), where("subject", "==", subject)));
+    const units = [...new Set(allSnapshot.docs.map(doc => doc.data().unit).filter(Boolean))];
+    unitSelect.innerHTML = `<option value="all">すべての単元</option>` +
+      units.map(u => `<option value="${u}">${u}</option>`).join("");
+  } else {
+    unitSelect.innerHTML = `<option value="all">すべての単元</option>`;
+  }
+
+  // 🔽 問題表示処理（ここは変更なし）
   let html = "";
   snapshot.forEach((docSnap) => {
     const data = docSnap.data();
@@ -193,6 +210,7 @@
     html += `
       <div class="p-4 border rounded-lg mb-4 bg-gray-50 shadow">
         <p><b>教科:</b> ${data.subject}</p>
+        <p><b>単元:</b> ${data.unit || "未設定"}</p>
         <p><b>形式:</b> ${data.type}</p>
 
         <label class="block mt-2 font-semibold">問題文：</label>
@@ -222,8 +240,9 @@
       }
     })
   );
-    }
-
+}
+    // 問題読み込み
+    
     // 入力フォーム生成
     function renderAnswerInputs(data, id) {
       if (data.type === "一問一答") {
