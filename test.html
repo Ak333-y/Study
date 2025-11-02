@@ -447,20 +447,30 @@ function submitAnswer() {
 if (isCorrect) {
   correctCount++;
 } else {
-  // ❌間違えた問題をFirestoreに記録
+  // ❌間違えた問題をFirestoreに記録（重複チェックあり）
   try {
     const user = auth.currentUser;
     if (user) {
-      await addDoc(collection(db, "wrongList"), {
-        uid: user.uid,
-        questionId: q.id,
-        question: q.question,
-        answer: q.answer,
-        subject: q.subject,
-        unit: q.unit,
-        date: new Date().toLocaleString("ja-JP")
-      });
-      console.log("❌ 間違えた問題を保存しました");
+      const wrongRef = collection(db, "wrongList");
+      const qSnap = await getDocs(
+        query(wrongRef, where("uid", "==", user.uid), where("questionId", "==", q.id))
+      );
+
+      // 同じ問題がまだ登録されていなければ追加
+      if (qSnap.empty) {
+        await addDoc(wrongRef, {
+          uid: user.uid,
+          questionId: q.id,
+          question: q.question,
+          answer: q.answer,
+          subject: q.subject,
+          unit: q.unit,
+          date: new Date().toLocaleString("ja-JP")
+        });
+        console.log("❌ 新しい間違えを保存しました");
+      } else {
+        console.log("⚠️ 同じ問題はすでに保存されています");
+      }
     }
   } catch (e) {
     console.error("⚠️ 間違えリスト保存エラー:", e);
