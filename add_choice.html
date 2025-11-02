@@ -121,7 +121,8 @@
       document.getElementById("choice3").value.trim(),
       document.getElementById("choice4").value.trim()
     ];
-    const answer = parseInt(document.getElementById("answer").value, 10);
+    // 🔴 ここを修正（parseIntを消す）
+const answer = document.getElementById("answer").value.trim();
 
     if (!subject || !question || choices.some(c => c === "") || !answer) {
       alert("すべての項目を入力してください。");
