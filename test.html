@@ -429,10 +429,14 @@ function submitAnswer() {
 
   if (q.type === "一問一答") {
     userAnswer = document.getElementById("answer").value.trim();
-  } else if (q.type === "四択") {
-    const checked = document.querySelector('input[name="choice"]:checked');
-    if (!checked) return alert("選択してください！");
-    userAnswer = checked.value;
+ } else if (q.type === "四択") {
+  let html = `<div class="choices">`;
+  q.choices.forEach((choice, index) => {
+    html += `<label><input type="radio" name="choice" value="${index + 1}"> ${choice}</label>`;
+  });
+  html += `</div>`;
+  container.innerHTML += html;
+  }
   } else if (q.type === "並び替え") {
     const order = Array.from(document.querySelectorAll(".sortable div")).map((d) => d.textContent);
     userAnswer = order.join("");
