@@ -444,9 +444,30 @@ function submitAnswer() {
   }
 
   const isCorrect = userAnswer === q.answer;
-  if (isCorrect) correctCount++;
+if (isCorrect) {
+  correctCount++;
+} else {
+  // ❌間違えた問題をFirestoreに記録
+  try {
+    const user = auth.currentUser;
+    if (user) {
+      await addDoc(collection(db, "wrongList"), {
+        uid: user.uid,
+        questionId: q.id,
+        question: q.question,
+        answer: q.answer,
+        subject: q.subject,
+        unit: q.unit,
+        date: new Date().toLocaleString("ja-JP")
+      });
+      console.log("❌ 間違えた問題を保存しました");
+    }
+  } catch (e) {
+    console.error("⚠️ 間違えリスト保存エラー:", e);
+  }
+}
 
-  flashAnimation(isCorrect, q.answer);
+flashAnimation(isCorrect, q.answer);
   
   answeredQuestions.push(q.id);
   sessionStorage.setItem("answeredQuestions", JSON.stringify(answeredQuestions));
