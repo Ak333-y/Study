@@ -135,7 +135,6 @@
       <a href="select.html">テスト</a>
       <a href="history.html">過去の成績</a>
       <a href="add_question.html">問題編集</a>
-      <a href="wrongList.html">解き直し</a>
       <div class="logout">
         <button onclick="logout()">ログアウト</button>
       </div>
@@ -156,13 +155,13 @@
 
     // 🔧 Firebase設定
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_AUTH_DOMAIN",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_BUCKET",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
-    };
+      apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
+  authDomain: "akeducationalplatform.firebaseapp.com",
+  projectId: "akeducationalplatform",
+  storageBucket: "akeducationalplatform.firebasestorage.app",
+  messagingSenderId: "778140595189",
+  appId: "1:778140595189:web:301e7490b813b44782a6bc"
+};
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
