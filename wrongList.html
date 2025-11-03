@@ -187,7 +187,7 @@
 
     // 📋 wrongList読み込み
     async function loadWrongList(userId) {
-      const q = query(collection(db, "wrongList"), where("userId", "==", userId));
+      const q = query(collection(db, "wrongList"));
       const querySnapshot = await getDocs(q);
 
       if (querySnapshot.empty) {
