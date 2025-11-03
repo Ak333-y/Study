@@ -361,31 +361,7 @@ async function loadQuestions() {
 
   showQuestion();
 }
-  questions = [];
-  snapshot.forEach((doc) => {
-    const data = doc.data();
-    if (!answeredQuestions.includes(doc.id)) {
-      questions.push({ ...data, id: doc.id });
-    }
-  });
-
-  const seen = new Set();
-  questions = questions.filter(q => {
-    if (seen.has(q.question)) return false;
-    seen.add(q.question);
-    return true;
-  });
-
-  questions = questions.sort(() => Math.random() - 0.5).slice(0, questionCount);
-
-  if (questions.length === 0) {
-    alert("この教科・単元の新しい問題はありません。");
-    window.location.href = "select.html";
-    return;
-  }
-
-  showQuestion();
-}
+  
 
 
 // ✅ 問題表示
