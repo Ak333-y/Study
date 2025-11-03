@@ -300,27 +300,72 @@ onAuthStateChanged(auth, async (user) => {
 // ✅ 問題取得
 async function loadQuestions() {
 
-  // ✨✨ テストを始めるたびに前回の記録リセット ✨✨
   sessionStorage.removeItem("answeredQuestions");
-  answeredQuestions.length = 0; // ← 念のため配列も空に！
+  answeredQuestions.length = 0;
 
-  let q;
+  let snapshot;
 
-  if (unit && unit !== "全範囲") {
-    q = query(
-      collection(db, "questions"),
-      where("subject", "==", subject),
-      where("unit", "==", unit)
+  // 🔹「解き直しモード」の場合は wrongList から取得
+  if (subject === "wrongList") {
+    snapshot = await getDocs(
+      query(collection(db, "wrongList"), where("unit", "==", unit))
     );
+
+    questions = [];
+    for (const doc of snapshot.docs) {
+      const wrong = doc.data();
+      // 元の問題データを questions コレクションから探す
+      const qSnap = await getDocs(
+        query(collection(db, "questions"), where("question", "==", wrong.question))
+      );
+      qSnap.forEach((d) => {
+        questions.push({ ...d.data(), id: d.id });
+      });
+    }
   } else {
-    q = query(
-      collection(db, "questions"),
-      where("subject", "==", subject)
-    );
+    // 🔹通常のテスト
+    let q;
+    if (unit && unit !== "全範囲") {
+      q = query(
+        collection(db, "questions"),
+        where("subject", "==", subject),
+        where("unit", "==", unit)
+      );
+    } else {
+      q = query(
+        collection(db, "questions"),
+        where("subject", "==", subject)
+      );
+    }
+    snapshot = await getDocs(q);
+
+    questions = [];
+    snapshot.forEach((doc) => {
+      const data = doc.data();
+      if (!answeredQuestions.includes(doc.id)) {
+        questions.push({ ...data, id: doc.id });
+      }
+    });
   }
 
-  const snapshot = await getDocs(q);
+  // 🔹重複防止＆ランダム選択
+  const seen = new Set();
+  questions = questions.filter(q => {
+    if (seen.has(q.question)) return false;
+    seen.add(q.question);
+    return true;
+  });
 
+  questions = questions.sort(() => Math.random() - 0.5).slice(0, questionCount);
+
+  if (questions.length === 0) {
+    alert("この単元の問題はありません！");
+    window.location.href = "select.html";
+    return;
+  }
+
+  showQuestion();
+}
   questions = [];
   snapshot.forEach((doc) => {
     const data = doc.data();
