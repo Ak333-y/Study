@@ -299,7 +299,6 @@ onAuthStateChanged(auth, async (user) => {
 // ✅ 問題取得
 // ✅ 問題取得
 async function loadQuestions() {
-
   sessionStorage.removeItem("answeredQuestions");
   answeredQuestions.length = 0;
 
@@ -314,7 +313,6 @@ async function loadQuestions() {
     questions = [];
     for (const doc of snapshot.docs) {
       const wrong = doc.data();
-      // 元の問題データを questions コレクションから探す
       const qSnap = await getDocs(
         query(collection(db, "questions"), where("question", "==", wrong.question))
       );
@@ -332,13 +330,10 @@ async function loadQuestions() {
         where("unit", "==", unit)
       );
     } else {
-      q = query(
-        collection(db, "questions"),
-        where("subject", "==", subject)
-      );
+      q = query(collection(db, "questions"), where("subject", "==", subject));
     }
-    snapshot = await getDocs(q);
 
+    snapshot = await getDocs(q);
     questions = [];
     snapshot.forEach((doc) => {
       const data = doc.data();
@@ -348,7 +343,7 @@ async function loadQuestions() {
     });
   }
 
-  // 🔹重複防止＆ランダム選択
+  // 🔹重複防止＆ランダム化
   const seen = new Set();
   questions = questions.filter(q => {
     if (seen.has(q.question)) return false;
