@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>解き直しリスト | StudyBase</title>
   <style>
     body {
@@ -18,7 +18,7 @@
       background: linear-gradient(90deg, #000814, #001d6e);
       color: white;
       padding: 10px 40px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.5);
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
     }
 
     .logo {
@@ -60,76 +60,61 @@
       cursor: pointer;
       font-weight: 700;
       font-size: 14px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-      transition: background 0.18s ease, box-shadow 0.18s ease, transform 0.12s ease;
-    }
-
-    .logout button:hover {
-      background: #991b1b;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.30);
-      transform: translateY(-1px);
     }
 
     .main {
       max-width: 900px;
-      margin: 80px auto;
-      background: white;
+      margin: 60px auto;
+      background: #fff;
       border-radius: 12px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      padding: 40px;
+      padding: 30px;
     }
 
-    h1 {
-      text-align: center;
-      margin-bottom: 30px;
-      color: #1e293b;
-    }
-
-    .unit {
-      margin-bottom: 40px;
-    }
-
-    .unit h2 {
-      color: #334155;
-      border-bottom: 2px solid #3b82f6;
+    h2 {
+      color: #001d6e;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #001d6e;
       padding-bottom: 5px;
     }
 
-    .question {
-      background: #f1f5f9;
-      border-radius: 8px;
-      padding: 15px;
-      margin-top: 10px;
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
     }
 
-    .question p {
-      margin: 5px 0;
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: left;
+    }
+
+    th {
+      background: #e0e7ff;
     }
 
     .btn {
-      background: #2563eb;
+      background: #001d6e;
       color: white;
-      padding: 8px 16px;
       border: none;
-      border-radius: 6px;
+      border-radius: 8px;
+      padding: 8px 16px;
       cursor: pointer;
       font-weight: bold;
-      margin-top: 10px;
     }
 
     .btn:hover {
-      background: #1d4ed8;
+      background: #0031a0;
     }
   </style>
 </head>
 <body>
-  <!-- 🔝 ナビバー -->
   <div class="navbar">
     <div class="logo">
       <img src="logo.png" alt="StudyBase ロゴ">
       StudyBase — Your Daily Step to Success.
     </div>
-
     <div class="menu">
       <a href="menu.html">ホーム</a>
       <a href="select.html">テスト</a>
@@ -141,91 +126,83 @@
     </div>
   </div>
 
-  <!-- 📘 メイン部分 -->
   <div class="main">
-    <h1>解き直しリスト</h1>
-    <div id="wrongListContainer">読み込み中...</div>
+    <h1>❌ 間違えた問題リスト</h1>
+    <div id="wrong-list"></div>
   </div>
 
-  <!-- 🔥 Firebase & スクリプト -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-    import { getFirestore, collection, query, where, getDocs, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+    import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
-    // 🔧 Firebase設定
     const firebaseConfig = {
       apiKey: "AIzaSyCYILTR11999wsK7zoFV2rfQkgneumhsvk",
-  authDomain: "akeducationalplatform.firebaseapp.com",
-  projectId: "akeducationalplatform",
-  storageBucket: "akeducationalplatform.firebasestorage.app",
-  messagingSenderId: "778140595189",
-  appId: "1:778140595189:web:301e7490b813b44782a6bc"
-};
+      authDomain: "akeducationalplatform.firebaseapp.com",
+      projectId: "akeducationalplatform",
+      storageBucket: "akeducationalplatform.firebasestorage.app",
+      messagingSenderId: "778140595189",
+      appId: "1:778140595189:web:301e7490b813b44782a6bc"
+    };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
-    const container = document.getElementById("wrongListContainer");
 
-    // 🚪ログアウト処理
-    window.logout = async function() {
-      await signOut(auth);
-      alert("ログアウトしました");
-      window.location.href = "login.html";
-    };
-
-    // 👤 ログイン認証チェック
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        alert("ログインしてください");
-        window.location.href = "index.html";
-        return;
-      }
-      await loadWrongList(user.uid);
+    // ログインしてなくても動くバージョン
+    onAuthStateChanged(auth, async () => {
+      loadWrongList();
     });
 
-    // 📋 wrongList読み込み
-    async function loadWrongList(userId) {
-      const q = query(collection(db, "wrongList"));
-      const querySnapshot = await getDocs(q);
+    async function loadWrongList() {
+      const listDiv = document.getElementById("wrong-list");
+      const snapshot = await getDocs(collection(db, "wrongList"));
 
-      if (querySnapshot.empty) {
-        container.innerHTML = "<p>間違えた問題はありません！</p>";
+      if (snapshot.empty) {
+        listDiv.innerHTML = "<p>間違えた問題はありません！🎉</p>";
         return;
       }
 
-      const subjects = {};
-      querySnapshot.forEach(docSnap => {
-        const data = docSnap.data();
-        if (!subjects[data.subject]) subjects[data.subject] = [];
-        subjects[data.subject].push({ id: docSnap.id, ...data });
+      const data = {};
+      snapshot.forEach((doc) => {
+        const d = doc.data();
+        if (!data[d.unit]) data[d.unit] = [];
+        data[d.unit].push(d);
       });
 
-      container.innerHTML = "";
-      for (const [subject, problems] of Object.entries(subjects)) {
-        const unitDiv = document.createElement("div");
-        unitDiv.className = "unit";
-        unitDiv.innerHTML = `<h2>${subject}</h2>`;
-
-        problems.forEach(problem => {
-          const div = document.createElement("div");
-          div.className = "question";
-          div.innerHTML = `
-            <p><strong>問題:</strong> ${problem.question}</p>
-            <p><strong>答え:</strong> ${problem.answer}</p>
-            <button class="btn" data-id="${problem.id}">正解した！(削除)</button>
-          `;
-          div.querySelector("button").addEventListener("click", async () => {
-            await deleteDoc(doc(db, "wrongList", problem.id));
-            div.remove();
-          });
-          unitDiv.appendChild(div);
+      let html = "";
+      for (const unit in data) {
+        html += `
+          <h2>${unit}</h2>
+          <table>
+            <tr><th>問題</th><th>正答</th></tr>
+        `;
+        data[unit].forEach(q => {
+          html += `<tr><td>${q.question}</td><td>${q.answer}</td></tr>`;
         });
-
-        container.appendChild(unitDiv);
+        html += `</table>
+          <button class="btn" onclick="startReview('${unit}')">この単元を解き直す</button>
+          <hr>`;
       }
+
+      listDiv.innerHTML = html;
     }
+
+    // 単元を選んでテストページへ
+    window.startReview = (unit) => {
+      sessionStorage.setItem("subject", "wrongList"); // 特別モード
+      sessionStorage.setItem("unit", unit);
+      sessionStorage.setItem("mode", "review"); // ← これで出題ページ側が判断できる
+      sessionStorage.setItem("questionCount", 10); // とりあえず10問
+      window.location.href = "test.html";
+    };
+
+    window.logout = () => {
+      signOut(auth).then(() => {
+        alert("ログアウトしました");
+        window.location.href = "index.html";
+      });
+    };
   </script>
 </body>
 </html>
