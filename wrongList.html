@@ -180,7 +180,7 @@
     onAuthStateChanged(auth, async (user) => {
       if (!user) {
         alert("ログインしてください");
-        window.location.href = "login.html";
+        window.location.href = "index.html";
         return;
       }
       await loadWrongList(user.uid);
