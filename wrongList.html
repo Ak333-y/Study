@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>解き直しリスト | StudyBase</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+      background-color: #f3f5f7;
+    }
+
+    .navbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(90deg, #000814, #001d6e);
+      color: white;
+      padding: 10px 40px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.5);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 26px;
+      font-weight: bold;
+    }
+
+    .logo img {
+      height: 50px;
+    }
+
+    .menu {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+    }
+
+    .menu a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 16px;
+      transition: 0.2s;
+    }
+
+    .menu a:hover {
+      color: #93c5fd;
+    }
+
+    .logout button {
+      background: #b91c1c;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 6px 16px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 14px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+      transition: background 0.18s ease, box-shadow 0.18s ease, transform 0.12s ease;
+    }
+
+    .logout button:hover {
+      background: #991b1b;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.30);
+      transform: translateY(-1px);
+    }
+
+    .main {
+      max-width: 900px;
+      margin: 80px auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      padding: 40px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #1e293b;
+    }
+
+    .unit {
+      margin-bottom: 40px;
+    }
+
+    .unit h2 {
+      color: #334155;
+      border-bottom: 2px solid #3b82f6;
+      padding-bottom: 5px;
+    }
+
+    .question {
+      background: #f1f5f9;
+      border-radius: 8px;
+      padding: 15px;
+      margin-top: 10px;
+    }
+
+    .question p {
+      margin: 5px 0;
+    }
+
+    .btn {
+      background: #2563eb;
+      color: white;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    .btn:hover {
+      background: #1d4ed8;
+    }
+  </style>
+</head>
+<body>
+  <!-- 🔝 ナビバー -->
+  <div class="navbar">
+    <div class="logo">
+      <img src="logo.png" alt="StudyBase ロゴ">
+      StudyBase — Your Daily Step to Success.
+    </div>
+
+    <div class="menu">
+      <a href="menu.html">ホーム</a>
+      <a href="select.html">テスト</a>
+      <a href="history.html">過去の成績</a>
+      <a href="add_question.html">問題編集</a>
+      <a href="wrongList.html">解き直し</a>
+      <div class="logout">
+        <button onclick="logout()">ログアウト</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 📘 メイン部分 -->
+  <div class="main">
+    <h1>解き直しリスト</h1>
+    <div id="wrongListContainer">読み込み中...</div>
+  </div>
+
+  <!-- 🔥 Firebase & スクリプト -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import { getFirestore, collection, query, where, getDocs, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+
+    // 🔧 Firebase設定
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_BUCKET",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    const container = document.getElementById("wrongListContainer");
+
+    // 🚪ログアウト処理
+    window.logout = async function() {
+      await signOut(auth);
+      alert("ログアウトしました");
+      window.location.href = "login.html";
+    };
+
+    // 👤 ログイン認証チェック
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        alert("ログインしてください");
+        window.location.href = "login.html";
+        return;
+      }
+      await loadWrongList(user.uid);
+    });
+
+    // 📋 wrongList読み込み
+    async function loadWrongList(userId) {
+      const q = query(collection(db, "wrongList"), where("userId", "==", userId));
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        container.innerHTML = "<p>間違えた問題はありません！</p>";
+        return;
+      }
+
+      const subjects = {};
+      querySnapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        if (!subjects[data.subject]) subjects[data.subject] = [];
+        subjects[data.subject].push({ id: docSnap.id, ...data });
+      });
+
+      container.innerHTML = "";
+      for (const [subject, problems] of Object.entries(subjects)) {
+        const unitDiv = document.createElement("div");
+        unitDiv.className = "unit";
+        unitDiv.innerHTML = `<h2>${subject}</h2>`;
+
+        problems.forEach(problem => {
+          const div = document.createElement("div");
+          div.className = "question";
+          div.innerHTML = `
+            <p><strong>問題:</strong> ${problem.question}</p>
+            <p><strong>答え:</strong> ${problem.answer}</p>
+            <button class="btn" data-id="${problem.id}">正解した！(削除)</button>
+          `;
+          div.querySelector("button").addEventListener("click", async () => {
+            await deleteDoc(doc(db, "wrongList", problem.id));
+            div.remove();
+          });
+          unitDiv.appendChild(div);
+        });
+
+        container.appendChild(unitDiv);
+      }
+    }
+  </script>
+</body>
+</html>
