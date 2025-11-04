@@ -157,9 +157,21 @@ async function loadQuestions() {
   if (type !== "all") conditions.push(where("type", "==", type));
   if (unit !== "all") conditions.push(where("unit", "==", unit)); // 単元フィルター追加！
 
-  const qRef = conditions.length ? query(baseQuery, ...conditions) : baseQuery;
-  const snapshot = await getDocs(qRef);
+  import { query, where, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+// ...
+
+let qRef;
+
+// 🧠 条件があるとき（教科・単元・形式などが選ばれてるとき）は制限なしで取得
+if (conditions.length > 0) {
+  qRef = query(baseQuery, ...conditions);
+} else {
+  // 🚀 最初の全件読み込み時だけ50件までに制限
+  qRef = query(baseQuery, limit(50));
+}
+
+const snapshot = await getDocs(qRef);
   const questionCountEl = document.getElementById("questionCount");
 questionCountEl.textContent = `登録数: ${snapshot.size}問`;
   // 🟢 単元リスト自動更新（教科を変えた時に反映）
