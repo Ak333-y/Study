@@ -159,14 +159,15 @@ async function loadQuestions() {
 
 // ...
 
+// 🔹modeで動作を変える
 let qRef;
 
-// 🧠 条件があるとき（教科・単元・形式などが選ばれてるとき）は制限なしで取得
-if (conditions.length > 0) {
-  qRef = query(baseQuery, ...conditions);
+// 🔹最初の1回だけ50件、それ以外は全部取得
+if (window.loadMode === "init") {
+  qRef = query(baseQuery, limit(50)); // 最初だけ軽く
 } else {
-  // 🚀 最初の全件読み込み時だけ50件までに制限
-  qRef = query(baseQuery, limit(50));
+  // 教科・単元・形式・検索時は全部読み込む
+  qRef = conditions.length > 0 ? query(baseQuery, ...conditions) : baseQuery;
 }
 
 const snapshot = await getDocs(qRef);
@@ -315,12 +316,36 @@ if (subject !== "all") {
       }
     });
 
-    onAuthStateChanged(auth, (user) => {
-      if (user) loadQuestions();
-      else window.location.href = "login.html";
-    });
-subjectSelect.addEventListener("change", loadQuestions);
-    document.getElementById("searchBtn").addEventListener("click", loadQuestions);
+    onAuthStateChanged(auth, (user) => {    
+  if (user) {
+    window.loadMode = "init"; // 初回だけ軽く
+    loadQuestions();
+  } else {
+    window.location.href = "login.html";    
+  }
+});  
+
+// 🔹教科・単元・形式変更時 → 全件表示モード
+subjectSelect.addEventListener("change", () => {
+  window.loadMode = "search";
+  loadQuestions();
+});
+
+document.getElementById("unitSelect").addEventListener("change", () => {
+  window.loadMode = "search";
+  loadQuestions();
+});
+
+typeSelect.addEventListener("change", () => {
+  window.loadMode = "search";
+  loadQuestions();
+});
+
+// 🔹検索ボタン押したときも全件モード
+document.getElementById("searchBtn").addEventListener("click", () => {
+  window.loadMode = "search";
+  loadQuestions();
+});
   </script>
 </body>
 </html>
