@@ -112,8 +112,8 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import {
-      getFirestore, collection, getDocs, query, where, updateDoc, deleteDoc, doc
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  getFirestore, collection, getDocs, query, where, updateDoc, deleteDoc, doc, limit
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
     import {
       getAuth, onAuthStateChanged, signOut
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -156,8 +156,6 @@ async function loadQuestions() {
   if (subject !== "all") conditions.push(where("subject", "==", subject));
   if (type !== "all") conditions.push(where("type", "==", type));
   if (unit !== "all") conditions.push(where("unit", "==", unit)); // 単元フィルター追加！
-
-  import { query, where, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // ...
 
