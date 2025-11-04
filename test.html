@@ -344,15 +344,28 @@ async function loadQuestions() {
   }
 
   // 🔹重複防止＆ランダム化
-  const seen = new Set();
-  questions = questions.filter(q => {
-    if (seen.has(q.question)) return false;
-    seen.add(q.question);
-    return true;
-  });
+  snapshot.forEach((doc) => {
+  const data = doc.data();
+  if (!answeredQuestions.includes(doc.id)) {
+    questions.push({ ...data, id: doc.id });
+  }
+});
 
-  questions = questions.sort(() => Math.random() - 0.5).slice(0, questionCount);
+// 🔹重複防止
+const seen = new Set();
+questions = questions.filter(q => {
+  if (seen.has(q.question)) return false;
+  seen.add(q.question);
+  return true;
+});
 
+// 🔹「全問」モード対応（ここ追加！）
+const count = sessionStorage.getItem("questionCount");
+if (count !== "all") {
+  questions = questions.sort(() => Math.random() - 0.5).slice(0, Number(count));
+} else {
+  questions = questions.sort(() => Math.random() - 0.5); // 全問ランダム
+    }
   if (questions.length === 0) {
     alert("この単元の問題はありません！");
     window.location.href = "select.html";
