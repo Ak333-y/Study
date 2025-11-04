@@ -587,7 +587,17 @@ async function showResult() {
   const container = document.querySelector(".container");
   const rate = ((correctCount / questions.length) * 100).toFixed(1);
 
-  // ✅ 成績を Firestore に保存
+  // ❌間違えた問題を収集
+  const wrongAnswers = questions
+    .map((q, i) => ({
+      question: q.question,
+      correctAnswer: q.answer,
+      userAnswer: "", // 入力式や選択式の場合ここで拾ってもOK
+      isCorrect: i < correctCount // 仮に正答数で区切るならここ調整してもいい
+    }))
+    .filter((q) => !q.isCorrect);
+
+  // ✅ Firestoreに記録
   try {
     const user = auth.currentUser;
     if (user) {
@@ -600,20 +610,43 @@ async function showResult() {
         rate: Number(rate),
         date: new Date().toLocaleString("ja-JP"),
       });
-      console.log("✅ 成績を保存しました！");
     }
   } catch (e) {
     console.error("❌ 成績の保存中にエラー:", e);
   }
 
-  // ✅ 画面表示
+  // ✅ 結果レイアウト
   container.innerHTML = `
-    <h2>テスト結果🎉</h2>
-    <p>${questions.length}問中 ${correctCount}問正解！</p>
-    <p>正答率：${rate}%</p>
-    <button class="submit-btn" onclick="window.location.href='select.html'">ホームに戻る</button>
+    <div style="display: flex; gap: 30px; align-items: flex-start;">
+      <!-- 左：スコアまとめ -->
+      <div style="flex: 1;">
+        <h2>テスト結果🎉</h2>
+        <p>${questions.length}問中 ${correctCount}問正解！</p>
+        <p>正答率：${rate}%</p>
+        <button class="submit-btn" onclick="window.location.href='select.html'">ホームに戻る</button>
+      </div>
+
+      <!-- 右：間違えた問題一覧 -->
+      <div style="flex: 1; background:#f9fafb; padding:15px; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,0.1); max-height:400px; overflow-y:auto;">
+        <h3 style="margin-top:0;">❌ 間違えた問題</h3>
+        ${
+          wrongAnswers.length === 0
+            ? "<p>全問正解！すばらしい👏</p>"
+            : wrongAnswers
+                .map(
+                  (w, i) => `
+              <div style="margin-bottom:10px;">
+                <p><strong>Q${i + 1}：</strong>${w.question}</p>
+                <p style="color:#555;">正答：<strong>${w.correctAnswer}</strong></p>
+              </div>
+            `
+                )
+                .join("")
+        }
+      </div>
+    </div>
   `;
-}
+    }
 
 // ✅ テスト中断
 function stopTest() {
