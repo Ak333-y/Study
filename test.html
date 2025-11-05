@@ -604,14 +604,13 @@ async function showResult() {
   const rate = ((correctCount / questions.length) * 100).toFixed(1);
 
   // ❌間違えた問題を収集
-const wrongAnswers = questions.filter(q => !q.isCorrect);
-    .map((q, i) => ({
-      question: q.question,
-      correctAnswer: q.answer,
-      userAnswer: "", // 入力式や選択式の場合ここで拾ってもOK
-      isCorrect: i < correctCount // 仮に正答数で区切るならここ調整してもいい
-    }))
-    .filter((q) => !q.isCorrect);
+const wrongAnswers = questions
+  .filter(q => !q.isCorrect)
+  .map((q, i) => ({
+    question: q.question,
+    correctAnswer: q.answer,
+    userAnswer: q.userAnswer || "",
+  }));
 
   // ✅ Firestoreに記録
   try {
