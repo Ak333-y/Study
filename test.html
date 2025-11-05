@@ -475,6 +475,9 @@ async function submitAnswer() {
   const isCorrect = userAnswer === q.answer;
 if (isCorrect) correctCount++;
 
+q.isCorrect = isCorrect;
+q.userAnswer = userAnswer;  // ←これ追加
+
 flashAnimation(isCorrect, q.answer);
   
   answeredQuestions.push(q.id);
@@ -601,7 +604,7 @@ async function showResult() {
   const rate = ((correctCount / questions.length) * 100).toFixed(1);
 
   // ❌間違えた問題を収集
-  const wrongAnswers = questions
+const wrongAnswers = questions.filter(q => !q.isCorrect);
     .map((q, i) => ({
       question: q.question,
       correctAnswer: q.answer,
